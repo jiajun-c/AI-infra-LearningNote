@@ -11,4 +11,9 @@
 
 [reduce](./cuda/reduce/README.md)
 
+
+### 1.3 向量化
+
+[vectorize](./cuda/vectorize/)
+
 ## 2. LLM 
