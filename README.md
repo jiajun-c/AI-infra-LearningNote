@@ -16,4 +16,17 @@
 
 [vectorize](./cuda/vectorize/)
 
-## 2. LLM 
+## 2. Trition
+
+- [基础语法](./Triton/basic/README.md)
+- [硬件信息]()
+- [性能测试]()
+
+## 3. 训推优化
+
+### 3.1 量化
+量化方法 
+- [线性量化](./quant/linearQuant/README.md)
+- 非线性量化
+- 二值量化
+
