@@ -4,7 +4,9 @@
             "name": "linux-gcc-x64",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/staff/chengjiajun/local/libtorch/include/**"
+                "/staff/chengjiajun/local/libtorch/include/**",
+                ":~/miniconda3/envs/pytorch/include/**",
+                "/staff/chengjiajun/miniconda3/envs/pytorch/include/**"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "${default}",

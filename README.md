@@ -16,11 +16,17 @@
 
 [vectorize](./cuda/vectorize/)
 
+### Hopper 架构特性
+
+- [分布式共享内存](./cuda/hopper/DistributedSM/README.md)
+- 
+
 ## 2. Trition
 
 - [基础语法](./Triton/basic/README.md)
-- [硬件信息]()
+- [硬件信息](./Triton/hardware/README.md)
 - [性能测试]()
+- [随机数](./Triton/random/README.md)
 
 ## 3. 训推优化
 

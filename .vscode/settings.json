@@ -60,5 +60,6 @@
     "iostream": "cpp",
     "random": "cpp",
     "memory": "cpp"
-  }
+  },
+  "C_Cpp.errorSquiggles": "disabled"
 }
