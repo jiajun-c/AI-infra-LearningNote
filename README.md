@@ -28,19 +28,27 @@
 - [性能测试]()
 - [随机数](./Triton/random/README.md)
 
-## 3. 训推优化
+## 3. 大模型基础
 
-### 3.1 量化
+- [Attention](./LLMArch/Attention/README.md)
+    - scaled Dot attention
+    - MHA
+    - MQA
+    - GQA
+
+## 4. 训推优化
+
+### 4.1 量化
 量化方法 
 - [线性量化](./quant/linearQuant/README.md)
 - 非线性量化
 - 二值量化
 
-## 4. LLM Benchmark
+## 5. LLM Benchmark
 
-### 4.1 大模型问答评估
+### 5.1 大模型问答评估
 
-### 4.2 推理性能评估
+### 5.2 推理性能评估
 
 推理性能指标一般为每秒输出的token数目
 
