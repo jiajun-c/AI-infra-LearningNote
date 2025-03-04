@@ -35,7 +35,10 @@
     - MHA
     - MQA
     - GQA
-
+- [MOE](./LLMArch/MoE/README.md)
+    - basic MoE
+    - sparse MoE
+    
 ## 4. 训推优化
 
 ### 4.1 量化
