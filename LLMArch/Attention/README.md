@@ -156,3 +156,68 @@ class GroupQueryAttention(nn.Module):
 
         return final_output
 ```
+
+## 6. FlashAttention
+
+FlashAttention的实现目前可以被分为V1，V2，V3三种
+
+### 6.1 FlashAttention V1
+
+V1中需要对数据进行分块的操作，每次计算一块进行输出，然后使用 online softmax 对分块进行softmax的操作。
+
+完整算法流程如下所示
+
+![v1](./images/V1.png)
+
+- 根据SRAM的大小，计算合适的分块Block大小
+- 将O，l，m在HBM中初始化为对应shape的全0的矩阵或向量
+- 将Q，K，V切分为对应数量的Blocks
+- 执行outer loop，在outer loop中，IO操作是将分块的K，V从HBM中加载到SRAM中
+- 执行inner loop，将Qi,Oi, li, mi 从HBM中load到SRAM中，以分块的形式计算中间值
+
+```python3
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import math
+
+N, d = 16, 8
+
+Q_mat = torch.rand((N, d))
+K_mat = torch.rand((N, d))
+V_mat = torch.rand((N, d))
+
+Br,Bc = 4,d
+
+O = torch.zeros((N, d))
+l = torch.zeros((N, 1))
+m = torch.full((N, 1), -torch.inf)
+
+for block_start_Bc in range(0, N, Bc):
+    block_end_Bc = block_start_Bc + Bc
+    Kj = K_mat[block_start_Bc:block_end_Bc, :]
+    Vj = V_mat[block_start_Bc:block_end_Bc, :]
+
+    for block_start_Br in range(0, N, Br):
+        block_end_Br = block_start_Br + Br
+        mi = m[block_start_Br:block_end_Br, :]
+        li = l[block_start_Br:block_end_Br, :]
+        Oi = O[block_start_Br:block_end_Br, :]
+        Qi = Q_mat[block_start_Br:block_end_Br, :]
+        
+        Sij = Qi @ Kj.T
+
+        mij_hat = torch.max(Sij, dim=1).values[:, None]
+
+        pij_hat = torch.exp(Sij - mij_hat)
+        lij_hat = torch.sum(pij_hat, dim=1)[:, None]
+
+        mi_new = torch.max(torch.column_stack([mi, mij_hat]), dim=1).values[:, None]
+        li_new = torch.exp(mi-mi_new) * li * torch.exp(mij_hat - mi_new)*lij_hat
+        Oi = (li * torch.exp(mi - mi_new)*Oi/li_new) * (torch.exp(mij_hat - mi_new)*pij_hat/li_new) @ Vj
+
+        m[block_start_Br:block_end_Br, :] = mi_new
+        l[block_start_Br:block_end_Br, :] = li_new
+
+        O[block_start_Br:block_end_Br, :] = Oi
+```
