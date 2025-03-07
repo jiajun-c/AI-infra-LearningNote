@@ -1,1 +1,8 @@
 build/
+*.pt
+*.onnx
+*.pnnx
+*.bin
+*.param
+*_ncnn.py
+*_pnnx.py
