@@ -38,7 +38,12 @@
 - [MOE](./LLMArch/MoE/README.md)
     - basic MoE
     - sparse MoE
-    
+
+- [模型中间表示](./IR/README.md)
+    - [PNNX](./IR/PNNX/README.md)
+    - [ONNX](./IR/ONNX/README.md)
+    - 可视化
+
 ## 4. 训推优化
 
 ### 4.1 量化
