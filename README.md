@@ -28,7 +28,7 @@
 - [性能测试]()
 - [随机数](./Triton/random/README.md)
 
-## 3. 大模型基础
+## 3. 大模型
 
 - [Attention](./LLMArch/Attention/README.md)
     - scaled Dot attention
@@ -43,16 +43,20 @@
     - [PNNX](./IR/PNNX/README.md)
     - [ONNX](./IR/ONNX/README.md)
     - 可视化
-- 模型runtime
-    - [TensoRT](./interferce/TensorRT/README.md)
 
 ## 4. 训推优化
 
+### 4.1 推理框架
+
+- 推理框架
+    - [TensoRT](./interferce/TensorRT/README.md)
+    
 ### 4.1 量化
-量化方法 
-- [线性量化](./quant/linearQuant/README.md)
-- 非线性量化
-- 二值量化
+- 量化方法 
+    - [线性量化](./quant/linearQuant/README.md)
+    - 非线性量化
+    - 二值量化
+
 
 ## 5. LLM Benchmark
 
