@@ -57,6 +57,11 @@
     - 非线性量化
     - 二值量化
 
+### 4.2 模型剪枝
+
+- [Fine-grain Pruning](./inference/prune/fine-grain/README.md)
+- [channel-based Pruning](./inference/prune/channel-based/README.md)
+
 
 ## 5. LLM Benchmark
 
