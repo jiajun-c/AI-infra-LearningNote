@@ -56,7 +56,7 @@
     - [线性量化](./quant/linearQuant/README.md)
     - 非线性量化
     - 二值量化
-
+    - [kmeans量化](./quant/kmeans/)
 ### 4.2 模型剪枝
 
 - [Fine-grain Pruning](./inference/prune/fine-grain/README.md)
