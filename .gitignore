@@ -6,3 +6,4 @@ build/
 *.param
 *_ncnn.py
 *_pnnx.py
+data/
