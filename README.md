@@ -52,23 +52,35 @@
     - [TensoRT](./interferce/TensorRT/README.md)
     
 ### 4.1 量化
-- 量化方法 
+
+- 量化方法
     - [线性量化](./quant/linearQuant/README.md)
     - 非线性量化
     - 二值量化
     - [kmeans量化](./quant/kmeans/README.md)
     - [QAT](./quant/QAT/README.md)
+
 ### 4.2 模型剪枝
 
 - [Fine-grain Pruning](./inference/prune/fine-grain/README.md)
 - [channel-based Pruning](./inference/prune/channel-based/README.md)
 
 
-## 5. LLM Benchmark
+### 4.3 Fine-Tuning
 
-### 5.1 大模型问答评估
+- [Supervised Fine-tuning](./train/Fine-tuning/SFT/README.md)
+- [Reinforcement Learning from Human Feedback](./train/Fine-tuning/RLHF/README.md)
+- [Parameter Efficient Fine-Tuning](./train/Fine-tuning/DPO/README.md)
 
-### 5.2 推理性能评估
+## 5 NAS
+
+[OFA网络](./NAS/README.md)
+
+## 6. LLM Benchmark
+
+### 6.1 大模型问答评估
+
+### 6.2 推理性能评估
 
 推理性能指标一般为每秒输出的token数目
 
