@@ -11,6 +11,7 @@ Attention最早由google提出，发表在Neruips上[paper link](https://proceed
 其公式为
 
 $Attention(Q, K, V) = softmax(\frac{QK^T}{\sqrt{d_k}})V$
+
 ![](./images/sdp.png)
 
 实现的代码如下所示
