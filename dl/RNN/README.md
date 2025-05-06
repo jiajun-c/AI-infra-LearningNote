@@ -25,4 +25,3 @@ RNN的反向传播和传统神经网络结构的反向传播不同，U和W的值
 ![alt text](image-1.png)
 - 隐藏层参数(U,V): 
 ![alt text](image-2.png)
-

@@ -44,6 +44,8 @@
     - [ONNX](./IR/ONNX/README.md)
     - 可视化
 
+- [模型保存](./model/save_load/README.md)
+
 ## 4. 训推优化
 
 ### 4.1 推理框架
@@ -72,6 +74,9 @@
 - [Reinforcement Learning from Human Feedback](./train/Fine-tuning/RLHF/README.md)
 - [Parameter Efficient Fine-Tuning](./train/Fine-tuning/DPO/README.md)
 
+### 4.4 模型学习率
+
+[Learning Rate Schedules](./model/learningRT/README.md)
 ## 5 NAS
 
 [OFA网络](./NAS/README.md)
