@@ -29,6 +29,8 @@
 - [随机数](./Triton/random/README.md)
 
 ## 3. 大模型
+- 文本token化
+    - [BPE](./tokenizer/BPE/README.md)
 
 - [Attention](./LLMArch/Attention/README.md)
     - scaled Dot attention
