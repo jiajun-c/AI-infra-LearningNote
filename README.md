@@ -1,5 +1,4 @@
 # AI-infra-LearningNote
-
 ## 1. CUDA
 
 ### 1.1 基础原语
@@ -92,3 +91,8 @@
 推理性能指标一般为每秒输出的token数目
 
 https://zhuanlan.zhihu.com/p/665170554
+
+
+## 实用第三方库
+
+- [einops](./third_party/einops/README.md): 实用的数据操作库
