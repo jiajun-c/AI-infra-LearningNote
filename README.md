@@ -47,6 +47,11 @@
 
 - [模型保存](./model/save_load/README.md)
 
+- 模型并行
+    - [DP(数据并行)](./parallel/DP/README.md)
+    - [DDP(分布式数据并行)](./parallel/DDP/README.md)
+    - [TP(模型并行)](./parallel/TP/README.md)
+    - [PP(流水并行)](./parallel/PP/README.md)
 ## 4. 训推优化
 
 ### 4.1 推理框架
@@ -78,15 +83,27 @@
 ### 4.4 模型学习率
 
 [Learning Rate Schedules](./model/learningRT/README.md)
-## 5 NAS
+
+## 5. 模型通信
+
+### 5.1 通信后端
+
+- [gloo](./comm/backend/gloo/README.md)
+
+
+### 5.2 通信原语
+
+- [集合通信原语](./comm/collectivate/README.md)
+
+## NAS
 
 [OFA网络](./NAS/README.md)
 
-## 6. LLM Benchmark
+## LLM Benchmark
 
-### 6.1 大模型问答评估
+### 大模型问答评估
 
-### 6.2 推理性能评估
+### 推理性能评估
 
 推理性能指标一般为每秒输出的token数目
 
