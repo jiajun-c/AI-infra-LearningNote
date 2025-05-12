@@ -59,7 +59,7 @@
 - 推理框架
     - [TensoRT](./interferce/TensorRT/README.md)
     
-### 4.1 量化
+### 4.1 显存优化
 
 - 量化方法
     - [线性量化](./quant/linearQuant/README.md)
@@ -67,7 +67,9 @@
     - 二值量化
     - [kmeans量化](./quant/kmeans/README.md)
     - [QAT](./quant/QAT/README.md)
-
+- 检查点机制
+    - [梯度检查点](./train/LowMem/checkpoint/README.md)
+    
 ### 4.2 模型剪枝
 
 - [Fine-grain Pruning](./inference/prune/fine-grain/README.md)
