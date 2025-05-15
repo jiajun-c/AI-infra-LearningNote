@@ -30,12 +30,15 @@
 ## 3. 大模型
 - 文本token化
     - [BPE](./tokenizer/BPE/README.md)
-
+- 位置编码
+    - [绝对位置编码](./position_encode/absolute/README.md)
+    - [相对位置编码]()
 - [Attention](./LLMArch/Attention/README.md)
     - scaled Dot attention
     - MHA
     - MQA
     - GQA
+    - [softmax](./LLMArch/Attention/)
 - [MOE](./LLMArch/MoE/README.md)
     - basic MoE
     - sparse MoE
@@ -69,7 +72,7 @@
     - [QAT](./quant/QAT/README.md)
 - 检查点机制
     - [梯度检查点](./train/LowMem/checkpoint/README.md)
-    
+
 ### 4.2 模型剪枝
 
 - [Fine-grain Pruning](./inference/prune/fine-grain/README.md)

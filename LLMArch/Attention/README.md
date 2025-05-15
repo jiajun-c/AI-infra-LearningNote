@@ -222,3 +222,4 @@ for block_start_Bc in range(0, N, Bc):
 
         O[block_start_Br:block_end_Br, :] = Oi
 ```
+

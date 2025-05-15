@@ -59,7 +59,8 @@
   "files.associations": {
     "iostream": "cpp",
     "random": "cpp",
-    "memory": "cpp"
+    "memory": "cpp",
+    "cmath": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled",
   "cmake.sourceDirectory": "/staff/chengjiajun/workspace/AI-infra-note/cuda/hopper/DistributedSM"
