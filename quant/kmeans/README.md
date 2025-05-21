@@ -19,7 +19,7 @@ def k_means_quantize(fp32_tensor: torch.Tensor, bitwidth=4, codebook=None):
             labels: [torch.(cuda.)LongTensor] cluster label tensor
     """
     if codebook is None:
-        ############### YOUR CODE STARTS HERE ###############
+        ############### YOUeeR CODE STARTS HERE ###############
         # get number of clusters based on the quantization precision
         # hint: one line of code
         n_clusters = 2 ** bitwidth
