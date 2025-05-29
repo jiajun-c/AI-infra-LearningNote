@@ -1,0 +1,616 @@
+2025-05-29 12:11:20 [INFO] [task_scheduler.cc:160] Initializing Task #15: "fused_matmul_add13"
+2025-05-29 12:11:20 [INFO] [task_scheduler.cc:35] 
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv87: T.Buffer((T.int64(1), T.int64(512)), "float32"), lv88: T.Buffer((T.int64(512), T.int64(1000)), "float32"), p_fc_bias: T.Buffer((T.int64(1000),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(1000)), "float32")):
+        T.func_attr({"tir.noalias": True})
+        # with T.block("root"):
+        matmul_intermediate = T.alloc_buffer((T.int64(1), T.int64(1000)))
+        for i0, i1, k in T.grid(T.int64(1), T.int64(1000), T.int64(512)):
+            with T.block("matmul"):
+                v_i0, v_i1, v_k = T.axis.remap("SSR", [i0, i1, k])
+                T.reads(lv87[v_i0, v_k], lv88[v_k, v_i1])
+                T.writes(matmul_intermediate[v_i0, v_i1])
+                with T.init():
+                    matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
+                matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + lv87[v_i0, v_k] * lv88[v_k, v_i1]
+        for ax0, ax1 in T.grid(T.int64(1), T.int64(1000)):
+            with T.block("T_add"):
+                v_ax0, v_ax1 = T.axis.remap("SS", [ax0, ax1])
+                T.reads(matmul_intermediate[v_ax0, v_ax1], p_fc_bias[v_ax1])
+                T.writes(T_add_intermediate[v_ax0, v_ax1])
+                T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + p_fc_bias[v_ax1]
+2025-05-29 12:11:20 [INFO] [task_scheduler.cc:164] Total 3 design space(s) generated
+2025-05-29 12:11:20 [INFO] [task_scheduler.cc:170] Design space #0:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv87: T.Buffer((T.int64(1), T.int64(512)), "float32"), lv88: T.Buffer((T.int64(512), T.int64(1000)), "float32"), p_fc_bias: T.Buffer((T.int64(1000),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(1000)), "float32")):
+        T.func_attr({"tir.noalias": True})
+        with T.block("root"):
+            T.reads()
+            T.writes()
+            T.block_attr({"meta_schedule.unroll_explicit": 16})
+            matmul_intermediate_local = T.alloc_buffer((T.int64(1), T.int64(1000)), scope="local")
+            lv87_shared = T.alloc_buffer((T.int64(1), T.int64(512)), scope="shared")
+            lv88_shared = T.alloc_buffer((T.int64(512), T.int64(1000)), scope="shared")
+            for i0_0_i1_0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
+                for i0_1_i1_1_fused in T.thread_binding(T.int64(8), thread="vthread.x"):
+                    for i0_2_i1_2_fused in T.thread_binding(T.int64(5), thread="threadIdx.x"):
+                        for k_0 in range(T.int64(64)):
+                            for ax0_ax1_fused in range(T.int64(8)):
+                                with T.block("lv87_shared"):
+                                    v0 = T.axis.spatial(T.int64(1), T.int64(0))
+                                    v1 = T.axis.spatial(T.int64(512), k_0 * T.int64(8) + ax0_ax1_fused)
+                                    T.reads(lv87[v0, v1])
+                                    T.writes(lv87_shared[v0, v1])
+                                    T.block_attr({"meta_schedule.cooperative_fetch": 1})
+                                    lv87_shared[v0, v1] = lv87[v0, v1]
+                            for ax0_ax1_fused in range(T.int64(8000)):
+                                with T.block("lv88_shared"):
+                                    v0 = T.axis.spatial(T.int64(512), k_0 * T.int64(8) + ax0_ax1_fused // T.int64(1000))
+                                    v1 = T.axis.spatial(T.int64(1000), ax0_ax1_fused % T.int64(1000))
+                                    T.reads(lv88[v0, v1])
+                                    T.writes(lv88_shared[v0, v1])
+                                    T.block_attr({"meta_schedule.cooperative_fetch": 3})
+                                    lv88_shared[v0, v1] = lv88[v0, v1]
+                            for k_1, i0_3, i1_3, k_2, i0_4, i1_4 in T.grid(T.int64(1), T.int64(1), T.int64(5), T.int64(8), T.int64(1), T.int64(5)):
+                                with T.block("matmul"):
+                                    v_i0 = T.axis.spatial(T.int64(1), i0_3 + i0_4)
+                                    v_i1 = T.axis.spatial(T.int64(1000), i0_1_i1_1_fused * T.int64(125) + i0_2_i1_2_fused * T.int64(25) + i1_3 * T.int64(5) + i1_4)
+                                    v_k = T.axis.reduce(T.int64(512), k_0 * T.int64(8) + k_1 * T.int64(8) + k_2)
+                                    T.reads(lv87_shared[v_i0, v_k], lv88_shared[v_k, v_i1])
+                                    T.writes(matmul_intermediate_local[v_i0, v_i1])
+                                    T.block_attr({"meta_schedule.thread_extent_high_inclusive": 1024, "meta_schedule.thread_extent_low_inclusive": 32, "meta_schedule.tiling_structure": "SSSRRSRS"})
+                                    with T.init():
+                                        matmul_intermediate_local[v_i0, v_i1] = T.float32(0.0)
+                                    matmul_intermediate_local[v_i0, v_i1] = matmul_intermediate_local[v_i0, v_i1] + lv87_shared[v_i0, v_k] * lv88_shared[v_k, v_i1]
+                        for ax0, ax1 in T.grid(T.int64(1), T.int64(25)):
+                            with T.block("matmul_intermediate_local"):
+                                v0 = T.axis.spatial(T.int64(1), ax0)
+                                v1 = T.axis.spatial(T.int64(1000), i0_1_i1_1_fused * T.int64(125) + i0_2_i1_2_fused * T.int64(25) + ax1)
+                                T.reads(matmul_intermediate_local[v0, v1], p_fc_bias[v1])
+                                T.writes(T_add_intermediate[v0, v1])
+                                T_add_intermediate[v0, v1] = matmul_intermediate_local[v0, v1] + p_fc_bias[v1]
+b0 = sch.get_block(name="matmul", func_name="main")
+b1 = sch.get_block(name="T_add", func_name="main")
+b2 = sch.get_block(name="root", func_name="main")
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.tiling_structure", ann_val="SSSRRSRS")
+l3, l4, l5 = sch.get_loops(block=b0)
+v6, v7, v8, v9, v10 = sch.sample_perfect_tile(loop=l3, n=5, max_innermost_factor=64, decision=[1, 1, 1, 1, 1])
+l11, l12, l13, l14, l15 = sch.split(loop=l3, factors=[v6, v7, v8, v9, v10], preserve_unit_iters=True, disable_predication=False)
+v16, v17, v18, v19, v20 = sch.sample_perfect_tile(loop=l4, n=5, max_innermost_factor=64, decision=[1, 8, 5, 5, 5])
+l21, l22, l23, l24, l25 = sch.split(loop=l4, factors=[v16, v17, v18, v19, v20], preserve_unit_iters=True, disable_predication=False)
+v26, v27, v28 = sch.sample_perfect_tile(loop=l5, n=3, max_innermost_factor=64, decision=[64, 1, 8])
+l29, l30, l31 = sch.split(loop=l5, factors=[v26, v27, v28], preserve_unit_iters=True, disable_predication=False)
+sch.reorder(l11, l21, l12, l22, l13, l23, l29, l30, l14, l24, l31, l15, l25)
+l32 = sch.fuse(l11, l21, preserve_unit_iters=True)
+sch.bind(loop=l32, thread_axis="blockIdx.x")
+l33 = sch.fuse(l12, l22, preserve_unit_iters=True)
+sch.bind(loop=l33, thread_axis="vthread.x")
+l34 = sch.fuse(l13, l23, preserve_unit_iters=True)
+sch.bind(loop=l34, thread_axis="threadIdx.x")
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.thread_extent_low_inclusive", ann_val=32)
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.thread_extent_high_inclusive", ann_val=1024)
+b35 = sch.cache_write(block=b0, write_buffer_index=0, storage_scope="local")
+sch.reverse_compute_at(block=b35, loop=l34, preserve_unit_loops=True, index=-1)
+b36 = sch.cache_read(block=b0, read_buffer_index=0, storage_scope="shared", consumer_blocks=[b0])
+sch.compute_at(block=b36, loop=l29, preserve_unit_loops=True, index=-1)
+l37, l38, l39, l40, l41, l42 = sch.get_loops(block=b36)
+l43 = sch.fuse(l41, l42, preserve_unit_iters=True)
+v44 = sch.sample_categorical(candidates=[1, 2, 3, 4], probs=[0.25, 0.25, 0.25, 0.25], decision=0)
+sch.annotate(block_or_loop=b36, ann_key="meta_schedule.cooperative_fetch", ann_val=v44)
+b45 = sch.cache_read(block=b0, read_buffer_index=1, storage_scope="shared", consumer_blocks=[b0])
+sch.compute_at(block=b45, loop=l29, preserve_unit_loops=True, index=-1)
+l46, l47, l48, l49, l50, l51 = sch.get_loops(block=b45)
+l52 = sch.fuse(l50, l51, preserve_unit_iters=True)
+v53 = sch.sample_categorical(candidates=[1, 2, 3, 4], probs=[0.25, 0.25, 0.25, 0.25], decision=2)
+sch.annotate(block_or_loop=b45, ann_key="meta_schedule.cooperative_fetch", ann_val=v53)
+sch.reverse_compute_inline(block=b1)
+v54 = sch.sample_categorical(candidates=[0, 16, 64, 512, 1024], probs=[0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001], decision=1)
+sch.annotate(block_or_loop=b2, ann_key="meta_schedule.unroll_explicit", ann_val=v54)
+2025-05-29 12:11:20 [INFO] [task_scheduler.cc:170] Design space #1:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv87: T.Buffer((T.int64(1), T.int64(512)), "float32"), lv88: T.Buffer((T.int64(512), T.int64(1000)), "float32"), p_fc_bias: T.Buffer((T.int64(1000),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(1000)), "float32")):
+        T.func_attr({"tir.noalias": True})
+        with T.block("root"):
+            T.reads()
+            T.writes()
+            T.block_attr({"meta_schedule.unroll_explicit": 0})
+            matmul_intermediate_local = T.alloc_buffer((T.int64(1), T.int64(1000)), scope="local")
+            lv87_shared = T.alloc_buffer((T.int64(1), T.int64(512)), scope="shared")
+            lv88_shared = T.alloc_buffer((T.int64(512), T.int64(1000)), scope="shared")
+            for i0_0_i1_0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
+                for i0_1_i1_1_fused in T.thread_binding(T.int64(8), thread="vthread.x"):
+                    for i0_2_i1_2_fused in T.thread_binding(T.int64(5), thread="threadIdx.x"):
+                        for k_0_fused in T.serial(T.int64(64), annotations={"software_pipeline_async_stages": [0], "software_pipeline_order": [0, 1, 2], "software_pipeline_stage": [0, 0, 2]}):
+                            for ax0_ax1_fused in range(T.int64(8)):
+                                with T.block("lv87_shared"):
+                                    v0 = T.axis.spatial(T.int64(1), T.int64(0))
+                                    v1 = T.axis.spatial(T.int64(512), k_0_fused * T.int64(8) + ax0_ax1_fused)
+                                    T.reads(lv87[v0, v1])
+                                    T.writes(lv87_shared[v0, v1])
+                                    T.block_attr({"meta_schedule.cooperative_fetch": 1})
+                                    lv87_shared[v0, v1] = lv87[v0, v1]
+                            for ax0_ax1_fused in range(T.int64(8000)):
+                                with T.block("lv88_shared"):
+                                    v0 = T.axis.spatial(T.int64(512), k_0_fused * T.int64(8) + ax0_ax1_fused // T.int64(1000))
+                                    v1 = T.axis.spatial(T.int64(1000), ax0_ax1_fused % T.int64(1000))
+                                    T.reads(lv88[v0, v1])
+                                    T.writes(lv88_shared[v0, v1])
+                                    T.block_attr({"meta_schedule.cooperative_fetch": 3})
+                                    lv88_shared[v0, v1] = lv88[v0, v1]
+                            for k_1, i0_3, i1_3, k_2, i0_4, i1_4 in T.grid(T.int64(1), T.int64(1), T.int64(5), T.int64(8), T.int64(1), T.int64(5)):
+                                with T.block("matmul"):
+                                    v_i0 = T.axis.spatial(T.int64(1), i0_3 + i0_4)
+                                    v_i1 = T.axis.spatial(T.int64(1000), i0_1_i1_1_fused * T.int64(125) + i0_2_i1_2_fused * T.int64(25) + i1_3 * T.int64(5) + i1_4)
+                                    v_k = T.axis.reduce(T.int64(512), k_0_fused * T.int64(8) + k_1 * T.int64(8) + k_2)
+                                    T.reads(lv87_shared[v_i0, v_k], lv88_shared[v_k, v_i1])
+                                    T.writes(matmul_intermediate_local[v_i0, v_i1])
+                                    T.block_attr({"meta_schedule.thread_extent_high_inclusive": 1024, "meta_schedule.thread_extent_low_inclusive": 32, "meta_schedule.tiling_structure": "SSSRRSRS"})
+                                    with T.init():
+                                        matmul_intermediate_local[v_i0, v_i1] = T.float32(0.0)
+                                    matmul_intermediate_local[v_i0, v_i1] = matmul_intermediate_local[v_i0, v_i1] + lv87_shared[v_i0, v_k] * lv88_shared[v_k, v_i1]
+                        for ax0, ax1 in T.grid(T.int64(1), T.int64(25)):
+                            with T.block("matmul_intermediate_local"):
+                                v0 = T.axis.spatial(T.int64(1), ax0)
+                                v1 = T.axis.spatial(T.int64(1000), i0_1_i1_1_fused * T.int64(125) + i0_2_i1_2_fused * T.int64(25) + ax1)
+                                T.reads(matmul_intermediate_local[v0, v1], p_fc_bias[v1])
+                                T.writes(T_add_intermediate[v0, v1])
+                                T_add_intermediate[v0, v1] = matmul_intermediate_local[v0, v1] + p_fc_bias[v1]
+b0 = sch.get_block(name="matmul", func_name="main")
+b1 = sch.get_block(name="T_add", func_name="main")
+b2 = sch.get_block(name="root", func_name="main")
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.tiling_structure", ann_val="SSSRRSRS")
+l3, l4, l5 = sch.get_loops(block=b0)
+v6, v7, v8, v9, v10 = sch.sample_perfect_tile(loop=l3, n=5, max_innermost_factor=64, decision=[1, 1, 1, 1, 1])
+l11, l12, l13, l14, l15 = sch.split(loop=l3, factors=[v6, v7, v8, v9, v10], preserve_unit_iters=True, disable_predication=False)
+v16, v17, v18, v19, v20 = sch.sample_perfect_tile(loop=l4, n=5, max_innermost_factor=64, decision=[1, 8, 5, 5, 5])
+l21, l22, l23, l24, l25 = sch.split(loop=l4, factors=[v16, v17, v18, v19, v20], preserve_unit_iters=True, disable_predication=False)
+v26, v27, v28 = sch.sample_perfect_tile(loop=l5, n=3, max_innermost_factor=64, decision=[64, 1, 8])
+l29, l30, l31 = sch.split(loop=l5, factors=[v26, v27, v28], preserve_unit_iters=True, disable_predication=False)
+sch.reorder(l11, l21, l12, l22, l13, l23, l29, l30, l14, l24, l31, l15, l25)
+l32 = sch.fuse(l11, l21, preserve_unit_iters=True)
+sch.bind(loop=l32, thread_axis="blockIdx.x")
+l33 = sch.fuse(l12, l22, preserve_unit_iters=True)
+sch.bind(loop=l33, thread_axis="vthread.x")
+l34 = sch.fuse(l13, l23, preserve_unit_iters=True)
+sch.bind(loop=l34, thread_axis="threadIdx.x")
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.thread_extent_low_inclusive", ann_val=32)
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.thread_extent_high_inclusive", ann_val=1024)
+b35 = sch.cache_write(block=b0, write_buffer_index=0, storage_scope="local")
+sch.reverse_compute_at(block=b35, loop=l34, preserve_unit_loops=True, index=-1)
+b36 = sch.cache_read(block=b0, read_buffer_index=0, storage_scope="shared", consumer_blocks=[b0])
+sch.compute_at(block=b36, loop=l29, preserve_unit_loops=True, index=-1)
+l37, l38, l39, l40, l41, l42 = sch.get_loops(block=b36)
+l43 = sch.fuse(l41, l42, preserve_unit_iters=True)
+v44 = sch.sample_categorical(candidates=[1, 2, 3, 4], probs=[0.25, 0.25, 0.25, 0.25], decision=0)
+sch.annotate(block_or_loop=b36, ann_key="meta_schedule.cooperative_fetch", ann_val=v44)
+b45 = sch.cache_read(block=b0, read_buffer_index=1, storage_scope="shared", consumer_blocks=[b0])
+sch.compute_at(block=b45, loop=l29, preserve_unit_loops=True, index=-1)
+l46, l47, l48, l49, l50, l51 = sch.get_loops(block=b45)
+l52 = sch.fuse(l50, l51, preserve_unit_iters=True)
+v53 = sch.sample_categorical(candidates=[1, 2, 3, 4], probs=[0.25, 0.25, 0.25, 0.25], decision=2)
+sch.annotate(block_or_loop=b45, ann_key="meta_schedule.cooperative_fetch", ann_val=v53)
+l54 = sch.fuse(l29, preserve_unit_iters=True)
+sch.annotate(block_or_loop=l54, ann_key="software_pipeline_stage", ann_val=[0, 0, 2])
+sch.annotate(block_or_loop=l54, ann_key="software_pipeline_order", ann_val=[0, 1, 2])
+sch.annotate(block_or_loop=l54, ann_key="software_pipeline_async_stages", ann_val=[0])
+sch.reverse_compute_inline(block=b1)
+v55 = sch.sample_categorical(candidates=[0, 16, 64, 512, 1024], probs=[0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001], decision=0)
+sch.annotate(block_or_loop=b2, ann_key="meta_schedule.unroll_explicit", ann_val=v55)
+2025-05-29 12:11:20 [INFO] [task_scheduler.cc:170] Design space #2:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv87: T.Buffer((T.int64(1), T.int64(512)), "float32"), lv88: T.Buffer((T.int64(512), T.int64(1000)), "float32"), p_fc_bias: T.Buffer((T.int64(1000),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(1000)), "float32")):
+        T.func_attr({"tir.noalias": True})
+        with T.block("root"):
+            T.reads()
+            T.writes()
+            T.block_attr({"meta_schedule.unroll_explicit": 64})
+            matmul_intermediate_local = T.alloc_buffer((T.int64(1), T.int64(1000)), scope="local")
+            lv87_shared = T.alloc_buffer((T.int64(1), T.int64(512)), scope="shared")
+            lv88_shared = T.alloc_buffer((T.int64(512), T.int64(1000)), scope="shared")
+            for i0_0_i1_0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
+                for i0_1_i1_1_fused in T.thread_binding(T.int64(8), thread="vthread.x"):
+                    for i0_2_i1_2_fused in T.thread_binding(T.int64(5), thread="threadIdx.x"):
+                        for k_0_fused in T.serial(T.int64(64), annotations={"software_pipeline_async_stages": [0], "software_pipeline_order": [0, 1, 2], "software_pipeline_stage": [0, 0, 3]}):
+                            for ax0_ax1_fused in range(T.int64(8)):
+                                with T.block("lv87_shared"):
+                                    v0 = T.axis.spatial(T.int64(1), T.int64(0))
+                                    v1 = T.axis.spatial(T.int64(512), k_0_fused * T.int64(8) + ax0_ax1_fused)
+                                    T.reads(lv87[v0, v1])
+                                    T.writes(lv87_shared[v0, v1])
+                                    T.block_attr({"meta_schedule.cooperative_fetch": 1})
+                                    lv87_shared[v0, v1] = lv87[v0, v1]
+                            for ax0_ax1_fused in range(T.int64(8000)):
+                                with T.block("lv88_shared"):
+                                    v0 = T.axis.spatial(T.int64(512), k_0_fused * T.int64(8) + ax0_ax1_fused // T.int64(1000))
+                                    v1 = T.axis.spatial(T.int64(1000), ax0_ax1_fused % T.int64(1000))
+                                    T.reads(lv88[v0, v1])
+                                    T.writes(lv88_shared[v0, v1])
+                                    T.block_attr({"meta_schedule.cooperative_fetch": 3})
+                                    lv88_shared[v0, v1] = lv88[v0, v1]
+                            for k_1, i0_3, i1_3, k_2, i0_4, i1_4 in T.grid(T.int64(1), T.int64(1), T.int64(5), T.int64(8), T.int64(1), T.int64(5)):
+                                with T.block("matmul"):
+                                    v_i0 = T.axis.spatial(T.int64(1), i0_3 + i0_4)
+                                    v_i1 = T.axis.spatial(T.int64(1000), i0_1_i1_1_fused * T.int64(125) + i0_2_i1_2_fused * T.int64(25) + i1_3 * T.int64(5) + i1_4)
+                                    v_k = T.axis.reduce(T.int64(512), k_0_fused * T.int64(8) + k_1 * T.int64(8) + k_2)
+                                    T.reads(lv87_shared[v_i0, v_k], lv88_shared[v_k, v_i1])
+                                    T.writes(matmul_intermediate_local[v_i0, v_i1])
+                                    T.block_attr({"meta_schedule.thread_extent_high_inclusive": 1024, "meta_schedule.thread_extent_low_inclusive": 32, "meta_schedule.tiling_structure": "SSSRRSRS"})
+                                    with T.init():
+                                        matmul_intermediate_local[v_i0, v_i1] = T.float32(0.0)
+                                    matmul_intermediate_local[v_i0, v_i1] = matmul_intermediate_local[v_i0, v_i1] + lv87_shared[v_i0, v_k] * lv88_shared[v_k, v_i1]
+                        for ax0, ax1 in T.grid(T.int64(1), T.int64(25)):
+                            with T.block("matmul_intermediate_local"):
+                                v0 = T.axis.spatial(T.int64(1), ax0)
+                                v1 = T.axis.spatial(T.int64(1000), i0_1_i1_1_fused * T.int64(125) + i0_2_i1_2_fused * T.int64(25) + ax1)
+                                T.reads(matmul_intermediate_local[v0, v1], p_fc_bias[v1])
+                                T.writes(T_add_intermediate[v0, v1])
+                                T_add_intermediate[v0, v1] = matmul_intermediate_local[v0, v1] + p_fc_bias[v1]
+b0 = sch.get_block(name="matmul", func_name="main")
+b1 = sch.get_block(name="T_add", func_name="main")
+b2 = sch.get_block(name="root", func_name="main")
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.tiling_structure", ann_val="SSSRRSRS")
+l3, l4, l5 = sch.get_loops(block=b0)
+v6, v7, v8, v9, v10 = sch.sample_perfect_tile(loop=l3, n=5, max_innermost_factor=64, decision=[1, 1, 1, 1, 1])
+l11, l12, l13, l14, l15 = sch.split(loop=l3, factors=[v6, v7, v8, v9, v10], preserve_unit_iters=True, disable_predication=False)
+v16, v17, v18, v19, v20 = sch.sample_perfect_tile(loop=l4, n=5, max_innermost_factor=64, decision=[1, 8, 5, 5, 5])
+l21, l22, l23, l24, l25 = sch.split(loop=l4, factors=[v16, v17, v18, v19, v20], preserve_unit_iters=True, disable_predication=False)
+v26, v27, v28 = sch.sample_perfect_tile(loop=l5, n=3, max_innermost_factor=64, decision=[64, 1, 8])
+l29, l30, l31 = sch.split(loop=l5, factors=[v26, v27, v28], preserve_unit_iters=True, disable_predication=False)
+sch.reorder(l11, l21, l12, l22, l13, l23, l29, l30, l14, l24, l31, l15, l25)
+l32 = sch.fuse(l11, l21, preserve_unit_iters=True)
+sch.bind(loop=l32, thread_axis="blockIdx.x")
+l33 = sch.fuse(l12, l22, preserve_unit_iters=True)
+sch.bind(loop=l33, thread_axis="vthread.x")
+l34 = sch.fuse(l13, l23, preserve_unit_iters=True)
+sch.bind(loop=l34, thread_axis="threadIdx.x")
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.thread_extent_low_inclusive", ann_val=32)
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.thread_extent_high_inclusive", ann_val=1024)
+b35 = sch.cache_write(block=b0, write_buffer_index=0, storage_scope="local")
+sch.reverse_compute_at(block=b35, loop=l34, preserve_unit_loops=True, index=-1)
+b36 = sch.cache_read(block=b0, read_buffer_index=0, storage_scope="shared", consumer_blocks=[b0])
+sch.compute_at(block=b36, loop=l29, preserve_unit_loops=True, index=-1)
+l37, l38, l39, l40, l41, l42 = sch.get_loops(block=b36)
+l43 = sch.fuse(l41, l42, preserve_unit_iters=True)
+v44 = sch.sample_categorical(candidates=[1, 2, 3, 4], probs=[0.25, 0.25, 0.25, 0.25], decision=0)
+sch.annotate(block_or_loop=b36, ann_key="meta_schedule.cooperative_fetch", ann_val=v44)
+b45 = sch.cache_read(block=b0, read_buffer_index=1, storage_scope="shared", consumer_blocks=[b0])
+sch.compute_at(block=b45, loop=l29, preserve_unit_loops=True, index=-1)
+l46, l47, l48, l49, l50, l51 = sch.get_loops(block=b45)
+l52 = sch.fuse(l50, l51, preserve_unit_iters=True)
+v53 = sch.sample_categorical(candidates=[1, 2, 3, 4], probs=[0.25, 0.25, 0.25, 0.25], decision=2)
+sch.annotate(block_or_loop=b45, ann_key="meta_schedule.cooperative_fetch", ann_val=v53)
+l54 = sch.fuse(l29, preserve_unit_iters=True)
+sch.annotate(block_or_loop=l54, ann_key="software_pipeline_stage", ann_val=[0, 0, 3])
+sch.annotate(block_or_loop=l54, ann_key="software_pipeline_order", ann_val=[0, 1, 2])
+sch.annotate(block_or_loop=l54, ann_key="software_pipeline_async_stages", ann_val=[0])
+sch.reverse_compute_inline(block=b1)
+v55 = sch.sample_categorical(candidates=[0, 16, 64, 512, 1024], probs=[0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001], decision=2)
+sch.annotate(block_or_loop=b2, ann_key="meta_schedule.unroll_explicit", ann_val=v55)
+2025-05-29 12:16:12 [INFO] [task_scheduler.cc:160] Initializing Task #15: "fused_matmul_add13"
+2025-05-29 12:16:12 [INFO] [task_scheduler.cc:35] 
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv87: T.Buffer((T.int64(1), T.int64(512)), "float32"), lv88: T.Buffer((T.int64(512), T.int64(1000)), "float32"), p_fc_bias: T.Buffer((T.int64(1000),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(1000)), "float32")):
+        T.func_attr({"tir.noalias": True})
+        # with T.block("root"):
+        matmul_intermediate = T.alloc_buffer((T.int64(1), T.int64(1000)))
+        for i0, i1, k in T.grid(T.int64(1), T.int64(1000), T.int64(512)):
+            with T.block("matmul"):
+                v_i0, v_i1, v_k = T.axis.remap("SSR", [i0, i1, k])
+                T.reads(lv87[v_i0, v_k], lv88[v_k, v_i1])
+                T.writes(matmul_intermediate[v_i0, v_i1])
+                with T.init():
+                    matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
+                matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + lv87[v_i0, v_k] * lv88[v_k, v_i1]
+        for ax0, ax1 in T.grid(T.int64(1), T.int64(1000)):
+            with T.block("T_add"):
+                v_ax0, v_ax1 = T.axis.remap("SS", [ax0, ax1])
+                T.reads(matmul_intermediate[v_ax0, v_ax1], p_fc_bias[v_ax1])
+                T.writes(T_add_intermediate[v_ax0, v_ax1])
+                T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + p_fc_bias[v_ax1]
+2025-05-29 12:16:12 [INFO] [task_scheduler.cc:164] Total 3 design space(s) generated
+2025-05-29 12:16:12 [INFO] [task_scheduler.cc:170] Design space #0:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv87: T.Buffer((T.int64(1), T.int64(512)), "float32"), lv88: T.Buffer((T.int64(512), T.int64(1000)), "float32"), p_fc_bias: T.Buffer((T.int64(1000),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(1000)), "float32")):
+        T.func_attr({"tir.noalias": True})
+        with T.block("root"):
+            T.reads()
+            T.writes()
+            T.block_attr({"meta_schedule.unroll_explicit": 0})
+            matmul_intermediate_local = T.alloc_buffer((T.int64(1), T.int64(1000)), scope="local")
+            lv87_shared = T.alloc_buffer((T.int64(1), T.int64(512)), scope="shared")
+            lv88_shared = T.alloc_buffer((T.int64(512), T.int64(1000)), scope="shared")
+            for i0_0_i1_0_fused in T.thread_binding(T.int64(10), thread="blockIdx.x"):
+                for i0_1_i1_1_fused in T.thread_binding(T.int64(1), thread="vthread.x"):
+                    for i0_2_i1_2_fused in T.thread_binding(T.int64(50), thread="threadIdx.x"):
+                        for k_0 in range(T.int64(8)):
+                            for ax0_ax1_fused in range(T.int64(64)):
+                                with T.block("lv87_shared"):
+                                    v0 = T.axis.spatial(T.int64(1), T.int64(0))
+                                    v1 = T.axis.spatial(T.int64(512), k_0 * T.int64(64) + ax0_ax1_fused)
+                                    T.reads(lv87[v0, v1])
+                                    T.writes(lv87_shared[v0, v1])
+                                    T.block_attr({"meta_schedule.cooperative_fetch": 3})
+                                    lv87_shared[v0, v1] = lv87[v0, v1]
+                            for ax0_ax1_fused in range(T.int64(6400)):
+                                with T.block("lv88_shared"):
+                                    v0 = T.axis.spatial(T.int64(512), k_0 * T.int64(64) + ax0_ax1_fused // T.int64(100))
+                                    v1 = T.axis.spatial(T.int64(1000), i0_0_i1_0_fused * T.int64(100) + ax0_ax1_fused % T.int64(100))
+                                    T.reads(lv88[v0, v1])
+                                    T.writes(lv88_shared[v0, v1])
+                                    T.block_attr({"meta_schedule.cooperative_fetch": 1})
+                                    lv88_shared[v0, v1] = lv88[v0, v1]
+                            for k_1, i0_3, i1_3, k_2, i0_4, i1_4 in T.grid(T.int64(2), T.int64(1), T.int64(2), T.int64(32), T.int64(1), T.int64(1)):
+                                with T.block("matmul"):
+                                    v_i0 = T.axis.spatial(T.int64(1), i0_3 + i0_4)
+                                    v_i1 = T.axis.spatial(T.int64(1000), i0_0_i1_0_fused * T.int64(100) + i0_2_i1_2_fused * T.int64(2) + i1_3 + i1_4)
+                                    v_k = T.axis.reduce(T.int64(512), k_0 * T.int64(64) + k_1 * T.int64(32) + k_2)
+                                    T.reads(lv87_shared[v_i0, v_k], lv88_shared[v_k, v_i1])
+                                    T.writes(matmul_intermediate_local[v_i0, v_i1])
+                                    T.block_attr({"meta_schedule.thread_extent_high_inclusive": 1024, "meta_schedule.thread_extent_low_inclusive": 32, "meta_schedule.tiling_structure": "SSSRRSRS"})
+                                    with T.init():
+                                        matmul_intermediate_local[v_i0, v_i1] = T.float32(0.0)
+                                    matmul_intermediate_local[v_i0, v_i1] = matmul_intermediate_local[v_i0, v_i1] + lv87_shared[v_i0, v_k] * lv88_shared[v_k, v_i1]
+                        for ax0, ax1 in T.grid(T.int64(1), T.int64(2)):
+                            with T.block("matmul_intermediate_local"):
+                                v0 = T.axis.spatial(T.int64(1), ax0)
+                                v1 = T.axis.spatial(T.int64(1000), i0_0_i1_0_fused * T.int64(100) + i0_2_i1_2_fused * T.int64(2) + ax1)
+                                T.reads(matmul_intermediate_local[v0, v1], p_fc_bias[v1])
+                                T.writes(T_add_intermediate[v0, v1])
+                                T_add_intermediate[v0, v1] = matmul_intermediate_local[v0, v1] + p_fc_bias[v1]
+b0 = sch.get_block(name="matmul", func_name="main")
+b1 = sch.get_block(name="T_add", func_name="main")
+b2 = sch.get_block(name="root", func_name="main")
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.tiling_structure", ann_val="SSSRRSRS")
+l3, l4, l5 = sch.get_loops(block=b0)
+v6, v7, v8, v9, v10 = sch.sample_perfect_tile(loop=l3, n=5, max_innermost_factor=64, decision=[1, 1, 1, 1, 1])
+l11, l12, l13, l14, l15 = sch.split(loop=l3, factors=[v6, v7, v8, v9, v10], preserve_unit_iters=True, disable_predication=False)
+v16, v17, v18, v19, v20 = sch.sample_perfect_tile(loop=l4, n=5, max_innermost_factor=64, decision=[10, 1, 50, 2, 1])
+l21, l22, l23, l24, l25 = sch.split(loop=l4, factors=[v16, v17, v18, v19, v20], preserve_unit_iters=True, disable_predication=False)
+v26, v27, v28 = sch.sample_perfect_tile(loop=l5, n=3, max_innermost_factor=64, decision=[8, 2, 32])
+l29, l30, l31 = sch.split(loop=l5, factors=[v26, v27, v28], preserve_unit_iters=True, disable_predication=False)
+sch.reorder(l11, l21, l12, l22, l13, l23, l29, l30, l14, l24, l31, l15, l25)
+l32 = sch.fuse(l11, l21, preserve_unit_iters=True)
+sch.bind(loop=l32, thread_axis="blockIdx.x")
+l33 = sch.fuse(l12, l22, preserve_unit_iters=True)
+sch.bind(loop=l33, thread_axis="vthread.x")
+l34 = sch.fuse(l13, l23, preserve_unit_iters=True)
+sch.bind(loop=l34, thread_axis="threadIdx.x")
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.thread_extent_low_inclusive", ann_val=32)
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.thread_extent_high_inclusive", ann_val=1024)
+b35 = sch.cache_write(block=b0, write_buffer_index=0, storage_scope="local")
+sch.reverse_compute_at(block=b35, loop=l34, preserve_unit_loops=True, index=-1)
+b36 = sch.cache_read(block=b0, read_buffer_index=0, storage_scope="shared", consumer_blocks=[b0])
+sch.compute_at(block=b36, loop=l29, preserve_unit_loops=True, index=-1)
+l37, l38, l39, l40, l41, l42 = sch.get_loops(block=b36)
+l43 = sch.fuse(l41, l42, preserve_unit_iters=True)
+v44 = sch.sample_categorical(candidates=[1, 2, 3, 4], probs=[0.25, 0.25, 0.25, 0.25], decision=2)
+sch.annotate(block_or_loop=b36, ann_key="meta_schedule.cooperative_fetch", ann_val=v44)
+b45 = sch.cache_read(block=b0, read_buffer_index=1, storage_scope="shared", consumer_blocks=[b0])
+sch.compute_at(block=b45, loop=l29, preserve_unit_loops=True, index=-1)
+l46, l47, l48, l49, l50, l51 = sch.get_loops(block=b45)
+l52 = sch.fuse(l50, l51, preserve_unit_iters=True)
+v53 = sch.sample_categorical(candidates=[1, 2, 3, 4], probs=[0.25, 0.25, 0.25, 0.25], decision=0)
+sch.annotate(block_or_loop=b45, ann_key="meta_schedule.cooperative_fetch", ann_val=v53)
+sch.reverse_compute_inline(block=b1)
+v54 = sch.sample_categorical(candidates=[0, 16, 64, 512, 1024], probs=[0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001], decision=0)
+sch.annotate(block_or_loop=b2, ann_key="meta_schedule.unroll_explicit", ann_val=v54)
+2025-05-29 12:16:12 [INFO] [task_scheduler.cc:170] Design space #1:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv87: T.Buffer((T.int64(1), T.int64(512)), "float32"), lv88: T.Buffer((T.int64(512), T.int64(1000)), "float32"), p_fc_bias: T.Buffer((T.int64(1000),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(1000)), "float32")):
+        T.func_attr({"tir.noalias": True})
+        with T.block("root"):
+            T.reads()
+            T.writes()
+            T.block_attr({"meta_schedule.unroll_explicit": 512})
+            matmul_intermediate_local = T.alloc_buffer((T.int64(1), T.int64(1000)), scope="local")
+            lv87_shared = T.alloc_buffer((T.int64(1), T.int64(512)), scope="shared")
+            lv88_shared = T.alloc_buffer((T.int64(512), T.int64(1000)), scope="shared")
+            for i0_0_i1_0_fused in T.thread_binding(T.int64(10), thread="blockIdx.x"):
+                for i0_1_i1_1_fused in T.thread_binding(T.int64(1), thread="vthread.x"):
+                    for i0_2_i1_2_fused in T.thread_binding(T.int64(50), thread="threadIdx.x"):
+                        for k_0_fused in T.serial(T.int64(8), annotations={"software_pipeline_async_stages": [0], "software_pipeline_order": [0, 1, 2], "software_pipeline_stage": [0, 0, 2]}):
+                            for ax0_ax1_fused in range(T.int64(64)):
+                                with T.block("lv87_shared"):
+                                    v0 = T.axis.spatial(T.int64(1), T.int64(0))
+                                    v1 = T.axis.spatial(T.int64(512), k_0_fused * T.int64(64) + ax0_ax1_fused)
+                                    T.reads(lv87[v0, v1])
+                                    T.writes(lv87_shared[v0, v1])
+                                    T.block_attr({"meta_schedule.cooperative_fetch": 3})
+                                    lv87_shared[v0, v1] = lv87[v0, v1]
+                            for ax0_ax1_fused in range(T.int64(6400)):
+                                with T.block("lv88_shared"):
+                                    v0 = T.axis.spatial(T.int64(512), k_0_fused * T.int64(64) + ax0_ax1_fused // T.int64(100))
+                                    v1 = T.axis.spatial(T.int64(1000), i0_0_i1_0_fused * T.int64(100) + ax0_ax1_fused % T.int64(100))
+                                    T.reads(lv88[v0, v1])
+                                    T.writes(lv88_shared[v0, v1])
+                                    T.block_attr({"meta_schedule.cooperative_fetch": 1})
+                                    lv88_shared[v0, v1] = lv88[v0, v1]
+                            for k_1, i0_3, i1_3, k_2, i0_4, i1_4 in T.grid(T.int64(2), T.int64(1), T.int64(2), T.int64(32), T.int64(1), T.int64(1)):
+                                with T.block("matmul"):
+                                    v_i0 = T.axis.spatial(T.int64(1), i0_3 + i0_4)
+                                    v_i1 = T.axis.spatial(T.int64(1000), i0_0_i1_0_fused * T.int64(100) + i0_2_i1_2_fused * T.int64(2) + i1_3 + i1_4)
+                                    v_k = T.axis.reduce(T.int64(512), k_0_fused * T.int64(64) + k_1 * T.int64(32) + k_2)
+                                    T.reads(lv87_shared[v_i0, v_k], lv88_shared[v_k, v_i1])
+                                    T.writes(matmul_intermediate_local[v_i0, v_i1])
+                                    T.block_attr({"meta_schedule.thread_extent_high_inclusive": 1024, "meta_schedule.thread_extent_low_inclusive": 32, "meta_schedule.tiling_structure": "SSSRRSRS"})
+                                    with T.init():
+                                        matmul_intermediate_local[v_i0, v_i1] = T.float32(0.0)
+                                    matmul_intermediate_local[v_i0, v_i1] = matmul_intermediate_local[v_i0, v_i1] + lv87_shared[v_i0, v_k] * lv88_shared[v_k, v_i1]
+                        for ax0, ax1 in T.grid(T.int64(1), T.int64(2)):
+                            with T.block("matmul_intermediate_local"):
+                                v0 = T.axis.spatial(T.int64(1), ax0)
+                                v1 = T.axis.spatial(T.int64(1000), i0_0_i1_0_fused * T.int64(100) + i0_2_i1_2_fused * T.int64(2) + ax1)
+                                T.reads(matmul_intermediate_local[v0, v1], p_fc_bias[v1])
+                                T.writes(T_add_intermediate[v0, v1])
+                                T_add_intermediate[v0, v1] = matmul_intermediate_local[v0, v1] + p_fc_bias[v1]
+b0 = sch.get_block(name="matmul", func_name="main")
+b1 = sch.get_block(name="T_add", func_name="main")
+b2 = sch.get_block(name="root", func_name="main")
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.tiling_structure", ann_val="SSSRRSRS")
+l3, l4, l5 = sch.get_loops(block=b0)
+v6, v7, v8, v9, v10 = sch.sample_perfect_tile(loop=l3, n=5, max_innermost_factor=64, decision=[1, 1, 1, 1, 1])
+l11, l12, l13, l14, l15 = sch.split(loop=l3, factors=[v6, v7, v8, v9, v10], preserve_unit_iters=True, disable_predication=False)
+v16, v17, v18, v19, v20 = sch.sample_perfect_tile(loop=l4, n=5, max_innermost_factor=64, decision=[10, 1, 50, 2, 1])
+l21, l22, l23, l24, l25 = sch.split(loop=l4, factors=[v16, v17, v18, v19, v20], preserve_unit_iters=True, disable_predication=False)
+v26, v27, v28 = sch.sample_perfect_tile(loop=l5, n=3, max_innermost_factor=64, decision=[8, 2, 32])
+l29, l30, l31 = sch.split(loop=l5, factors=[v26, v27, v28], preserve_unit_iters=True, disable_predication=False)
+sch.reorder(l11, l21, l12, l22, l13, l23, l29, l30, l14, l24, l31, l15, l25)
+l32 = sch.fuse(l11, l21, preserve_unit_iters=True)
+sch.bind(loop=l32, thread_axis="blockIdx.x")
+l33 = sch.fuse(l12, l22, preserve_unit_iters=True)
+sch.bind(loop=l33, thread_axis="vthread.x")
+l34 = sch.fuse(l13, l23, preserve_unit_iters=True)
+sch.bind(loop=l34, thread_axis="threadIdx.x")
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.thread_extent_low_inclusive", ann_val=32)
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.thread_extent_high_inclusive", ann_val=1024)
+b35 = sch.cache_write(block=b0, write_buffer_index=0, storage_scope="local")
+sch.reverse_compute_at(block=b35, loop=l34, preserve_unit_loops=True, index=-1)
+b36 = sch.cache_read(block=b0, read_buffer_index=0, storage_scope="shared", consumer_blocks=[b0])
+sch.compute_at(block=b36, loop=l29, preserve_unit_loops=True, index=-1)
+l37, l38, l39, l40, l41, l42 = sch.get_loops(block=b36)
+l43 = sch.fuse(l41, l42, preserve_unit_iters=True)
+v44 = sch.sample_categorical(candidates=[1, 2, 3, 4], probs=[0.25, 0.25, 0.25, 0.25], decision=2)
+sch.annotate(block_or_loop=b36, ann_key="meta_schedule.cooperative_fetch", ann_val=v44)
+b45 = sch.cache_read(block=b0, read_buffer_index=1, storage_scope="shared", consumer_blocks=[b0])
+sch.compute_at(block=b45, loop=l29, preserve_unit_loops=True, index=-1)
+l46, l47, l48, l49, l50, l51 = sch.get_loops(block=b45)
+l52 = sch.fuse(l50, l51, preserve_unit_iters=True)
+v53 = sch.sample_categorical(candidates=[1, 2, 3, 4], probs=[0.25, 0.25, 0.25, 0.25], decision=0)
+sch.annotate(block_or_loop=b45, ann_key="meta_schedule.cooperative_fetch", ann_val=v53)
+l54 = sch.fuse(l29, preserve_unit_iters=True)
+sch.annotate(block_or_loop=l54, ann_key="software_pipeline_stage", ann_val=[0, 0, 2])
+sch.annotate(block_or_loop=l54, ann_key="software_pipeline_order", ann_val=[0, 1, 2])
+sch.annotate(block_or_loop=l54, ann_key="software_pipeline_async_stages", ann_val=[0])
+sch.reverse_compute_inline(block=b1)
+v55 = sch.sample_categorical(candidates=[0, 16, 64, 512, 1024], probs=[0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001], decision=3)
+sch.annotate(block_or_loop=b2, ann_key="meta_schedule.unroll_explicit", ann_val=v55)
+2025-05-29 12:16:12 [INFO] [task_scheduler.cc:170] Design space #2:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv87: T.Buffer((T.int64(1), T.int64(512)), "float32"), lv88: T.Buffer((T.int64(512), T.int64(1000)), "float32"), p_fc_bias: T.Buffer((T.int64(1000),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(1000)), "float32")):
+        T.func_attr({"tir.noalias": True})
+        with T.block("root"):
+            T.reads()
+            T.writes()
+            T.block_attr({"meta_schedule.unroll_explicit": 0})
+            matmul_intermediate_local = T.alloc_buffer((T.int64(1), T.int64(1000)), scope="local")
+            lv87_shared = T.alloc_buffer((T.int64(1), T.int64(512)), scope="shared")
+            lv88_shared = T.alloc_buffer((T.int64(512), T.int64(1000)), scope="shared")
+            for i0_0_i1_0_fused in T.thread_binding(T.int64(10), thread="blockIdx.x"):
+                for i0_1_i1_1_fused in T.thread_binding(T.int64(1), thread="vthread.x"):
+                    for i0_2_i1_2_fused in T.thread_binding(T.int64(50), thread="threadIdx.x"):
+                        for k_0_fused in T.serial(T.int64(8), annotations={"software_pipeline_async_stages": [0], "software_pipeline_order": [0, 1, 2], "software_pipeline_stage": [0, 0, 3]}):
+                            for ax0_ax1_fused in range(T.int64(64)):
+                                with T.block("lv87_shared"):
+                                    v0 = T.axis.spatial(T.int64(1), T.int64(0))
+                                    v1 = T.axis.spatial(T.int64(512), k_0_fused * T.int64(64) + ax0_ax1_fused)
+                                    T.reads(lv87[v0, v1])
+                                    T.writes(lv87_shared[v0, v1])
+                                    T.block_attr({"meta_schedule.cooperative_fetch": 3})
+                                    lv87_shared[v0, v1] = lv87[v0, v1]
+                            for ax0_ax1_fused in range(T.int64(6400)):
+                                with T.block("lv88_shared"):
+                                    v0 = T.axis.spatial(T.int64(512), k_0_fused * T.int64(64) + ax0_ax1_fused // T.int64(100))
+                                    v1 = T.axis.spatial(T.int64(1000), i0_0_i1_0_fused * T.int64(100) + ax0_ax1_fused % T.int64(100))
+                                    T.reads(lv88[v0, v1])
+                                    T.writes(lv88_shared[v0, v1])
+                                    T.block_attr({"meta_schedule.cooperative_fetch": 1})
+                                    lv88_shared[v0, v1] = lv88[v0, v1]
+                            for k_1, i0_3, i1_3, k_2, i0_4, i1_4 in T.grid(T.int64(2), T.int64(1), T.int64(2), T.int64(32), T.int64(1), T.int64(1)):
+                                with T.block("matmul"):
+                                    v_i0 = T.axis.spatial(T.int64(1), i0_3 + i0_4)
+                                    v_i1 = T.axis.spatial(T.int64(1000), i0_0_i1_0_fused * T.int64(100) + i0_2_i1_2_fused * T.int64(2) + i1_3 + i1_4)
+                                    v_k = T.axis.reduce(T.int64(512), k_0_fused * T.int64(64) + k_1 * T.int64(32) + k_2)
+                                    T.reads(lv87_shared[v_i0, v_k], lv88_shared[v_k, v_i1])
+                                    T.writes(matmul_intermediate_local[v_i0, v_i1])
+                                    T.block_attr({"meta_schedule.thread_extent_high_inclusive": 1024, "meta_schedule.thread_extent_low_inclusive": 32, "meta_schedule.tiling_structure": "SSSRRSRS"})
+                                    with T.init():
+                                        matmul_intermediate_local[v_i0, v_i1] = T.float32(0.0)
+                                    matmul_intermediate_local[v_i0, v_i1] = matmul_intermediate_local[v_i0, v_i1] + lv87_shared[v_i0, v_k] * lv88_shared[v_k, v_i1]
+                        for ax0, ax1 in T.grid(T.int64(1), T.int64(2)):
+                            with T.block("matmul_intermediate_local"):
+                                v0 = T.axis.spatial(T.int64(1), ax0)
+                                v1 = T.axis.spatial(T.int64(1000), i0_0_i1_0_fused * T.int64(100) + i0_2_i1_2_fused * T.int64(2) + ax1)
+                                T.reads(matmul_intermediate_local[v0, v1], p_fc_bias[v1])
+                                T.writes(T_add_intermediate[v0, v1])
+                                T_add_intermediate[v0, v1] = matmul_intermediate_local[v0, v1] + p_fc_bias[v1]
+b0 = sch.get_block(name="matmul", func_name="main")
+b1 = sch.get_block(name="T_add", func_name="main")
+b2 = sch.get_block(name="root", func_name="main")
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.tiling_structure", ann_val="SSSRRSRS")
+l3, l4, l5 = sch.get_loops(block=b0)
+v6, v7, v8, v9, v10 = sch.sample_perfect_tile(loop=l3, n=5, max_innermost_factor=64, decision=[1, 1, 1, 1, 1])
+l11, l12, l13, l14, l15 = sch.split(loop=l3, factors=[v6, v7, v8, v9, v10], preserve_unit_iters=True, disable_predication=False)
+v16, v17, v18, v19, v20 = sch.sample_perfect_tile(loop=l4, n=5, max_innermost_factor=64, decision=[10, 1, 50, 2, 1])
+l21, l22, l23, l24, l25 = sch.split(loop=l4, factors=[v16, v17, v18, v19, v20], preserve_unit_iters=True, disable_predication=False)
+v26, v27, v28 = sch.sample_perfect_tile(loop=l5, n=3, max_innermost_factor=64, decision=[8, 2, 32])
+l29, l30, l31 = sch.split(loop=l5, factors=[v26, v27, v28], preserve_unit_iters=True, disable_predication=False)
+sch.reorder(l11, l21, l12, l22, l13, l23, l29, l30, l14, l24, l31, l15, l25)
+l32 = sch.fuse(l11, l21, preserve_unit_iters=True)
+sch.bind(loop=l32, thread_axis="blockIdx.x")
+l33 = sch.fuse(l12, l22, preserve_unit_iters=True)
+sch.bind(loop=l33, thread_axis="vthread.x")
+l34 = sch.fuse(l13, l23, preserve_unit_iters=True)
+sch.bind(loop=l34, thread_axis="threadIdx.x")
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.thread_extent_low_inclusive", ann_val=32)
+sch.annotate(block_or_loop=b0, ann_key="meta_schedule.thread_extent_high_inclusive", ann_val=1024)
+b35 = sch.cache_write(block=b0, write_buffer_index=0, storage_scope="local")
+sch.reverse_compute_at(block=b35, loop=l34, preserve_unit_loops=True, index=-1)
+b36 = sch.cache_read(block=b0, read_buffer_index=0, storage_scope="shared", consumer_blocks=[b0])
+sch.compute_at(block=b36, loop=l29, preserve_unit_loops=True, index=-1)
+l37, l38, l39, l40, l41, l42 = sch.get_loops(block=b36)
+l43 = sch.fuse(l41, l42, preserve_unit_iters=True)
+v44 = sch.sample_categorical(candidates=[1, 2, 3, 4], probs=[0.25, 0.25, 0.25, 0.25], decision=2)
+sch.annotate(block_or_loop=b36, ann_key="meta_schedule.cooperative_fetch", ann_val=v44)
+b45 = sch.cache_read(block=b0, read_buffer_index=1, storage_scope="shared", consumer_blocks=[b0])
+sch.compute_at(block=b45, loop=l29, preserve_unit_loops=True, index=-1)
+l46, l47, l48, l49, l50, l51 = sch.get_loops(block=b45)
+l52 = sch.fuse(l50, l51, preserve_unit_iters=True)
+v53 = sch.sample_categorical(candidates=[1, 2, 3, 4], probs=[0.25, 0.25, 0.25, 0.25], decision=0)
+sch.annotate(block_or_loop=b45, ann_key="meta_schedule.cooperative_fetch", ann_val=v53)
+l54 = sch.fuse(l29, preserve_unit_iters=True)
+sch.annotate(block_or_loop=l54, ann_key="software_pipeline_stage", ann_val=[0, 0, 3])
+sch.annotate(block_or_loop=l54, ann_key="software_pipeline_order", ann_val=[0, 1, 2])
+sch.annotate(block_or_loop=l54, ann_key="software_pipeline_async_stages", ann_val=[0])
+sch.reverse_compute_inline(block=b1)
+v55 = sch.sample_categorical(candidates=[0, 16, 64, 512, 1024], probs=[0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001], decision=0)
+sch.annotate(block_or_loop=b2, ann_key="meta_schedule.unroll_explicit", ann_val=v55)

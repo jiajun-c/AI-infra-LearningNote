@@ -1,0 +1,180 @@
+2025-05-29 12:11:12 [INFO] [task_scheduler.cc:160] Initializing Task #1: "reshape"
+2025-05-29 12:11:12 [INFO] [task_scheduler.cc:35] 
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv86: T.Buffer((T.int64(1), T.int64(512), T.int64(1), T.int64(1)), "float32"), T_reshape: T.Buffer((T.int64(1), T.int64(512)), "float32")):
+        T.func_attr({"op_pattern": 2, "tir.noalias": True})
+        # with T.block("root"):
+        for ax0, ax1 in T.grid(T.int64(1), T.int64(512)):
+            with T.block("T_reshape"):
+                v_ax0, v_ax1 = T.axis.remap("SS", [ax0, ax1])
+                T.reads(lv86[T.int64(0), v_ax1 % T.int64(512), T.int64(0), T.int64(0)])
+                T.writes(T_reshape[v_ax0, v_ax1])
+                T_reshape[v_ax0, v_ax1] = lv86[T.int64(0), v_ax1 % T.int64(512), T.int64(0), T.int64(0)]
+2025-05-29 12:11:12 [INFO] [task_scheduler.cc:164] Total 1 design space(s) generated
+2025-05-29 12:11:12 [INFO] [task_scheduler.cc:170] Design space #0:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv86: T.Buffer((T.int64(1), T.int64(512), T.int64(1), T.int64(1)), "float32"), T_reshape: T.Buffer((T.int64(1), T.int64(512)), "float32")):
+        T.func_attr({"op_pattern": 2, "tir.noalias": True})
+        # with T.block("root"):
+        for ax0_ax1_fused_0 in T.thread_binding(T.int64(4), thread="blockIdx.x"):
+            for ax0_ax1_fused_1 in T.thread_binding(T.int64(128), thread="threadIdx.x"):
+                with T.block("T_reshape"):
+                    v_ax0 = T.axis.spatial(T.int64(1), T.int64(0))
+                    v_ax1 = T.axis.spatial(T.int64(512), ax0_ax1_fused_0 * T.int64(128) + ax0_ax1_fused_1)
+                    T.reads(lv86[T.int64(0), v_ax1 % T.int64(512), T.int64(0), T.int64(0)])
+                    T.writes(T_reshape[v_ax0, v_ax1])
+                    T_reshape[v_ax0, v_ax1] = lv86[T.int64(0), v_ax1 % T.int64(512), T.int64(0), T.int64(0)]
+b0 = sch.get_block(name="T_reshape", func_name="main")
+l1, l2 = sch.get_loops(block=b0)
+l3 = sch.fuse(l1, l2, preserve_unit_iters=True)
+v4 = sch.sample_categorical(candidates=[32, 64, 128, 256, 512], probs=[0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001], decision=2)
+l5, l6 = sch.split(loop=l3, factors=[None, v4], preserve_unit_iters=True, disable_predication=False)
+sch.bind(loop=l5, thread_axis="blockIdx.x")
+sch.bind(loop=l6, thread_axis="threadIdx.x")
+2025-05-29 12:11:56 [INFO] [evolutionary_search.cc:714] Generating candidates......
+2025-05-29 12:11:56 [INFO] [evolutionary_search.cc:716] Picked top 0 candidate(s) from database
+2025-05-29 12:11:56 [INFO] [evolutionary_search.cc:533] Sample-Init-Population summary:
+Postproc #0 [meta_schedule.DisallowDynamicLoop(0x5605800c1078)]: 0 failure(s)
+Postproc #1 [meta_schedule.RewriteCooperativeFetch(0x5605800d1418)]: 0 failure(s)
+Postproc #2 [meta_schedule.RewriteUnboundBlock(0x560580558638)]: 0 failure(s)
+Postproc #3 [meta_schedule.RewriteParallelVectorizeUnroll(0x56057fe56038)]: 0 failure(s)
+Postproc #4 [meta_schedule.RewriteReductionBlock(0x56057fc15f38)]: 0 failure(s)
+Postproc #5 [meta_schedule.VerifyGPUCode(0x560580637508)]: 0 failure(s)
+Postproc #6 [meta_schedule.RewriteTensorize(0x5605806374a8)]: 0 failure(s)
+2025-05-29 12:11:56 [INFO] [evolutionary_search.cc:724] Sampled 512 candidate(s)
+2025-05-29 12:11:56 [INFO] [evolutionary_search.cc:622] Evolve iter #0 done. Summary:
+Postproc #0 [meta_schedule.DisallowDynamicLoop(0x5605800c1078)]: 0 failure(s)
+Postproc #1 [meta_schedule.RewriteCooperativeFetch(0x5605800d1418)]: 0 failure(s)
+Postproc #2 [meta_schedule.RewriteUnboundBlock(0x560580558638)]: 0 failure(s)
+Postproc #3 [meta_schedule.RewriteParallelVectorizeUnroll(0x56057fe56038)]: 0 failure(s)
+Postproc #4 [meta_schedule.RewriteReductionBlock(0x56057fc15f38)]: 0 failure(s)
+Postproc #5 [meta_schedule.VerifyGPUCode(0x560580637508)]: 0 failure(s)
+Postproc #6 [meta_schedule.RewriteTensorize(0x5605806374a8)]: 0 failure(s)
+2025-05-29 12:11:56 [INFO] [evolutionary_search.cc:622] Evolve iter #1 done. Summary:
+Postproc #0 [meta_schedule.DisallowDynamicLoop(0x5605800c1078)]: 0 failure(s)
+Postproc #1 [meta_schedule.RewriteCooperativeFetch(0x5605800d1418)]: 0 failure(s)
+Postproc #2 [meta_schedule.RewriteUnboundBlock(0x560580558638)]: 0 failure(s)
+Postproc #3 [meta_schedule.RewriteParallelVectorizeUnroll(0x56057fe56038)]: 0 failure(s)
+Postproc #4 [meta_schedule.RewriteReductionBlock(0x56057fc15f38)]: 0 failure(s)
+Postproc #5 [meta_schedule.VerifyGPUCode(0x560580637508)]: 0 failure(s)
+Postproc #6 [meta_schedule.RewriteTensorize(0x5605806374a8)]: 0 failure(s)
+2025-05-29 12:11:56 [INFO] [evolutionary_search.cc:622] Evolve iter #2 done. Summary:
+Postproc #0 [meta_schedule.DisallowDynamicLoop(0x5605800c1078)]: 0 failure(s)
+Postproc #1 [meta_schedule.RewriteCooperativeFetch(0x5605800d1418)]: 0 failure(s)
+Postproc #2 [meta_schedule.RewriteUnboundBlock(0x560580558638)]: 0 failure(s)
+Postproc #3 [meta_schedule.RewriteParallelVectorizeUnroll(0x56057fe56038)]: 0 failure(s)
+Postproc #4 [meta_schedule.RewriteReductionBlock(0x56057fc15f38)]: 0 failure(s)
+Postproc #5 [meta_schedule.VerifyGPUCode(0x560580637508)]: 0 failure(s)
+Postproc #6 [meta_schedule.RewriteTensorize(0x5605806374a8)]: 0 failure(s)
+2025-05-29 12:11:56 [INFO] [evolutionary_search.cc:622] Evolve iter #3 done. Summary:
+Postproc #0 [meta_schedule.DisallowDynamicLoop(0x5605800c1078)]: 0 failure(s)
+Postproc #1 [meta_schedule.RewriteCooperativeFetch(0x5605800d1418)]: 0 failure(s)
+Postproc #2 [meta_schedule.RewriteUnboundBlock(0x560580558638)]: 0 failure(s)
+Postproc #3 [meta_schedule.RewriteParallelVectorizeUnroll(0x56057fe56038)]: 0 failure(s)
+Postproc #4 [meta_schedule.RewriteReductionBlock(0x56057fc15f38)]: 0 failure(s)
+Postproc #5 [meta_schedule.VerifyGPUCode(0x560580637508)]: 0 failure(s)
+Postproc #6 [meta_schedule.RewriteTensorize(0x5605806374a8)]: 0 failure(s)
+2025-05-29 12:11:56 [INFO] [evolutionary_search.cc:650] Scores of the best 5 candidates:
+[1 : 5]:	0.7617  0.5866  0.4394  0.2505  0.0785
+2025-05-29 12:11:56 [INFO] [evolutionary_search.cc:728] Got 5 candidate(s) with evolutionary search
+2025-05-29 12:11:56 [INFO] [evolutionary_search.cc:731] Sending 5 candidates(s) for measurement
+2025-05-29 12:16:05 [INFO] [task_scheduler.cc:160] Initializing Task #1: "reshape"
+2025-05-29 12:16:05 [INFO] [task_scheduler.cc:35] 
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv86: T.Buffer((T.int64(1), T.int64(512), T.int64(1), T.int64(1)), "float32"), T_reshape: T.Buffer((T.int64(1), T.int64(512)), "float32")):
+        T.func_attr({"op_pattern": 2, "tir.noalias": True})
+        # with T.block("root"):
+        for ax0, ax1 in T.grid(T.int64(1), T.int64(512)):
+            with T.block("T_reshape"):
+                v_ax0, v_ax1 = T.axis.remap("SS", [ax0, ax1])
+                T.reads(lv86[T.int64(0), v_ax1 % T.int64(512), T.int64(0), T.int64(0)])
+                T.writes(T_reshape[v_ax0, v_ax1])
+                T_reshape[v_ax0, v_ax1] = lv86[T.int64(0), v_ax1 % T.int64(512), T.int64(0), T.int64(0)]
+2025-05-29 12:16:05 [INFO] [task_scheduler.cc:164] Total 1 design space(s) generated
+2025-05-29 12:16:05 [INFO] [task_scheduler.cc:170] Design space #0:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv86: T.Buffer((T.int64(1), T.int64(512), T.int64(1), T.int64(1)), "float32"), T_reshape: T.Buffer((T.int64(1), T.int64(512)), "float32")):
+        T.func_attr({"op_pattern": 2, "tir.noalias": True})
+        # with T.block("root"):
+        for ax0_ax1_fused_0 in T.thread_binding(T.int64(4), thread="blockIdx.x"):
+            for ax0_ax1_fused_1 in T.thread_binding(T.int64(128), thread="threadIdx.x"):
+                with T.block("T_reshape"):
+                    v_ax0 = T.axis.spatial(T.int64(1), T.int64(0))
+                    v_ax1 = T.axis.spatial(T.int64(512), ax0_ax1_fused_0 * T.int64(128) + ax0_ax1_fused_1)
+                    T.reads(lv86[T.int64(0), v_ax1 % T.int64(512), T.int64(0), T.int64(0)])
+                    T.writes(T_reshape[v_ax0, v_ax1])
+                    T_reshape[v_ax0, v_ax1] = lv86[T.int64(0), v_ax1 % T.int64(512), T.int64(0), T.int64(0)]
+b0 = sch.get_block(name="T_reshape", func_name="main")
+l1, l2 = sch.get_loops(block=b0)
+l3 = sch.fuse(l1, l2, preserve_unit_iters=True)
+v4 = sch.sample_categorical(candidates=[32, 64, 128, 256, 512], probs=[0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001], decision=2)
+l5, l6 = sch.split(loop=l3, factors=[None, v4], preserve_unit_iters=True, disable_predication=False)
+sch.bind(loop=l5, thread_axis="blockIdx.x")
+sch.bind(loop=l6, thread_axis="threadIdx.x")
+2025-05-29 12:16:37 [INFO] [evolutionary_search.cc:714] Generating candidates......
+2025-05-29 12:16:37 [INFO] [evolutionary_search.cc:716] Picked top 0 candidate(s) from database
+2025-05-29 12:16:37 [INFO] [evolutionary_search.cc:533] Sample-Init-Population summary:
+Postproc #0 [meta_schedule.DisallowDynamicLoop(0x556f1be02e18)]: 0 failure(s)
+Postproc #1 [meta_schedule.RewriteCooperativeFetch(0x556f1bafe428)]: 0 failure(s)
+Postproc #2 [meta_schedule.RewriteUnboundBlock(0x556f1b9f0448)]: 0 failure(s)
+Postproc #3 [meta_schedule.RewriteParallelVectorizeUnroll(0x556f1b65b278)]: 0 failure(s)
+Postproc #4 [meta_schedule.RewriteReductionBlock(0x556f1b25edc8)]: 0 failure(s)
+Postproc #5 [meta_schedule.VerifyGPUCode(0x556f1b9c5d98)]: 0 failure(s)
+Postproc #6 [meta_schedule.RewriteTensorize(0x556f1b9f1198)]: 0 failure(s)
+2025-05-29 12:16:37 [INFO] [evolutionary_search.cc:724] Sampled 512 candidate(s)
+2025-05-29 12:16:37 [INFO] [evolutionary_search.cc:622] Evolve iter #0 done. Summary:
+Postproc #0 [meta_schedule.DisallowDynamicLoop(0x556f1be02e18)]: 0 failure(s)
+Postproc #1 [meta_schedule.RewriteCooperativeFetch(0x556f1bafe428)]: 0 failure(s)
+Postproc #2 [meta_schedule.RewriteUnboundBlock(0x556f1b9f0448)]: 0 failure(s)
+Postproc #3 [meta_schedule.RewriteParallelVectorizeUnroll(0x556f1b65b278)]: 0 failure(s)
+Postproc #4 [meta_schedule.RewriteReductionBlock(0x556f1b25edc8)]: 0 failure(s)
+Postproc #5 [meta_schedule.VerifyGPUCode(0x556f1b9c5d98)]: 0 failure(s)
+Postproc #6 [meta_schedule.RewriteTensorize(0x556f1b9f1198)]: 0 failure(s)
+2025-05-29 12:16:37 [INFO] [evolutionary_search.cc:622] Evolve iter #1 done. Summary:
+Postproc #0 [meta_schedule.DisallowDynamicLoop(0x556f1be02e18)]: 0 failure(s)
+Postproc #1 [meta_schedule.RewriteCooperativeFetch(0x556f1bafe428)]: 0 failure(s)
+Postproc #2 [meta_schedule.RewriteUnboundBlock(0x556f1b9f0448)]: 0 failure(s)
+Postproc #3 [meta_schedule.RewriteParallelVectorizeUnroll(0x556f1b65b278)]: 0 failure(s)
+Postproc #4 [meta_schedule.RewriteReductionBlock(0x556f1b25edc8)]: 0 failure(s)
+Postproc #5 [meta_schedule.VerifyGPUCode(0x556f1b9c5d98)]: 0 failure(s)
+Postproc #6 [meta_schedule.RewriteTensorize(0x556f1b9f1198)]: 0 failure(s)
+2025-05-29 12:16:37 [INFO] [evolutionary_search.cc:622] Evolve iter #2 done. Summary:
+Postproc #0 [meta_schedule.DisallowDynamicLoop(0x556f1be02e18)]: 0 failure(s)
+Postproc #1 [meta_schedule.RewriteCooperativeFetch(0x556f1bafe428)]: 0 failure(s)
+Postproc #2 [meta_schedule.RewriteUnboundBlock(0x556f1b9f0448)]: 0 failure(s)
+Postproc #3 [meta_schedule.RewriteParallelVectorizeUnroll(0x556f1b65b278)]: 0 failure(s)
+Postproc #4 [meta_schedule.RewriteReductionBlock(0x556f1b25edc8)]: 0 failure(s)
+Postproc #5 [meta_schedule.VerifyGPUCode(0x556f1b9c5d98)]: 0 failure(s)
+Postproc #6 [meta_schedule.RewriteTensorize(0x556f1b9f1198)]: 0 failure(s)
+2025-05-29 12:16:37 [INFO] [evolutionary_search.cc:622] Evolve iter #3 done. Summary:
+Postproc #0 [meta_schedule.DisallowDynamicLoop(0x556f1be02e18)]: 0 failure(s)
+Postproc #1 [meta_schedule.RewriteCooperativeFetch(0x556f1bafe428)]: 0 failure(s)
+Postproc #2 [meta_schedule.RewriteUnboundBlock(0x556f1b9f0448)]: 0 failure(s)
+Postproc #3 [meta_schedule.RewriteParallelVectorizeUnroll(0x556f1b65b278)]: 0 failure(s)
+Postproc #4 [meta_schedule.RewriteReductionBlock(0x556f1b25edc8)]: 0 failure(s)
+Postproc #5 [meta_schedule.VerifyGPUCode(0x556f1b9c5d98)]: 0 failure(s)
+Postproc #6 [meta_schedule.RewriteTensorize(0x556f1b9f1198)]: 0 failure(s)
+2025-05-29 12:16:37 [INFO] [evolutionary_search.cc:650] Scores of the best 5 candidates:
+[1 : 5]:	0.9332  0.8070  0.7194  0.5800  0.4973
+2025-05-29 12:16:37 [INFO] [evolutionary_search.cc:728] Got 5 candidate(s) with evolutionary search
+2025-05-29 12:16:37 [INFO] [evolutionary_search.cc:731] Sending 5 candidates(s) for measurement

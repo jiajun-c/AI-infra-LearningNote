@@ -1,0 +1,224 @@
+2025-05-29 12:11:16 [INFO] [task_scheduler.cc:160] Initializing Task #8: "max_pool2d"
+2025-05-29 12:11:16 [INFO] [task_scheduler.cc:35] 
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv3: T.Buffer((T.int64(1), T.int64(64), T.int64(112), T.int64(112)), "float32"), pool_max: T.Buffer((T.int64(1), T.int64(64), T.int64(56), T.int64(56)), "float32")):
+        T.func_attr({"op_pattern": 4, "tir.noalias": True})
+        # with T.block("root"):
+        pad_temp = T.alloc_buffer((T.int64(1), T.int64(64), T.int64(114), T.int64(114)))
+        for ax0, ax1, ax2, ax3 in T.grid(T.int64(1), T.int64(64), T.int64(114), T.int64(114)):
+            with T.block("pad_temp"):
+                v_ax0, v_ax1, v_ax2, v_ax3 = T.axis.remap("SSSS", [ax0, ax1, ax2, ax3])
+                T.reads(lv3[v_ax0, v_ax1, v_ax2 - T.int64(1), v_ax3 - T.int64(1)])
+                T.writes(pad_temp[v_ax0, v_ax1, v_ax2, v_ax3])
+                pad_temp[v_ax0, v_ax1, v_ax2, v_ax3] = T.if_then_else(T.int64(1) <= v_ax2 and v_ax2 < T.int64(113) and T.int64(1) <= v_ax3 and v_ax3 < T.int64(113), lv3[v_ax0, v_ax1, v_ax2 - T.int64(1), v_ax3 - T.int64(1)], T.float32(-340282346638528859811704183484516925440.0))
+        for ax0, ax1, ax2, ax3, rv0, rv1 in T.grid(T.int64(1), T.int64(64), T.int64(56), T.int64(56), T.int64(3), T.int64(3)):
+            with T.block("pool_max"):
+                v_ax0, v_ax1, v_ax2, v_ax3, v_rv0, v_rv1 = T.axis.remap("SSSSRR", [ax0, ax1, ax2, ax3, rv0, rv1])
+                T.reads(pad_temp[v_ax0, v_ax1, v_ax2 * T.int64(2) + v_rv0, v_ax3 * T.int64(2) + v_rv1])
+                T.writes(pool_max[v_ax0, v_ax1, v_ax2, v_ax3])
+                T.block_attr({"schedule_rule": "meta_schedule.pool_max"})
+                with T.init():
+                    pool_max[v_ax0, v_ax1, v_ax2, v_ax3] = T.float32(-340282346638528859811704183484516925440.0)
+                pool_max[v_ax0, v_ax1, v_ax2, v_ax3] = T.max(pool_max[v_ax0, v_ax1, v_ax2, v_ax3], pad_temp[v_ax0, v_ax1, v_ax2 * T.int64(2) + v_rv0, v_ax3 * T.int64(2) + v_rv1])
+2025-05-29 12:11:16 [INFO] [task_scheduler.cc:164] Total 2 design space(s) generated
+2025-05-29 12:11:16 [INFO] [task_scheduler.cc:170] Design space #0:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv3: T.Buffer((T.int64(1), T.int64(64), T.int64(112), T.int64(112)), "float32"), pool_max: T.Buffer((T.int64(1), T.int64(64), T.int64(56), T.int64(56)), "float32")):
+        T.func_attr({"op_pattern": 4, "tir.noalias": True})
+        with T.block("root"):
+            T.reads()
+            T.writes()
+            T.block_attr({"meta_schedule.unroll_explicit": 512})
+            for ax0_ax1_ax2_ax3_fused_0 in T.thread_binding(T.int64(196), thread="blockIdx.x"):
+                for ax0_ax1_ax2_ax3_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
+                    for rv0, rv1 in T.grid(T.int64(3), T.int64(3)):
+                        with T.block("pool_max"):
+                            v_ax0 = T.axis.spatial(T.int64(1), T.int64(0))
+                            v_ax1 = T.axis.spatial(T.int64(64), (ax0_ax1_ax2_ax3_fused_0 * T.int64(1024) + ax0_ax1_ax2_ax3_fused_1) // T.int64(3136))
+                            v_ax2 = T.axis.spatial(T.int64(56), (ax0_ax1_ax2_ax3_fused_0 * T.int64(1024) + ax0_ax1_ax2_ax3_fused_1) % T.int64(3136) // T.int64(56))
+                            v_ax3 = T.axis.spatial(T.int64(56), (ax0_ax1_ax2_ax3_fused_0 * T.int64(1024) + ax0_ax1_ax2_ax3_fused_1) % T.int64(56))
+                            v_rv0, v_rv1 = T.axis.remap("RR", [rv0, rv1])
+                            T.reads(lv3[v_ax0, v_ax1, v_ax2 * T.int64(2) + v_rv0 - T.int64(1), v_ax3 * T.int64(2) + v_rv1 - T.int64(1)])
+                            T.writes(pool_max[v_ax0, v_ax1, v_ax2, v_ax3])
+                            with T.init():
+                                pool_max[v_ax0, v_ax1, v_ax2, v_ax3] = T.float32(-340282346638528859811704183484516925440.0)
+                            pool_max[v_ax0, v_ax1, v_ax2, v_ax3] = T.max(pool_max[v_ax0, v_ax1, v_ax2, v_ax3], T.if_then_else(T.int64(1) <= v_ax2 * T.int64(2) + v_rv0 and v_ax2 * T.int64(2) + v_rv0 < T.int64(113) and T.int64(1) <= v_ax3 * T.int64(2) + v_rv1 and v_ax3 * T.int64(2) + v_rv1 < T.int64(113), lv3[v_ax0, v_ax1, v_ax2 * T.int64(2) + v_rv0 - T.int64(1), v_ax3 * T.int64(2) + v_rv1 - T.int64(1)], T.float32(-340282346638528859811704183484516925440.0)))
+b0 = sch.get_block(name="pad_temp", func_name="main")
+b1 = sch.get_block(name="pool_max", func_name="main")
+b2 = sch.get_block(name="root", func_name="main")
+sch.unannotate(block_or_loop=b1, ann_key="schedule_rule")
+sch.compute_inline(block=b0)
+v3 = sch.sample_categorical(candidates=[0, 16, 64, 512, 1024], probs=[0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001], decision=3)
+sch.annotate(block_or_loop=b2, ann_key="meta_schedule.unroll_explicit", ann_val=v3)
+l4, l5, l6, l7, l8, l9 = sch.get_loops(block=b1)
+l10 = sch.fuse(l4, l5, l6, l7, preserve_unit_iters=True)
+v11 = sch.sample_categorical(candidates=[32, 64, 128, 256, 512, 1024], probs=[0.16666666666666666, 0.16666666666666666, 0.16666666666666666, 0.16666666666666666, 0.16666666666666666, 0.16666666666666666], decision=5)
+l12, l13 = sch.split(loop=l10, factors=[None, v11], preserve_unit_iters=True, disable_predication=False)
+sch.bind(loop=l12, thread_axis="blockIdx.x")
+sch.bind(loop=l13, thread_axis="threadIdx.x")
+2025-05-29 12:11:16 [INFO] [task_scheduler.cc:170] Design space #1:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv3: T.Buffer((T.int64(1), T.int64(64), T.int64(112), T.int64(112)), "float32"), pool_max: T.Buffer((T.int64(1), T.int64(64), T.int64(56), T.int64(56)), "float32")):
+        T.func_attr({"op_pattern": 4, "tir.noalias": True})
+        with T.block("root"):
+            T.reads()
+            T.writes()
+            T.block_attr({"meta_schedule.unroll_explicit": 64})
+            for ax0_ax1_ax2_ax3_fused in T.thread_binding(T.int64(200704), thread="blockIdx.x"):
+                for rv0_rv1_fused_0 in range(T.int64(3)):
+                    for rv0_rv1_fused_1 in T.thread_binding(T.int64(4), thread="threadIdx.x"):
+                        with T.block("pool_max"):
+                            v_ax0 = T.axis.spatial(T.int64(1), T.int64(0))
+                            v_ax1 = T.axis.spatial(T.int64(64), ax0_ax1_ax2_ax3_fused // T.int64(3136))
+                            v_ax2 = T.axis.spatial(T.int64(56), ax0_ax1_ax2_ax3_fused % T.int64(3136) // T.int64(56))
+                            v_ax3 = T.axis.spatial(T.int64(56), ax0_ax1_ax2_ax3_fused % T.int64(56))
+                            v_rv0 = T.axis.reduce(T.int64(3), (rv0_rv1_fused_0 * T.int64(4) + rv0_rv1_fused_1) // T.int64(3))
+                            v_rv1 = T.axis.reduce(T.int64(3), (rv0_rv1_fused_0 * T.int64(4) + rv0_rv1_fused_1) % T.int64(3))
+                            T.where(rv0_rv1_fused_0 * T.int64(4) + rv0_rv1_fused_1 < T.int64(9))
+                            T.reads(lv3[v_ax0, v_ax1, v_ax2 * T.int64(2) + v_rv0 - T.int64(1), v_ax3 * T.int64(2) + v_rv1 - T.int64(1)])
+                            T.writes(pool_max[v_ax0, v_ax1, v_ax2, v_ax3])
+                            with T.init():
+                                pool_max[v_ax0, v_ax1, v_ax2, v_ax3] = T.float32(-340282346638528859811704183484516925440.0)
+                            pool_max[v_ax0, v_ax1, v_ax2, v_ax3] = T.max(pool_max[v_ax0, v_ax1, v_ax2, v_ax3], T.if_then_else(T.int64(1) <= v_ax2 * T.int64(2) + v_rv0 and v_ax2 * T.int64(2) + v_rv0 < T.int64(113) and T.int64(1) <= v_ax3 * T.int64(2) + v_rv1 and v_ax3 * T.int64(2) + v_rv1 < T.int64(113), lv3[v_ax0, v_ax1, v_ax2 * T.int64(2) + v_rv0 - T.int64(1), v_ax3 * T.int64(2) + v_rv1 - T.int64(1)], T.float32(-340282346638528859811704183484516925440.0)))
+b0 = sch.get_block(name="pad_temp", func_name="main")
+b1 = sch.get_block(name="pool_max", func_name="main")
+b2 = sch.get_block(name="root", func_name="main")
+sch.unannotate(block_or_loop=b1, ann_key="schedule_rule")
+sch.compute_inline(block=b0)
+v3 = sch.sample_categorical(candidates=[4, 8, 16, 32, 64, 128, 256, 512], probs=[0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125], decision=0)
+l4, l5, l6, l7, l8, l9 = sch.get_loops(block=b1)
+l10 = sch.fuse(l8, l9, preserve_unit_iters=True)
+l11, l12 = sch.split(loop=l10, factors=[None, v3], preserve_unit_iters=True, disable_predication=False)
+sch.bind(loop=l12, thread_axis="threadIdx.x")
+v13 = sch.sample_categorical(candidates=[0, 16, 64, 512, 1024], probs=[0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001], decision=2)
+sch.annotate(block_or_loop=b2, ann_key="meta_schedule.unroll_explicit", ann_val=v13)
+l14, l15, l16, l17, l18, l19 = sch.get_loops(block=b1)
+l20 = sch.fuse(l14, l15, l16, l17, preserve_unit_iters=True)
+sch.bind(loop=l20, thread_axis="blockIdx.x")
+2025-05-29 12:16:08 [INFO] [task_scheduler.cc:160] Initializing Task #8: "max_pool2d"
+2025-05-29 12:16:08 [INFO] [task_scheduler.cc:35] 
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv3: T.Buffer((T.int64(1), T.int64(64), T.int64(112), T.int64(112)), "float32"), pool_max: T.Buffer((T.int64(1), T.int64(64), T.int64(56), T.int64(56)), "float32")):
+        T.func_attr({"op_pattern": 4, "tir.noalias": True})
+        # with T.block("root"):
+        pad_temp = T.alloc_buffer((T.int64(1), T.int64(64), T.int64(114), T.int64(114)))
+        for ax0, ax1, ax2, ax3 in T.grid(T.int64(1), T.int64(64), T.int64(114), T.int64(114)):
+            with T.block("pad_temp"):
+                v_ax0, v_ax1, v_ax2, v_ax3 = T.axis.remap("SSSS", [ax0, ax1, ax2, ax3])
+                T.reads(lv3[v_ax0, v_ax1, v_ax2 - T.int64(1), v_ax3 - T.int64(1)])
+                T.writes(pad_temp[v_ax0, v_ax1, v_ax2, v_ax3])
+                pad_temp[v_ax0, v_ax1, v_ax2, v_ax3] = T.if_then_else(T.int64(1) <= v_ax2 and v_ax2 < T.int64(113) and T.int64(1) <= v_ax3 and v_ax3 < T.int64(113), lv3[v_ax0, v_ax1, v_ax2 - T.int64(1), v_ax3 - T.int64(1)], T.float32(-340282346638528859811704183484516925440.0))
+        for ax0, ax1, ax2, ax3, rv0, rv1 in T.grid(T.int64(1), T.int64(64), T.int64(56), T.int64(56), T.int64(3), T.int64(3)):
+            with T.block("pool_max"):
+                v_ax0, v_ax1, v_ax2, v_ax3, v_rv0, v_rv1 = T.axis.remap("SSSSRR", [ax0, ax1, ax2, ax3, rv0, rv1])
+                T.reads(pad_temp[v_ax0, v_ax1, v_ax2 * T.int64(2) + v_rv0, v_ax3 * T.int64(2) + v_rv1])
+                T.writes(pool_max[v_ax0, v_ax1, v_ax2, v_ax3])
+                T.block_attr({"schedule_rule": "meta_schedule.pool_max"})
+                with T.init():
+                    pool_max[v_ax0, v_ax1, v_ax2, v_ax3] = T.float32(-340282346638528859811704183484516925440.0)
+                pool_max[v_ax0, v_ax1, v_ax2, v_ax3] = T.max(pool_max[v_ax0, v_ax1, v_ax2, v_ax3], pad_temp[v_ax0, v_ax1, v_ax2 * T.int64(2) + v_rv0, v_ax3 * T.int64(2) + v_rv1])
+2025-05-29 12:16:08 [INFO] [task_scheduler.cc:164] Total 2 design space(s) generated
+2025-05-29 12:16:08 [INFO] [task_scheduler.cc:170] Design space #0:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv3: T.Buffer((T.int64(1), T.int64(64), T.int64(112), T.int64(112)), "float32"), pool_max: T.Buffer((T.int64(1), T.int64(64), T.int64(56), T.int64(56)), "float32")):
+        T.func_attr({"op_pattern": 4, "tir.noalias": True})
+        with T.block("root"):
+            T.reads()
+            T.writes()
+            T.block_attr({"meta_schedule.unroll_explicit": 512})
+            for ax0_ax1_ax2_ax3_fused_0 in T.thread_binding(T.int64(784), thread="blockIdx.x"):
+                for ax0_ax1_ax2_ax3_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                    for rv0, rv1 in T.grid(T.int64(3), T.int64(3)):
+                        with T.block("pool_max"):
+                            v_ax0 = T.axis.spatial(T.int64(1), T.int64(0))
+                            v_ax1 = T.axis.spatial(T.int64(64), (ax0_ax1_ax2_ax3_fused_0 * T.int64(256) + ax0_ax1_ax2_ax3_fused_1) // T.int64(3136))
+                            v_ax2 = T.axis.spatial(T.int64(56), (ax0_ax1_ax2_ax3_fused_0 * T.int64(256) + ax0_ax1_ax2_ax3_fused_1) % T.int64(3136) // T.int64(56))
+                            v_ax3 = T.axis.spatial(T.int64(56), (ax0_ax1_ax2_ax3_fused_0 * T.int64(256) + ax0_ax1_ax2_ax3_fused_1) % T.int64(56))
+                            v_rv0, v_rv1 = T.axis.remap("RR", [rv0, rv1])
+                            T.reads(lv3[v_ax0, v_ax1, v_ax2 * T.int64(2) + v_rv0 - T.int64(1), v_ax3 * T.int64(2) + v_rv1 - T.int64(1)])
+                            T.writes(pool_max[v_ax0, v_ax1, v_ax2, v_ax3])
+                            with T.init():
+                                pool_max[v_ax0, v_ax1, v_ax2, v_ax3] = T.float32(-340282346638528859811704183484516925440.0)
+                            pool_max[v_ax0, v_ax1, v_ax2, v_ax3] = T.max(pool_max[v_ax0, v_ax1, v_ax2, v_ax3], T.if_then_else(T.int64(1) <= v_ax2 * T.int64(2) + v_rv0 and v_ax2 * T.int64(2) + v_rv0 < T.int64(113) and T.int64(1) <= v_ax3 * T.int64(2) + v_rv1 and v_ax3 * T.int64(2) + v_rv1 < T.int64(113), lv3[v_ax0, v_ax1, v_ax2 * T.int64(2) + v_rv0 - T.int64(1), v_ax3 * T.int64(2) + v_rv1 - T.int64(1)], T.float32(-340282346638528859811704183484516925440.0)))
+b0 = sch.get_block(name="pad_temp", func_name="main")
+b1 = sch.get_block(name="pool_max", func_name="main")
+b2 = sch.get_block(name="root", func_name="main")
+sch.unannotate(block_or_loop=b1, ann_key="schedule_rule")
+sch.compute_inline(block=b0)
+v3 = sch.sample_categorical(candidates=[0, 16, 64, 512, 1024], probs=[0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001], decision=3)
+sch.annotate(block_or_loop=b2, ann_key="meta_schedule.unroll_explicit", ann_val=v3)
+l4, l5, l6, l7, l8, l9 = sch.get_loops(block=b1)
+l10 = sch.fuse(l4, l5, l6, l7, preserve_unit_iters=True)
+v11 = sch.sample_categorical(candidates=[32, 64, 128, 256, 512, 1024], probs=[0.16666666666666666, 0.16666666666666666, 0.16666666666666666, 0.16666666666666666, 0.16666666666666666, 0.16666666666666666], decision=3)
+l12, l13 = sch.split(loop=l10, factors=[None, v11], preserve_unit_iters=True, disable_predication=False)
+sch.bind(loop=l12, thread_axis="blockIdx.x")
+sch.bind(loop=l13, thread_axis="threadIdx.x")
+2025-05-29 12:16:08 [INFO] [task_scheduler.cc:170] Design space #1:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(lv3: T.Buffer((T.int64(1), T.int64(64), T.int64(112), T.int64(112)), "float32"), pool_max: T.Buffer((T.int64(1), T.int64(64), T.int64(56), T.int64(56)), "float32")):
+        T.func_attr({"op_pattern": 4, "tir.noalias": True})
+        with T.block("root"):
+            T.reads()
+            T.writes()
+            T.block_attr({"meta_schedule.unroll_explicit": 0})
+            for ax0_ax1_ax2_ax3_fused in T.thread_binding(T.int64(200704), thread="blockIdx.x"):
+                for rv0_rv1_fused_0 in range(T.int64(1)):
+                    for rv0_rv1_fused_1 in T.thread_binding(T.int64(64), thread="threadIdx.x"):
+                        with T.block("pool_max"):
+                            v_ax0 = T.axis.spatial(T.int64(1), T.int64(0))
+                            v_ax1 = T.axis.spatial(T.int64(64), ax0_ax1_ax2_ax3_fused // T.int64(3136))
+                            v_ax2 = T.axis.spatial(T.int64(56), ax0_ax1_ax2_ax3_fused % T.int64(3136) // T.int64(56))
+                            v_ax3 = T.axis.spatial(T.int64(56), ax0_ax1_ax2_ax3_fused % T.int64(56))
+                            v_rv0 = T.axis.reduce(T.int64(3), (rv0_rv1_fused_0 * T.int64(64) + rv0_rv1_fused_1) // T.int64(3))
+                            v_rv1 = T.axis.reduce(T.int64(3), (rv0_rv1_fused_0 * T.int64(64) + rv0_rv1_fused_1) % T.int64(3))
+                            T.where(rv0_rv1_fused_0 * T.int64(64) + rv0_rv1_fused_1 < T.int64(9))
+                            T.reads(lv3[v_ax0, v_ax1, v_ax2 * T.int64(2) + v_rv0 - T.int64(1), v_ax3 * T.int64(2) + v_rv1 - T.int64(1)])
+                            T.writes(pool_max[v_ax0, v_ax1, v_ax2, v_ax3])
+                            with T.init():
+                                pool_max[v_ax0, v_ax1, v_ax2, v_ax3] = T.float32(-340282346638528859811704183484516925440.0)
+                            pool_max[v_ax0, v_ax1, v_ax2, v_ax3] = T.max(pool_max[v_ax0, v_ax1, v_ax2, v_ax3], T.if_then_else(T.int64(1) <= v_ax2 * T.int64(2) + v_rv0 and v_ax2 * T.int64(2) + v_rv0 < T.int64(113) and T.int64(1) <= v_ax3 * T.int64(2) + v_rv1 and v_ax3 * T.int64(2) + v_rv1 < T.int64(113), lv3[v_ax0, v_ax1, v_ax2 * T.int64(2) + v_rv0 - T.int64(1), v_ax3 * T.int64(2) + v_rv1 - T.int64(1)], T.float32(-340282346638528859811704183484516925440.0)))
+b0 = sch.get_block(name="pad_temp", func_name="main")
+b1 = sch.get_block(name="pool_max", func_name="main")
+b2 = sch.get_block(name="root", func_name="main")
+sch.unannotate(block_or_loop=b1, ann_key="schedule_rule")
+sch.compute_inline(block=b0)
+v3 = sch.sample_categorical(candidates=[4, 8, 16, 32, 64, 128, 256, 512], probs=[0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125], decision=4)
+l4, l5, l6, l7, l8, l9 = sch.get_loops(block=b1)
+l10 = sch.fuse(l8, l9, preserve_unit_iters=True)
+l11, l12 = sch.split(loop=l10, factors=[None, v3], preserve_unit_iters=True, disable_predication=False)
+sch.bind(loop=l12, thread_axis="threadIdx.x")
+v13 = sch.sample_categorical(candidates=[0, 16, 64, 512, 1024], probs=[0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001, 0.20000000000000001], decision=0)
+sch.annotate(block_or_loop=b2, ann_key="meta_schedule.unroll_explicit", ann_val=v13)
+l14, l15, l16, l17, l18, l19 = sch.get_loops(block=b1)
+l20 = sch.fuse(l14, l15, l16, l17, preserve_unit_iters=True)
+sch.bind(loop=l20, thread_axis="blockIdx.x")
