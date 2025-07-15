@@ -91,7 +91,65 @@ print(vm["forward"](tvm_data, *params).numpy())
 
 ## 2. Tensor IR
 
-## 3. tuning
+### 2.1 基础语法
+
+```python3
+@T.prim_func
+def vector_add(A: T.Buffer[128, "float32"],
+               B: T.Buffer[128, "float32"],
+               C: T.Buffer[128, "float32"]):
+    # 并行执行元素级加法
+    for i in T.parallel(128):
+        with T.block("C"):
+            vi = T.axis.spatial(128, i)
+            C[vi] = A[vi] + B[vi]
+```
+
+`@T.prim_func` 是对该函数的声明
+
+`T.block` 其中的Block是TensorIR中的基本计算单位
+
+对于for循环，可以使用 `T.grid` 这种语法糖进行处理
+
+```python
+for i, j, k in T.grid(128, 128, 128):
+    with T.block("Y"):
+```
+
+对于轴块绑定，使用 `T.axis.remap`声明轴块，S表示范围，R表示归约。
+
+```python
+vi, vj, vk = T.axis.remap("SSR", [i, j, k])
+```
+
+### 2.2 并行化/向量化/循环展开
+
+如下所示，相对i循环进行切分，将其划分为i0和i1两层，再对i0层进行并行，对i1层进行循环展开，对j层进行并行化。
+
+```python3
+@tvm.script.ir_module
+class MyAdd:
+    @T.prim_func
+    def add(A: T.Buffer((4, 4), "int64"),
+            B: T.Buffer((4, 4), "int64"),
+            C: T.Buffer((4, 4), "int64")):
+        T.func_attr({"global_symbol": "add", "tir.noalias": True})
+        for i, j in T.grid(4, 4):
+            with T.block("C"):
+                vi = T.axis.spatial(4, i)
+                vj = T.axis.spatial(4, j)
+                C[vi, vj] = A[vi, vj] + B[vi, vj]
+
+sch = tvm.tir.Schedule(MyAdd)
+block = sch.get_block("C", func_name="add")
+i, j = sch.get_loops(block)
+i0, i1 = sch.split(i, factors=[2, 2])
+sch.parallel(i0)
+sch.unroll(i1)
+sch.vectorize(j)
+print(IPython.display.Code(sch.mod.script(), language="python"))
+```
+
 
 
 
