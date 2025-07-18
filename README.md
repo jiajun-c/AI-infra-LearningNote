@@ -137,3 +137,7 @@ https://zhuanlan.zhihu.com/p/665170554
 ## 实用第三方库
 
 - [einops](./third_party/einops/README.md): 实用的数据操作库
+
+## 性能优化
+
+[分析程序](./profile/improve/README.md)
