@@ -20,12 +20,23 @@
 - [分布式共享内存](./cuda/hopper/DistributedSM/README.md)
 - 
 
-## 2. Trition
+## 2. 编程语言
 
-- [基础语法](./Triton/basic/README.md)
-- [硬件信息](./Triton/hardware/README.md)
+### 2.1 C++
+
+> 为了更好的写cuda :(
+
+- [元编程](./lang/cpp/metaprogam/README.md)
+- [内存管理](./lang/cpp/memory/README.md)
+
+### 2.2 Python
+
+### 2.3 Trition
+
+- [基础语法](./lang/Triton/basic/README.md)
+- [硬件信息](./lang/Triton/hardware/README.md)
 - [性能测试]()
-- [随机数](./Triton/random/README.md)
+- [随机数](./lang/Triton/random/README.md)
 
 ## 3. 大模型
 - 编程框架
