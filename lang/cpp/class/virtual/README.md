@@ -173,6 +173,10 @@ int main() {
 }
 ```
 
+如下所示，这个多继承的数据布局
+
+![alt text](./image-2.png)
+
 ## tips
 
 静态成员函数不能加上virtual，因为静态成员函数没有this指针

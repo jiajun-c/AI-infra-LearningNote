@@ -28,7 +28,9 @@
 
 - [元编程](./lang/cpp/metaprogam/README.md)
 - [内存管理](./lang/cpp/memory/README.md)
-
+    - new malloc ...
+    - 自定义内存管理器
+    
 ### 2.2 Python
 
 ### 2.3 Trition
