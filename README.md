@@ -15,6 +15,10 @@
 
 [vectorize](./cuda/vectorize/)
 
+### 1.4 TensorCore
+
+[TensorCore](./cuda/tensorCore/README.md)
+
 ### Hopper 架构特性
 
 - [分布式共享内存](./cuda/hopper/DistributedSM/README.md)
