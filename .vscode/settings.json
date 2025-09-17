@@ -150,7 +150,8 @@
     "valarray": "cpp",
     "slist": "cpp",
     "__bit_reference": "cpp",
-    "filesystem": "cpp"
+    "filesystem": "cpp",
+    "__locale": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled",
   "cmake.sourceDirectory": "/staff/chengjiajun/workspace/AI-infra-note/cuda/hopper/DistributedSM"
