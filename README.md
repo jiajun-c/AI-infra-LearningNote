@@ -22,7 +22,9 @@
 ### Hopper 架构特性
 
 - [分布式共享内存](./cuda/hopper/DistributedSM/README.md)
-- 
+
+- CCCL
+    - [thrust](./cuda/cccl/thrust/README.md)
 
 ## 2. 编程语言
 
@@ -39,6 +41,9 @@
     - [map](./lang/cpp/stl/map/README.md)
     - [vector](./lang/cpp/stl/vector/README.md)
     - [unordered_map](./lang/cpp/stl/unordered_map/README.md)
+
+- [运算符](./lang/cpp/operator/README.md)
+    - 运算符重载
 
 ### 2.2 Python
 

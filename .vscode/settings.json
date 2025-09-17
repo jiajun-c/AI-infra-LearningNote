@@ -141,7 +141,16 @@
     "typeindex": "cpp",
     "typeinfo": "cpp",
     "variant": "cpp",
-    "__nullptr": "cpp"
+    "__nullptr": "cpp",
+    "__hash_table": "cpp",
+    "__split_buffer": "cpp",
+    "__tree": "cpp",
+    "hash_map": "cpp",
+    "hash_set": "cpp",
+    "valarray": "cpp",
+    "slist": "cpp",
+    "__bit_reference": "cpp",
+    "filesystem": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled",
   "cmake.sourceDirectory": "/staff/chengjiajun/workspace/AI-infra-note/cuda/hopper/DistributedSM"
