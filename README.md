@@ -1,21 +1,15 @@
 # AI-infra-LearningNote
 ## 1. CUDA
 
-### 1.1 基础原语
+[CUDA架构/编译](./cuda/arch/README.md)
 
-[warp level](./cuda/primitives/warp/README.md)
+### 1.1 基础操作
 
+- [warp原语](./cuda/primitives/warp/README.md)
+- [reduce](./cuda/reduce/README.md)
+- [vectorize](./cuda/vectorize/README.md)
 
-### 1.2 规约操作
-
-[reduce](./cuda/reduce/README.md)
-
-
-### 1.3 向量化
-
-[vectorize](./cuda/vectorize/)
-
-### 1.4 TensorCore
+### 1.2 TensorCore
 
 [TensorCore](./cuda/tensorCore/README.md)
 
