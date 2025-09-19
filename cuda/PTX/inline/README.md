@@ -21,3 +21,29 @@ __global__ void sequence_gpu(int *d_ptr, int N) {
     }
 }
 ```
+
+使用`::"memory"`来保证操作数在执行这条语句之前所有的访存操作都完成。
+
+```cpp
+asm volatile ("mov.u32 %0, %%clock;" : "=r"(start) :: "memory");
+```
+
+### 使用PTX进行高效计时
+
+如下所示，在开始和结束两个时间段将当前时钟周期存入到变量中，然后计算出操作所消耗的时钟周期。
+
+```cpp
+	asm volatile ("mov.u32 %0, %%clock;" : "=r"(start) :: "memory");
+	for (int j=0 ; j < REPEAT_TIMES ; ++j) {
+		v2 = __shfl_sync (0xffffffff, v1, src_lane, 32);
+		v2 = __shfl_sync (0xffffffff, v1, src_lane, 32);
+		v2 = __shfl_sync (0xffffffff, v1, src_lane, 32);
+		v2 = __shfl_sync (0xffffffff, v1, src_lane, 32);
+	}
+	// synchronize all threads
+	asm volatile("bar.sync 0;");
+
+	// stop timing
+	uint32_t stop = 0;
+	asm volatile("mov.u32 %0, %%clock;" : "=r"(stop) :: "memory");
+```
