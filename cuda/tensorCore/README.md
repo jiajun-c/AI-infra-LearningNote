@@ -70,5 +70,45 @@ __global__ void mma_fp16_acc_fp32(half* d_A, half* d_B, float *out) {
 
 `__cvta_generic_to_shared` 可以将一个普通的地址转换为共享内存的地址。
 
-然后通过 `LDMATRIX_X4` 将共享内存地址的几个元素存入到一个普通的数组中。
+然后通过 `LDMATRIX_X4` 将共享内存地址的几个元素存入到一个普通的数组中，如下所示。
 
+```cpp
+#define LDMATRIX_X1(R, addr) \
+    asm volatile("ldmatrix.sync.aligned.x1.m8n8.shared.b16 {%0}, [%1];\n" : "=r"(R) : "r"(addr))
+
+#define LDMATRIX_X2(R0, R1, addr) \
+    asm volatile("ldmatrix.sync.aligned.x2.m8n8.shared.b16 {%0, %1}, [%2];\n" : "=r"(R0), "=r"(R1) : "r"(addr))
+
+#define LDMATRIX_X4(R0, R1, R2, R3, addr)                                             \
+    asm volatile("ldmatrix.sync.aligned.x4.m8n8.shared.b16 {%0, %1, %2, %3}, [%4];\n" \
+                 : "=r"(R0), "=r"(R1), "=r"(R2), "=r"(R3)                             \
+                 : "r"(addr))
+```
+
+将数据从全局内存拷贝到L2/共享内存
+
+```cpp
+#if ((__CUDACC_VER_MAJOR__ == 11) && (__CUDACC_VER_MINOR__ >= 4)) || (__CUDACC_VER_MAJOR__ > 11)
+#define CP_ASYNC_CA(dst, src, Bytes) \
+    asm volatile("cp.async.ca.shared.global.L2::128B [%0], [%1], %2;\n" ::"r"(dst), "l"(src), "n"(Bytes))
+
+#define CP_ASYNC_CG(dst, src, Bytes) \
+    asm volatile("cp.async.cg.shared.global.L2::128B [%0], [%1], %2;\n" ::"r"(dst), "l"(src), "n"(Bytes))
+#else
+#define CP_ASYNC_CA(dst, src, Bytes) \
+    asm volatile("cp.async.ca.shared.global [%0], [%1], %2;\n" ::"r"(dst), "l"(src), "n"(Bytes))
+
+#define CP_ASYNC_CG(dst, src, Bytes) \
+    asm volatile("cp.async.cg.shared.global [%0], [%1], %2;\n" ::"r"(dst), "l"(src), "n"(Bytes))
+#endif
+```
+
+等待必要的组完成。
+
+```cpp
+#define CP_ASYNC_COMMIT_GROUP() asm volatile("cp.async.commit_group;\n" ::)
+
+#define CP_ASYNC_WAIT_GROUP(N) asm volatile("cp.async.wait_group %0;\n" ::"n"(N))
+
+#define CP_ASYNC_WAIT_ALL() asm volatile("cp.async.wait_all;\n" ::)
+```
