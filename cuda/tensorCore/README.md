@@ -65,3 +65,10 @@ __global__ void mma_fp16_acc_fp32(half* d_A, half* d_B, float *out) {
 }
 
 ```
+
+## 访存优化
+
+`__cvta_generic_to_shared` 可以将一个普通的地址转换为共享内存的地址。
+
+然后通过 `LDMATRIX_X4` 将共享内存地址的几个元素存入到一个普通的数组中。
+
