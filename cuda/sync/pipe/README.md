@@ -80,3 +80,5 @@ __global__ void example_kernel(T* global0, T* global1, cuda::std::size_t subset_
 `benchpipe.cu`中对流水化的性能进行了测试，当计算时间占比接近或者大于访存时间时，使用该接口可以提升性能。
 
 在H100中，大约有6倍性能提升。
+
+## 

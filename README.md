@@ -24,6 +24,10 @@
 ### 高阶操作
 - [cuda::pipeline](./cuda/sync/pipe/README.md)
 
+## 2. CUDA算子实现
+
+- [blas算子](./cuda/blas/hgemv/README.md)
+
 ## 2. 编程语言
 
 ### 2.1 C++
