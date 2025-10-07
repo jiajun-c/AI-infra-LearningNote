@@ -21,8 +21,9 @@
     - [thrust](./cuda/cccl/thrust/README.md)
     - [cusparse](./cuda/cccl/cusparse/README.md)
 
-### 高阶操作
+## CUDA 异步操作
 - [cuda::pipeline](./cuda/sync/pipe/README.md)
+- [stream](./cuda/sync/stream/README.md)
 
 ## 2. CUDA算子实现
 
