@@ -24,10 +24,14 @@
 ## CUDA 异步操作
 - [cuda::pipeline](./cuda/sync/pipe/README.md)
 - [stream](./cuda/sync/stream/README.md)
+- [异步访存操作](./cuda/sync/mem/README.md)
 
-## 2. CUDA算子实现
+### CUDA算子实现
 
-- [blas算子](./cuda/blas/hgemv/README.md)
+- blas算子
+    - [gemv](./cuda/blas/hgemv/README.md)
+    - [gemm](./cuda/blas/gemm/README.md)
+
 
 ## 2. 编程语言
 
