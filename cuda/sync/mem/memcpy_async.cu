@@ -5,12 +5,13 @@
 #include <vector>
 #include <chrono>
 #include <cassert>
-
+#include <cuda/atomic>
+#include <cuda/std/barrier>
 // 简单的向量加法计算函数
 __device__ void compute(int* global_out, const int* shared_in, int size) {
-    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    int idx = threadIdx.x;
     if (idx < size) {
-        global_out[idx] = shared_in[idx] + 1; // 简单的加1操作
+        global_out[idx] =  shared_in[idx]*2; // 简单的加1操作
     }
 }
 
@@ -19,54 +20,54 @@ __global__ void with_memcpy_async(int* global_out, const int* global_in, size_t 
                                   float* kernel_time_ms) {
     auto grid = cooperative_groups::this_grid();
     auto block = cooperative_groups::this_thread_block();
-    if (block.size() > 0 && grid.block_index().x == 0 && block.group_index().x  ==0)
-    printf(" grid.size %d  block.size %d\n", grid.size(), block.size());
-  assert(size == batch_sz * grid.size()); // Exposition: input size fits batch_sz * grid_size
+    assert(size == batch_sz * grid.size()); // Exposition: input size fits batch_sz * grid_size
 
-    extern __shared__ int shared[]; // 动态共享内存
-    
-    // 创建事件用于内核内部计时
-    
+    extern __shared__ int shared[]; // block.size() * sizeof(int) bytes
+
+    size_t local_idx = block.thread_rank();
+
     for (size_t batch = 0; batch < batch_sz; ++batch) {
+    // Compute the index of the current batch for this block in global memory:
         size_t block_batch_idx = block.group_index().x * block.size() + grid.size() * batch;
-        
-        // 整个线程组协作地将整个批次拷贝到共享内存
-        cooperative_groups::memcpy_async(block, shared, global_in + block_batch_idx, 
-                                       sizeof(int) * block.size());
-        
-        // 等待所有拷贝完成
-        cooperative_groups::wait(block);
-        
-        compute(global_out + block_batch_idx, shared, block.size());
-        
-        block.sync();
+        size_t global_idx = block_batch_idx + threadIdx.x;
+        shared[local_idx] = global_in[global_idx];
+
+        block.sync(); // Wait for all copies to complete
+
+        compute(global_out + block_batch_idx, shared, block.size()); // Compute and write result to global memory
+
+        block.sync(); 
     }
 }
 
 // 传统同步版本的内核函数（用于对比）
 __global__ void traditional_sync(int* global_out, const int* global_in, size_t size, size_t batch_sz,
                                 float* kernel_time_ms) {
-    extern __shared__ int shared[];
-    int tid = threadIdx.x;
-    
+    auto grid = cooperative_groups::this_grid();
+    auto block = cooperative_groups::this_thread_block();
+    assert(size == batch_sz * grid.size()); // Exposition: input size fits batch_sz * grid_size
+
+    extern __shared__ int shared[]; // block.size() * sizeof(int) bytes
+
+    size_t local_idx = block.thread_rank();
 
     for (size_t batch = 0; batch < batch_sz; ++batch) {
-        size_t block_batch_idx = blockIdx.x * blockDim.x + gridDim.x * blockDim.x * batch;
-        size_t global_idx = block_batch_idx + tid;
-        
-        if (global_idx < size) {
-            // 传统的同步拷贝：先到寄存器，再到共享内存
-            int temp = global_in[global_idx];
-            shared[tid] = temp;
-        }
-        
-        __syncthreads(); // 等待所有拷贝完成
-        
-        compute(global_out + block_batch_idx, shared, blockDim.x);
-        
-        __syncthreads(); // 等待计算完成
-    }
+    size_t block_batch_idx = block.group_index().x * block.size() + grid.size() * batch;
+    // Whole thread-group cooperatively copies whole batch to shared memory:
+    cooperative_groups::memcpy_async(block, shared, global_in + block_batch_idx,cuda::aligned_size_t<16>( sizeof(int) * block.size()));
 
+    cooperative_groups::wait(block); // Joins all threads, waits for all copies to complete
+    // Compute the index of the current batch for this block in global memory:
+        // size_t block_batch_idx = block.group_index().x * block.size() + grid.size() * batch;
+        // size_t global_idx = block_batch_idx + threadIdx.x;
+        // shared[local_idx] = global_in[global_idx];
+
+        // block.sync(); // Wait for all copies to complete
+
+        compute(global_out + block_batch_idx, shared, block.size()); // Compute and write result to global memory
+
+        block.sync(); 
+    }
 }
 
 // 性能测试函数
@@ -108,12 +109,12 @@ void benchmark_memcpy_async(size_t total_size, size_t batch_size, int block_size
 
     // 测试memcpy_async版本
     for (int i = 0; i < 20; ++i) {
-        with_memcpy_async<<<grid, block, shared_mem_size>>>(d_output_async, d_input, total_size, batch_sz, d_kernel_time_async);
+        traditional_sync<<<grid, block, shared_mem_size>>>(d_output_async, d_input, total_size, batch_sz, d_kernel_time_async);
     }
     
     auto start_time = std::chrono::high_resolution_clock::now();
+    traditional_sync<<<grid, block, shared_mem_size>>>(
 
-    with_memcpy_async<<<grid, block, shared_mem_size>>>(
         d_output_async, d_input, total_size, batch_sz, d_kernel_time_async);
     cudaDeviceSynchronize();
     auto end_time = std::chrono::high_resolution_clock::now();
@@ -121,16 +122,14 @@ void benchmark_memcpy_async(size_t total_size, size_t batch_size, int block_size
     cudaMemcpy(h_output_async, d_output_async, total_size * sizeof(int), cudaMemcpyDeviceToHost);
     
     auto async_duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-    
-    float async_kernel_time;
-    cudaMemcpy(&async_kernel_time, d_kernel_time_async, sizeof(float), cudaMemcpyDeviceToHost);
-    for (int i = 0; i < 10; ++i) {
-  traditional_sync<<<grid, block, shared_mem_size>>>(
+
+    for (int i = 0; i < 20; ++i) {
+    with_memcpy_async<<<grid, block, shared_mem_size>>>(
         d_output_traditional, d_input, total_size, batch_sz, d_kernel_time_traditional);    }
     // 测试传统同步版本
     start_time = std::chrono::high_resolution_clock::now();
     
-    traditional_sync<<<grid, block, shared_mem_size>>>(
+    with_memcpy_async<<<grid, block, shared_mem_size>>>(
         d_output_traditional, d_input, total_size, batch_sz, d_kernel_time_traditional);
     cudaDeviceSynchronize();
     end_time = std::chrono::high_resolution_clock::now();
@@ -139,15 +138,14 @@ void benchmark_memcpy_async(size_t total_size, size_t batch_size, int block_size
     
     auto traditional_duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
     
-    float traditional_kernel_time;
-    cudaMemcpy(&traditional_kernel_time, d_kernel_time_traditional, sizeof(float), cudaMemcpyDeviceToHost);
     
     // 验证结果正确性
     bool results_match = true;
     for (size_t i = 0; i < total_size; ++i) {
         if (h_output_async[i] != h_output_traditional[i]) {
+            printf("结果不匹配: h_output_async[%zu] = %d, h_output_traditional[%zu] = %d\n", i, h_output_async[i], i, h_output_traditional[i]);
             results_match = false;
-            break;
+            // break;
         }
     }
     
@@ -187,8 +185,8 @@ void benchmark_memcpy_async(size_t total_size, size_t batch_size, int block_size
 int main() {
     // 设置不同的测试场景
     std::vector<std::tuple<size_t, size_t, int>> test_cases = {
-        {1024 * 1024, 4096, 256}   // 中等数据量，中等批次
-        // {2048 * 2048, 8192, 512},    // 大数据量，大批次
+        // {1024 * 1024, 4096, 256}   // 中等数据量，中等批次
+        {2048 * 2048, 8192, 512}    // 大数据量，大批次
         // {512 * 512, 2048, 128}   ,    // 小数据量，小批次
         // {512 * 32, 32, 32}       // 小数据量，小批次
     };

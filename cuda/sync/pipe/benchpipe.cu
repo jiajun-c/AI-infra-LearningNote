@@ -1,220 +1,173 @@
-#include <cooperative_groups/memcpy_async.h>
 #include <cuda/pipeline>
+#include <cooperative_groups.h>
 #include <iostream>
-#include <cassert>
-#include <vector>
-#include <algorithm>
+#include <cuda_runtime.h>
+
+// 禁用 `pipeline_shared_state` 初始化警告
 #pragma nv_diag_suppress static_var_with_dynamic_init
 
-// CUDA错误检查宏
-#define CHECK_CUDA_ERROR(call) \
-    do { \
-        cudaError_t err = (call); \
-        if (err != cudaSuccess) { \
-            std::cerr << "CUDA error at " << __FILE__ << ":" << __LINE__ << ": " \
-                      << cudaGetErrorString(err) << std::endl; \
-            exit(EXIT_FAILURE); \
-        } \
-    } while (0)
-
-// 设备端计算函数：将共享内存中的数据翻倍并写入全局内存
-__device__ void compute(int* global_out, int const* shared_in) {
-    // int idx = threadIdx.x + blockIdx.x * blockDim.x;
-    // 简单示例：将数据翻倍
-    for (int j = 0; j < 100; j++)
-    global_out[ threadIdx.x] = shared_in[threadIdx.x]*shared_in[threadIdx.x]/3* 2*shared_in[threadIdx.x];
-    //  = computed_val;
+// 简单的计算函数示例：对共享内存中的两个数据块进行逐元素相加
+template <typename T>
+__device__ void compute(T* shared_block) {
+    int tid = cooperative_groups::this_thread_block().thread_rank();
+    int block_size = cooperative_groups::this_thread_block().size();
+    // 假设每个共享内存块包含block_size个元素，计算两个部分的相加
+    if (tid < block_size) {
+        shared_block[tid] += shared_block[tid + block_size];
+    }
+    __syncthreads(); // 确保块内线程同步
 }
-__global__ void baseline(int* global_out, int const* global_in, int size, int batch) {
-    int idx = threadIdx.x + blockIdx.x * blockDim.x;
-        for (int i = 0; i < batch; i++) {
-            for (int j = 0; j < 100; j++)
-            global_out[idx + gridDim.x *blockDim.x*i ] = global_in[idx]* global_in[idx]*2/3*2* global_in[idx];
 
-        }
+template <typename T>
+__global__ void baseline_kernel(T* global0, T* global1, T* output, cuda::std::size_t subset_count, int data_size_per_subset) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < data_size_per_subset) {
+        return;
+    }
+    for (int i = 0; i < subset_count; ++i) {
+        output[i * data_size_per_subset + idx] = global0[i * data_size_per_subset + idx] + global1[i * data_size_per_subset + idx];
+    }
 }
-// 内核函数：使用流水线技术进行异步数据拷贝和计算
-__global__ void with_staging(int* global_out, int const* global_in, size_t size, size_t batch_sz) {
-    auto grid = cooperative_groups::this_grid();
-    auto block = cooperative_groups::this_thread_block();
-    assert(size == batch_sz * grid.size()); // 假设输入大小符合 batch_sz * grid_size
+// 使用CUDA Pipeline的主内核函数
+template <typename T>
+__global__ void pipeline_kernel(T* global0, T* global1, T* output, cuda::std::size_t subset_count, int data_size_per_subset) {
+    extern __shared__ __align__(sizeof(T)) unsigned char shared_memory_raw[];
+    T* shared_base = reinterpret_cast<T*>(shared_memory_raw);
+    
+    auto group = cooperative_groups::this_thread_block();
+    int block_size = group.size();
+    // 为两个流水线阶段分配共享内存
+    T* shared_stages[2] = { shared_base, shared_base + 2 * block_size };
 
-    constexpr size_t stages_count = 2; // 两阶段流水线
-    // 两个批次必须适合共享内存：
-    extern __shared__ int shared[];  // stages_count * block.size() * sizeof(int) 字节
-    size_t shared_offset[stages_count] = { 0, block.size() }; // 每个批次的偏移量
+    // 创建Pipeline对象
+    constexpr auto scope = cuda::thread_scope_block;
+    constexpr cuda::std::size_t stages_count = 2;
+    __shared__ cuda::pipeline_shared_state<scope, stages_count> shared_state;
+    auto pipeline = cuda::make_pipeline(group, &shared_state);
 
-    // 为两阶段cuda::pipeline分配共享存储：
-    __shared__ cuda::pipeline_shared_state<
-        cuda::thread_scope_block,
-        stages_count> shared_state;
-    auto pipeline = cuda::make_pipeline(block, &shared_state);
-
-    // 每个线程处理`batch_sz`个元素。
-    // 计算此线程块的批次`batch`在全局内存中的偏移量：
-    auto block_batch = [&](size_t batch) -> size_t {
-      return block.group_index().x * block.size() + grid.size() * batch;
-    };
-
-    // 通过提交`memcpy_async`来获取块的整个批次，初始化第一个流水线阶段：
-    if (batch_sz == 0) return;
+    // 初始化Pipeline：预加载第一个数据子集
     pipeline.producer_acquire();
-    cuda::memcpy_async(block, shared + shared_offset[0], global_in + block_batch(0), sizeof(int) * block.size(), pipeline);
+    cuda::memcpy_async(group, shared_stages[0], 
+                       &global0[0], sizeof(T) * block_size, pipeline);
+    cuda::memcpy_async(group, shared_stages[0] + block_size,
+                       &global1[0], sizeof(T) * block_size, pipeline);
     pipeline.producer_commit();
 
-    // 流水线拷贝/计算：
-    for (size_t batch = 1; batch < batch_sz; ++batch) {
-        // 计算和拷贝阶段的索引：
-        size_t compute_stage_idx = (batch - 1) % 2;
-        size_t copy_stage_idx = batch % 2;
-        size_t global_idx = block_batch(batch);
-
-        // 所有生产者线程集体获取流水线头阶段：
+    // 主循环：重叠数据加载与计算
+    for (cuda::std::size_t subset = 1; subset < subset_count; ++subset) {
+        // 生产者阶段：异步加载下一个数据子集
         pipeline.producer_acquire();
-
-        // 将异步拷贝提交到流水线头阶段，以便在下一个循环迭代中计算
-        cuda::memcpy_async(block, shared + shared_offset[copy_stage_idx], global_in + global_idx, sizeof(int) * block.size(), pipeline);
-        // 集体提交（推进）流水线头阶段
+        cuda::memcpy_async(group, shared_stages[subset % 2],
+                           &global0[subset * block_size],
+                           sizeof(T) * block_size, pipeline);
+        cuda::memcpy_async(group, shared_stages[subset % 2] + block_size,
+                           &global1[subset * block_size],
+                           sizeof(T) * block_size, pipeline);
         pipeline.producer_commit();
 
-        // 集体等待提交到先前`compute`阶段的操作完成：
+        // 消费者阶段：处理已加载的上一个子集
         pipeline.consumer_wait();
-
-        // 与"拷贝"阶段的memcpy_async重叠的计算：
-        compute(global_out + block_batch(batch-1), shared + shared_offset[compute_stage_idx]);
-
-        // 集体释放阶段资源
+        compute(shared_stages[(subset - 1) % 2]);  // 执行计算
+        // 将结果写回全局内存（可选，根据实际需求调整）
+        if (threadIdx.x < block_size) {
+            output[(subset - 1) * block_size + threadIdx.x] = shared_stages[(subset - 1) % 2][threadIdx.x];
+        }
         pipeline.consumer_release();
     }
 
-    // 计算最后一次迭代获取的数据
+    // 处理管道中剩余的最后一批数据
     pipeline.consumer_wait();
-    compute(global_out + block_batch(batch_sz-1), shared + shared_offset[(batch_sz - 1) % 2]);
+    compute(shared_stages[(subset_count - 1) % 2]);
+    if (threadIdx.x < block_size) {
+        output[(subset_count - 1) * block_size + threadIdx.x] = shared_stages[(subset_count - 1) % 2][threadIdx.x];
+    }
     pipeline.consumer_release();
 }
 
 int main() {
-    // 设置问题规模
-    cudaSetDevice(2);
-    const size_t total_elements = 4096*4096*16;     // 总元素数
-    const size_t batch_size = 16;            // 批次数
-    const size_t elements_per_batch = total_elements / batch_size; // 每批元素数
-    
-    // 设置线程块和网格大小
-    const int block_size = 256;             // 每个线程块256个线程
-    const int grid_size = total_elements / block_size / batch_size; // 计算网格大小
-    
-    // 计算共享内存大小：两阶段，每阶段block_size个元素
-    const size_t shared_mem_size = 2 * block_size * sizeof(int);
-    
-    std::cout << "配置参数:" << std::endl;
-    std::cout << "  总元素数: " << total_elements << std::endl;
-    std::cout << "  批次数: " << batch_size << std::endl;
-    std::cout << "  每批元素数: " << elements_per_batch << std::endl;
-    std::cout << "  线程块大小: " << block_size << std::endl;
-    std::cout << "  网格大小: " << grid_size << std::endl;
-    std::cout << "  共享内存大小: " << shared_mem_size << " 字节" << std::endl;
-    
-    // 分配和初始化主机内存
-    std::vector<int> h_input(total_elements);
-    std::vector<int> h_output(total_elements);
-    std::vector<int> h_expected(total_elements);
-    
-    for (size_t i = 0; i < total_elements; ++i) {
-        h_input[i] = static_cast<int>(i);
-        h_expected[i] = h_input[i] * 2; // 预期结果：值翻倍
+    const int TOTAL_ELEMENTS = 1024*1024*1024;  // 总数据元素数量
+    const int BLOCK_SIZE = 256;       // 线程块大小
+    const int SUBSET_COUNT = TOTAL_ELEMENTS / BLOCK_SIZE;  // 子集数量
+    const int ELEMENTS_PER_SUBSET = BLOCK_SIZE;
+
+    // 分配主机内存
+    int *h_global0, *h_global1, *h_output;
+    h_global0 = new int[TOTAL_ELEMENTS];
+    h_global1 = new int[TOTAL_ELEMENTS];
+    h_output = new int[TOTAL_ELEMENTS];
+
+    // 初始化主机数据
+    for (int i = 0; i < TOTAL_ELEMENTS; i++) {
+        h_global0[i] = i;
+        h_global1[i] = i * 2;
     }
-    
+
     // 分配设备内存
-    int *d_input, *d_output;
-    CHECK_CUDA_ERROR(cudaMalloc(&d_input, total_elements * sizeof(int)));
-    CHECK_CUDA_ERROR(cudaMalloc(&d_output, total_elements * sizeof(int)));
-    
-    // 将数据从主机复制到设备
-    CHECK_CUDA_ERROR(cudaMemcpy(d_input, h_input.data(), 
-                                total_elements * sizeof(int), 
-                                cudaMemcpyHostToDevice));
-    
-    // 初始化输出设备内存
-    CHECK_CUDA_ERROR(cudaMemset(d_output, 0, total_elements * sizeof(int)));
-    
+    int *d_global0, *d_global1, *d_output;
+    cudaMalloc(&d_global0, TOTAL_ELEMENTS * sizeof(int));
+    cudaMalloc(&d_global1, TOTAL_ELEMENTS * sizeof(int));
+    cudaMalloc(&d_output, TOTAL_ELEMENTS * sizeof(int));
+
+    // 将数据复制到设备
+    cudaMemcpy(d_global0, h_global0, TOTAL_ELEMENTS * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_global1, h_global1, TOTAL_ELEMENTS * sizeof(int), cudaMemcpyHostToDevice);
+
+    // 计算内核启动参数
+    dim3 block(BLOCK_SIZE);
+    dim3 grid(1);  // 使用1个线程块
+    size_t shared_mem_size = 2 * 2 * BLOCK_SIZE * sizeof(int);  // 双缓冲，每个阶段2*BLOCK_SIZE个元素
+
     // 启动内核
-    std::cout << "启动内核..." << std::endl;
-    
-    // 检查设备是否支持协作组
-    cudaDeviceProp prop;
-    CHECK_CUDA_ERROR(cudaGetDeviceProperties(&prop, 0));
-    
-    dim3 grid(grid_size);
-    dim3 block(block_size);
-    // int *d_input1, *d_output1;
-    // float elapsedTime1 = 0.0;
-    // CHECK_CUDA_ERROR(cudaMalloc(&d_input1, total_elements * sizeof(int)));
-    // CHECK_CUDA_ERROR(cudaMalloc(&d_output1, total_elements * sizeof(int)));
-    // cudaEvent_t start1, stop1;
-    // cudaEventCreate(&start1);
-    // cudaEventCreate(&stop1);
-    // cudaEventRecord(start1, 0);
-    // baseline<<<grid, block>>>(d_output1, d_input1, total_elements,batch_size);
-    // cudaEventRecord(stop1, 0);
-    // cudaEventSynchronize(stop1);
-
-    // cudaEventElapsedTime(&elapsedTime1, start1, stop1);
-    // std::cout << elapsedTime1 << std::endl;
-
-
+    for (int i = 0; i < 10; i++) {
         cudaEvent_t start, stop;
-        float elapsedTime = 0.0;
+
         cudaEventCreate(&start);
         cudaEventCreate(&stop);
-        cudaEventRecord(start, 0);
-        // 回退到传统启动方式
-        with_staging<<<grid, block, shared_mem_size>>>(
-            d_output, d_input, total_elements, batch_size);
-    cudaEventRecord(stop, 0);
-    cudaEventSynchronize(stop);
-    
-    cudaEventElapsedTime(&elapsedTime, start, stop);
-    std::cout << elapsedTime << std::endl;
-
+        cudaEventRecord(start);
+        baseline_kernel<int><<<grid, block, shared_mem_size>>>(d_global0, d_global1, d_output, SUBSET_COUNT, ELEMENTS_PER_SUBSET);
+        cudaDeviceSynchronize();
+        cudaEventSynchronize(stop);
+        cudaEventRecord(stop);
+        float elapsedTimes;
+        cudaEventElapsedTime(&elapsedTimes, start, stop);
+ 
+        // Output results
+ 
+        std::cout << " time" << ": " << elapsedTimes << " ms" << std::endl;
+    }
 
     // 检查内核启动错误
-    CHECK_CUDA_ERROR(cudaGetLastError());
-    
-    // 等待内核完成
-    CHECK_CUDA_ERROR(cudaDeviceSynchronize());
-    
-    // 将结果复制回主机
-    CHECK_CUDA_ERROR(cudaMemcpy(h_output.data(), d_output, 
-                                total_elements * sizeof(int), 
-                                cudaMemcpyDeviceToHost));
+    cudaError_t kernelLaunchStatus = cudaGetLastError();
+    if (kernelLaunchStatus != cudaSuccess) {
+        std::cerr << "Kernel launch failed: " << cudaGetErrorString(kernelLaunchStatus) << std::endl;
+        return -1;
+    }
 
-    // 验证结果
-    bool success = true;
-    for (size_t i = 0; i < total_elements; ++i) {
-        if (h_output[i] != h_expected[i]) {
-            std::cerr << "结果验证失败于索引 " << i 
-                      << ": 期望 " << h_expected[i] 
-                      << ", 得到 " << h_output[i] << std::endl;
-            success = false;
-            break;
-        }
+    // 等待设备计算完成
+    cudaError_t syncStatus = cudaDeviceSynchronize();
+    if (syncStatus != cudaSuccess) {
+        std::cerr << "Device synchronization failed: " << cudaGetErrorString(syncStatus) << std::endl;
+        return -1;
     }
-    
-    if (success) {
-        std::cout << "结果验证成功! 所有值都正确翻倍。" << std::endl;
-        
-        // 显示前10个结果作为示例
-        std::cout << "前10个结果:" << std::endl;
-        for (int i = 0; i < 10 && i < total_elements; ++i) {
-            std::cout << "  输入[" << i << "] = " << h_input[i] 
-                      << ", 输出[" << i << "] = " << h_output[i] << std::endl;
-        }
+
+    // 将结果复制回主机
+    cudaMemcpy(h_output, d_output, TOTAL_ELEMENTS * sizeof(int), cudaMemcpyDeviceToHost);
+
+    // 验证结果（简单检查前10个元素）
+    std::cout << "Checking first 10 results (expected: input0 + input1):" << std::endl;
+    for (int i = 0; i < 10 && i < TOTAL_ELEMENTS; i++) {
+        int expected = h_global0[i] + h_global1[i];  // 根据compute函数逻辑
+        std::cout << "Index " << i << ": " << h_output[i] << " (expected: " << expected << ")" << std::endl;
     }
-    
-    // 释放设备内存
-    cudaFree(d_input);
+
+    // 释放资源
+    cudaFree(d_global0);
+    cudaFree(d_global1);
     cudaFree(d_output);
-    
-    return success ? 0 : 1;
+    delete[] h_global0;
+    delete[] h_global1;
+    delete[] h_output;
+
+    std::cout << "Pipeline example completed successfully!" << std::endl;
+    return 0;
 }

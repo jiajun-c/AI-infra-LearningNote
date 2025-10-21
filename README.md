@@ -13,14 +13,6 @@
 
 [TensorCore](./cuda/tensorCore/README.md)
 
-### Hopper 架构特性
-
-- [分布式共享内存](./cuda/hopper/DistributedSM/README.md)
-
-- CCCL
-    - [thrust](./cuda/cccl/thrust/README.md)
-    - [cusparse](./cuda/cccl/cusparse/README.md)
-
 ## CUDA 异步操作
 - [cuda::pipeline](./cuda/sync/pipe/README.md)
 - [stream](./cuda/sync/stream/README.md)
@@ -31,6 +23,19 @@
 - blas算子
     - [gemv](./cuda/blas/hgemv/README.md)
     - [gemm](./cuda/blas/gemm/README.md)
+
+### 访存优化
+
+- 访存优化
+    - [bank 冲突优化](./cuda/memory/bank/README.md)
+    - [cache 优化](./cuda/memory/cache/README.md)
+### Hopper 架构特性
+
+- [分布式共享内存](./cuda/hopper/DistributedSM/README.md)
+
+- CCCL
+    - [thrust](./cuda/cccl/thrust/README.md)
+    - [cusparse](./cuda/cccl/cusparse/README.md)
 
 
 ## 2. 编程语言
