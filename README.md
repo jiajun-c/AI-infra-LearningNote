@@ -57,6 +57,9 @@
 - [运算符](./lang/cpp/operator/README.md)
     - 运算符重载
 
+- 异步操作
+    - [future](./lang/cpp/async/future/README.md) 
+
 ### 2.2 Python
 
 ### 2.3 Trition
@@ -92,6 +95,7 @@
 - [模型保存](./model/save_load/README.md)
 
 - 模型并行
+    - [并行数据集处理](./parallel/dataset/README.md)
     - [DP(数据并行)](./parallel/DP/README.md)
     - [DDP(分布式数据并行)](./parallel/DDP/README.md)
     - [TP(模型并行)](./parallel/TP/README.md)

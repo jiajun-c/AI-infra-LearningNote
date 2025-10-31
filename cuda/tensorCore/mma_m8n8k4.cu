@@ -29,8 +29,8 @@ __global__ void mma_fp64_acc_fp64(double *out) {
     int tid = threadIdx.x;
     if (tid >= 32) return;
     double frag_a = double(tid);
-    double frag_b =0.0;
-    if (tid%4 == 0) frag_b = double(tid/4);
+    double frag_b = double(tid);
+    // if (tid%4 == 0) frag_b = double(tid/4);
     mma_m8n8k4(acc, frag_a, frag_b);
     out[tid*2] = acc[0];
     out[tid*2+1] = acc[1];

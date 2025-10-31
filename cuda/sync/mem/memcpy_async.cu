@@ -7,14 +7,31 @@
 #include <cassert>
 #include <cuda/atomic>
 #include <cuda/std/barrier>
+#include <cuda/pipeline>
 // 简单的向量加法计算函数
 __device__ void compute(int* global_out, const int* shared_in, int size) {
     int idx = threadIdx.x;
     if (idx < size) {
-        global_out[idx] =  shared_in[idx]*2; // 简单的加1操作
+        float out = 1.0;
+        // for (int i = 0; i < 400; i++) out = out*i/(i+1);
+        global_out[idx] =  shared_in[idx]*2*3*4/shared_in[idx]*shared_in[idx]*out; // 简单的加1操作
     }
 }
-
+#define CHECK_CUDA(call)                                \
+    do                                                  \
+    {                                                   \
+        const cudaError_t error_code = call;            \
+        if (error_code != cudaSuccess)                  \
+        {                                               \
+            printf("CUDA Error:\n");                    \
+            printf("    File:       %s\n", __FILE__);   \
+            printf("    Line:       %d\n", __LINE__);   \
+            printf("    Error code: %d\n", error_code); \
+            printf("    Error text: %s\n",              \
+                   cudaGetErrorString(error_code));     \
+            exit(1);                                    \
+        }                                               \
+    } while (0)
 // 使用memcpy_async的内核函数
 __global__ void with_memcpy_async(int* global_out, const int* global_in, size_t size, size_t batch_sz, 
                                   float* kernel_time_ms) {
@@ -43,30 +60,65 @@ __global__ void with_memcpy_async(int* global_out, const int* global_in, size_t 
 // 传统同步版本的内核函数（用于对比）
 __global__ void traditional_sync(int* global_out, const int* global_in, size_t size, size_t batch_sz,
                                 float* kernel_time_ms) {
+    // auto grid = cooperative_groups::this_grid();
+    // auto block = cooperative_groups::this_thread_block();
+    // assert(size == batch_sz * grid.size()); // Exposition: input size fits batch_sz * grid_size
+
+    // extern __shared__ int shared[]; // block.size() * sizeof(int) bytes
+
+    // size_t local_idx = block.thread_rank();
+
+    // for (size_t batch = 0; batch < batch_sz; ++batch) {
+    // size_t block_batch_idx = block.group_index().x * block.size() + grid.size() * batch;
+    // // Whole thread-group cooperatively copies whole batch to shared memory:
+    // cooperative_groups::memcpy_async(block, shared, global_in + block_batch_idx,cuda::aligned_size_t<16>( sizeof(int) * block.size()));
+
+    // cooperative_groups::wait(block); // Joins all threads, waits for all copies to complete
+    // // Compute the index of the current batch for this block in global memory:
+    //     // size_t block_batch_idx = block.group_index().x * block.size() + grid.size() * batch;
+    //     // size_t global_idx = block_batch_idx + threadIdx.x;
+    //     // shared[local_idx] = global_in[global_idx];
+
+    //     // block.sync(); // Wait for all copies to complete
+
+    //     compute(global_out + block_batch_idx, shared, block.size()); // Compute and write result to global memory
+
+    //     block.sync(); 
+    // }
+    const int stages_count = 2;
     auto grid = cooperative_groups::this_grid();
     auto block = cooperative_groups::this_thread_block();
-    assert(size == batch_sz * grid.size()); // Exposition: input size fits batch_sz * grid_size
+    auto thread = cooperative_groups::this_thread();
+    assert(size == batch_sz * grid.size()); // Assume input size fits batch_sz * grid_size
 
-    extern __shared__ int shared[]; // block.size() * sizeof(int) bytes
+    extern __shared__ int shared[]; // stages_count * block.size() * sizeof(int) bytes
+    size_t shared_offset[stages_count];
+    for (int s = 0; s < stages_count; ++s) shared_offset[s] = s * block.size();
 
-    size_t local_idx = block.thread_rank();
+    // No pipeline::shared_state needed
+    cuda::pipeline<cuda::thread_scope_thread> pipeline = cuda::make_pipeline();
 
-    for (size_t batch = 0; batch < batch_sz; ++batch) {
-    size_t block_batch_idx = block.group_index().x * block.size() + grid.size() * batch;
-    // Whole thread-group cooperatively copies whole batch to shared memory:
-    cooperative_groups::memcpy_async(block, shared, global_in + block_batch_idx,cuda::aligned_size_t<16>( sizeof(int) * block.size()));
+    auto block_batch = [&](size_t batch) -> int {
+        return block.group_index().x * block.size() + grid.size() * batch;
+    };
 
-    cooperative_groups::wait(block); // Joins all threads, waits for all copies to complete
-    // Compute the index of the current batch for this block in global memory:
-        // size_t block_batch_idx = block.group_index().x * block.size() + grid.size() * batch;
-        // size_t global_idx = block_batch_idx + threadIdx.x;
-        // shared[local_idx] = global_in[global_idx];
-
-        // block.sync(); // Wait for all copies to complete
-
-        compute(global_out + block_batch_idx, shared, block.size()); // Compute and write result to global memory
-
-        block.sync(); 
+    for (size_t compute_batch = 0, fetch_batch = 0; compute_batch < batch_sz; ++compute_batch) {
+        for (; fetch_batch < batch_sz && fetch_batch < (compute_batch + stages_count); ++fetch_batch) {
+            pipeline.producer_acquire();
+            size_t shared_idx = fetch_batch % stages_count;
+            size_t batch_idx = fetch_batch;
+            // Each thread fetches its own data:
+            size_t thread_batch_idx = block_batch(batch_idx);
+            // The copy is performed by a single `thread` and the size of the batch is now that of a single element:
+            cuda::memcpy_async(block, shared + shared_offset[shared_idx], global_in + thread_batch_idx, sizeof(int)*block.size(), pipeline);
+            pipeline.producer_commit();
+        }
+        pipeline.consumer_wait();
+        block.sync(); // __syncthreads: All memcpy_async of all threads in the block for this stage have completed here
+        int shared_idx = compute_batch % stages_count;
+        int batch_idx = compute_batch;
+        compute(global_out + block_batch(batch_idx), shared + shared_offset[shared_idx], block.size());
+        pipeline.consumer_release();
     }
 }
 
@@ -109,11 +161,11 @@ void benchmark_memcpy_async(size_t total_size, size_t batch_size, int block_size
 
     // 测试memcpy_async版本
     for (int i = 0; i < 20; ++i) {
-        traditional_sync<<<grid, block, shared_mem_size>>>(d_output_async, d_input, total_size, batch_sz, d_kernel_time_async);
+        traditional_sync<<<grid, block, 2*shared_mem_size>>>(d_output_async, d_input, total_size, batch_sz, d_kernel_time_async);
     }
-    
+    CHECK_CUDA(cudaGetLastError());
     auto start_time = std::chrono::high_resolution_clock::now();
-    traditional_sync<<<grid, block, shared_mem_size>>>(
+    traditional_sync<<<grid, block, 2*shared_mem_size>>>(
 
         d_output_async, d_input, total_size, batch_sz, d_kernel_time_async);
     cudaDeviceSynchronize();
@@ -145,7 +197,7 @@ void benchmark_memcpy_async(size_t total_size, size_t batch_size, int block_size
         if (h_output_async[i] != h_output_traditional[i]) {
             printf("结果不匹配: h_output_async[%zu] = %d, h_output_traditional[%zu] = %d\n", i, h_output_async[i], i, h_output_traditional[i]);
             results_match = false;
-            // break;
+            break;
         }
     }
     
@@ -183,11 +235,12 @@ void benchmark_memcpy_async(size_t total_size, size_t batch_size, int block_size
     cudaFree(d_kernel_time_traditional);
 }
 int main() {
+    cudaSetDevice(0);
     // 设置不同的测试场景
     std::vector<std::tuple<size_t, size_t, int>> test_cases = {
-        // {1024 * 1024, 4096, 256}   // 中等数据量，中等批次
-        {2048 * 2048, 8192, 512}    // 大数据量，大批次
-        // {512 * 512, 2048, 128}   ,    // 小数据量，小批次
+        {1024 * 1024, 4096, 256},   // 中等数据量，中等批次
+        {2048 * 2048, 8192, 512},    // 大数据量，大批次
+        {512 * 512, 2048, 128}     // 小数据量，小批次
         // {512 * 32, 32, 32}       // 小数据量，小批次
     };
     
