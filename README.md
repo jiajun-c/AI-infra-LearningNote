@@ -60,6 +60,8 @@
 - 异步操作
     - [future](./lang/cpp/async/future/README.md) 
 
+- [命名空间](./lang/cpp/namespace/README.md)
+
 ### 2.2 Python
 
 ### 2.3 Trition
