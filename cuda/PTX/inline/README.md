@@ -30,7 +30,7 @@ __global__ void sequence_gpu(int *d_ptr, int N) {
 asm volatile ("mov.u32 %0, %%clock;" : "=r"(start) :: "memory");
 ```
 
-### 使用PTX进行高效计时
+## 使用PTX进行高效计时
 
 如下所示，在开始和结束两个时间段将当前时钟周期存入到变量中，然后计算出操作所消耗的时钟周期。
 
@@ -49,3 +49,32 @@ asm volatile ("mov.u32 %0, %%clock;" : "=r"(start) :: "memory");
 	uint32_t stop = 0;
 	asm volatile("mov.u32 %0, %%clock;" : "=r"(stop) :: "memory");
 ```
+
+## 数据移动和转换指令
+
+### 1. 数据缓存操作
+
+用于数据加载的缓存指令
+
+`.ca`: cache all levels，使用正常的缓存策略在L1, L2层级进行数据的分配，保证了在L2层级的数据局部性，但是在多个L1层级上不能保证和全局数据的一致性
+`.cg`: cache global level，在L2及以下的层级进行数据缓存
+`.cs`: cache streaming：适用于只访问一两次的数据，会被最先替换出cache
+`.lu`: last use,避免不必要的写回到不会再使用缓存行上
+`.cv`: 不在再进行缓存或者读取，会把L2中对应的缓存行给抛弃
+
+用于数据存储的缓存操作
+
+`.wb`: write back, 将数据写入到缓存的所有层级中
+`.cg`: cache global level，在L2及以下的层级进行数据缓存
+`.cs`: cache streaming：虽然被写入到了cache中，但是会被最先替换出cache
+`.wt`: write through, 直接写入到了全局地址空间中，不通过L2
+
+
+### 2. 缓存替换策略
+
+`evict_normal`: 默认的缓存替换策略
+`evict_first`: 通过该策略进行缓存的将会被首先驱逐出cache
+`evict_last`: 通过该策略进行缓存的将会被最后驱逐出cache
+`evict_unchange` 不改变数据驱逐的优化级
+`no_allocate`: 不为数据分配缓存行
+
