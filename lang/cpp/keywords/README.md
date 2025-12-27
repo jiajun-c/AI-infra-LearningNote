@@ -38,3 +38,30 @@ int main(int argc, char **argv) {
 ## const
 
 const 表示变量的值是不可变的。
+
+## constexpr 
+
+constexpr是常量表达式, 使用该关键词修饰的函数将会在编译期计算其返回值。
+
+使用constexpr修饰的类其成员也都是constexpr，返回constexpr的时候需要使用const修饰返回值
+
+```cpp
+#include "../exercise.h"
+
+// READ: 有 cv 限定符的成员函数 <https://zh.cppreference.com/w/cpp/language/member_functions>
+
+struct Fibonacci {
+    int numbers[11];
+    // TODO: 修改方法签名和实现，使测试通过
+    int get(int i) const{
+        return numbers[i];
+    }
+};
+
+int main(int argc, char **argv) {
+    Fibonacci constexpr FIB{{0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55}};
+    ASSERT(FIB.get(10) == 55, "fibonacci(10) should be 55");
+    std::cout << "fibonacci(10) = " << FIB.get(10) << std::endl;
+    return 0;
+}
+```
