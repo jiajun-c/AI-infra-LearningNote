@@ -157,6 +157,13 @@
 
 - [NCCL](./comm/CCL/NCCL/README.md)
 
+## 6. Agent
+
+- [langChain](./agent/langchain/README.md)
+- [推理](./agent/infer/README.md)
+- [向量数据库](./agent/vectorDB/README.md)
+  - [faiss](./agent/vectorDB/faiss/README.md)
+
 ## NAS
 
 [OFA网络](./NAS/README.md)
