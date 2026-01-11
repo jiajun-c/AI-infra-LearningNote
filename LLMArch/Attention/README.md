@@ -51,7 +51,7 @@ class ScaledDotProductAttetion(nn.Module):
 
 缩放点积注意力每次仅进行一次Attention的操作，如果将其转换为K次的Attention操作，那么我们可以将其改写为如下所示的公式
 
-$MultiHead(Q, K, V) = Concat(head1, ..., headh)W^O$
+$MultiHead(Q, K, V) = Concat(head1, ..., headh)$
 
 $head_i = Attention(QW_i^Q, KW_i^K, VW_i^V)$
 

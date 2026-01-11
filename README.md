@@ -68,6 +68,10 @@
 
 ### 2.2 Python
 
+- [数据类型](./lang/python/type/README.md)
+- [类](./lang/python/class/README.md)
+    - [抽象基类](./lang/python/class/abc/README.md)
+
 ### 2.3 Trition
 
 - [基础语法](./lang/Triton/basic/README.md)
