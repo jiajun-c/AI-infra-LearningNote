@@ -25,3 +25,19 @@ apple = Apple("Apple")
 apple.bloom()
 ```
 
+## Python 内置的抽象基类
+
+Python中定义了一个抽象基类来用于定义检测对象是否支持某种行为协议，这样使得我们可以判断
+
+![alt text](image.png)
+
+如下所示collections中定义了一个Sequence的行为协议，几种基础类型都实现了该协议
+
+```python3
+from collections.abc import Sequence
+
+print(isinstance([1, 2, 3], Sequence))    # True
+print(isinstance((1, 2, 3), Sequence))    # True
+print(isinstance("hello", Sequence))      # True
+print(isinstance(range(5), Sequence))     # True（range 也实现了协议）
+```

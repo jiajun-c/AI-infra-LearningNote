@@ -2,6 +2,8 @@
 
 做归一化是因为CNN中包含很多隐含层，每层参数会随着训练而改变优化，所以隐层的输入分布总会发生变化，使得其不满足特定的分布。
 
+elementwise_affine 表示是否对每个特征维度应用可以学习的缩放和偏移变换
+
 ## 1. Batch Normalization
 
 对一个batch中所有的样本的同一个特征维度进行归一化。假设输入为(B, H) B = batch size, H = hidden size
@@ -15,4 +17,8 @@
 LayerNorm 是大模型中场景的归一化操作，作用是对特征张量按照某一维度或者某几个维度进行0均值，1方差的归一化，后者是缩放和平移变量
 
 ![alt text](image.png)
+
+## 3. RMS Normalization
+
+![alt text](image-1.png)
 
