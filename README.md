@@ -127,7 +127,8 @@
 
 ### 4.2 优化技术
 
-- [kv cache](./LLMArch/kvcache/README.md)
+- [kv cache](./inference/kvcache/README.md)
+- [batch](./inference/)
 
 ### 4.3 显存优化
 
