@@ -4,12 +4,9 @@
             "name": "linux-gcc-x64",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/staff/chengjiajun/local/libtorch/include/**",
-                ":~/miniconda3/envs/pytorch/include/**",
-                "/staff/chengjiajun/miniconda3/envs/pytorch/include/**",
                 "/staff/chengjiajun/local/include"
             ],
-            "compilerPath": "/usr/bin/gcc",
+            "compilerPath": "/staff/chengjiajun/miniconda3/bin/gcc",
             "cStandard": "${default}",
             "cppStandard": "${default}",
             "intelliSenseMode": "linux-gcc-x64",

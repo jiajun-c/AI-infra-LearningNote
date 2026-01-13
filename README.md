@@ -96,7 +96,9 @@
 - [MOE](./LLMArch/MoE/README.md)
     - basic MoE
     - sparse MoE
-
+- [线性层](./LLMArch/Linear/README.md)
+    - Lm_head
+    - FFN
 - [模型中间表示](./IR/README.md)
     - [PNNX](./IR/PNNX/README.md)
     - [ONNX](./IR/ONNX/README.md)
@@ -114,6 +116,10 @@
 - 模型评估
     - [性能指标](./LLMBench/InferBench/README.md)
     - [语言能力评估](./LLMBench/metrics/README.md)
+
+- 多模态
+    - [vit](./multimodal/vit/README.md)
+    - [clip](./multimodal/clip/README.md)
 
 ## 4. 训推优化
 
@@ -140,7 +146,6 @@
     - [QAT](./quant/QAT/README.md)
 - 检查点机制
     - [梯度检查点](./train/LowMem/checkpoint/README.md)
-
 ### 4.4 模型剪枝
 
 - [Fine-grain Pruning](./inference/prune/fine-grain/README.md)
