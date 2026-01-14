@@ -112,7 +112,7 @@
     - [DDP(分布式数据并行)](./parallel/DDP/README.md)
     - [TP(模型并行)](./parallel/TP/README.md)
     - [PP(流水并行)](./parallel/PP/README.md)
-
+    - [EP]
 - 模型评估
     - [性能指标](./LLMBench/InferBench/README.md)
     - [语言能力评估](./LLMBench/metrics/README.md)
