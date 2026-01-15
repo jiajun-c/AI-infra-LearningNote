@@ -66,6 +66,8 @@
 
 - [命名空间](./lang/cpp/namespace/README.md)
 
+- 工具函数
+    - [类型操作]()
 ### 2.2 Python
 
 - [数据类型](./lang/python/type/README.md)
@@ -81,7 +83,8 @@
 
 ## 3. 大模型
 - 编程框架
-    - [PyTorch](./pytorch/README.md)
+    - [PyTorch](./framework/pytorch/README.md)
+        - [tensor](./framework/pytorch/tensor/README.md)
 - 文本token化
     - [BPE](./tokenizer/BPE/README.md)
 - 位置编码
@@ -183,6 +186,12 @@
 - [向量数据库](./agent/vectorDB/README.md)
   - [faiss](./agent/vectorDB/faiss/README.md)
 
+## 7 程序性能分析和调试
+
+- 性能优化
+- [程序调试](./debug/README.md)
+    - GDB
+
 ## NAS
 
 [OFA网络](./NAS/README.md)
@@ -212,5 +221,7 @@ https://zhuanlan.zhihu.com/p/665170554
 - 存储
     - [页表](./system/memory/pagetable.md)
     - [TLB](./system/memory/tlb.md)
-- 进程
-    - []()
+- [进程相关](./system/process/README.md)
+    - 进程
+    - 线程
+    - 协程
