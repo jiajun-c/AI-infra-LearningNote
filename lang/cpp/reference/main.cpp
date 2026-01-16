@@ -8,6 +8,10 @@ int main() {
     int y = x;
     int &z = y;
     printf("%x %x %x\n", &x, &y, &z);
-}
 
-// 9f1b1d88 9f1b1d8c 9f1b1d8c
+    z = 10;
+    printf("%d %d %d\n", x, y, z);
+    int a = 10;
+    int &&ref = 10;
+    printf("%x\n", &ref);
+}
