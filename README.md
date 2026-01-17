@@ -58,6 +58,10 @@
     - [vector](./lang/cpp/stl/vector/README.md)
     - [unordered_map](./lang/cpp/stl/unordered_map/README.md)
 
+- 类
+    - [类的继承](./lang/cpp/class/inherit/README.md)
+    - [虚](./lang/cpp/class/virtual/README.md)
+
 - [运算符](./lang/cpp/operator/README.md)
     - 运算符重载
 
@@ -65,6 +69,8 @@
     - [future](./lang/cpp/async/future/README.md) 
 
 - [命名空间](./lang/cpp/namespace/README.md)
+
+- [类型转换](./lang/cpp/cast/README.md)
 
 - 工具函数
     - [类型操作]()
@@ -115,7 +121,7 @@
     - [DDP(分布式数据并行)](./parallel/DDP/README.md)
     - [TP(模型并行)](./parallel/TP/README.md)
     - [PP(流水并行)](./parallel/PP/README.md)
-    - [EP]
+    - EP
 - 模型评估
     - [性能指标](./LLMBench/InferBench/README.md)
     - [语言能力评估](./LLMBench/metrics/README.md)
