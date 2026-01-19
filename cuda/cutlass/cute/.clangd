@@ -1,0 +1,27 @@
+CompileFlags:
+  Remove: 
+    - "--generate-code=*"
+    - "-gencode=*"
+    - "--generate-code*"
+    - "-gencode*"
+    - "-forward-unknown-to-host-compiler"
+  Add: 
+    - "-std=c++17"
+    - "--cuda-gpu-arch=sm_80"
+    - "-Wno-unknown-cuda-version"
+    # 👇 注意：每行前面都有一个短横线和空格 "- "
+    - "-I/usr/include/c++/11"
+    - "-I/usr/include/x86_64-linux-gnu/c++/11"
+    - "-I/usr/include/c++/11/backward"
+    - "-I/usr/lib/gcc/x86_64-linux-gnu/11/include"
+    - "-I/usr/local/include"
+    - "-I/usr/include/x86_64-linux-gnu"
+    - "-I/usr/include"
+
+Diagnostics:
+  Suppress:
+    - "*"
+  
+  ClangTidy:
+    Remove: 
+      - "*"
