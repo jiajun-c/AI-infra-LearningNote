@@ -16,7 +16,7 @@ $Attention(Q, K, V) = softmax(\frac{QK^T}{\sqrt{d_k}})V$
 
 实现的代码如下所示
 
-```python3
+```python
 class ScaledDotProductAttetion(nn.Module):
     def __init__(self, dim) -> None:
         super().__init__()

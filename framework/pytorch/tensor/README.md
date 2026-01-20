@@ -22,3 +22,11 @@ y = torch.arange(0, 3)
 outy = torch.repeat_interleave(y, repeats=torch.tensor([1, 2, 3], dtype=torch.long))
 print(outy)
 ```
+
+## tensor version
+
+当我们通过torch.view 来获取一个tensor的视图时，其实着两个指向的是同一片地址空间，对一个进行修改另外一个就要进行修改
+
+当对一个tensor进行了修改之后，其version会进行自增，同时顺藤摸瓜将其他关联的视图也全部进行了更新
+
+在反向求导的场景下，该版本管理可以帮助我们追踪修改，防止报错，在推理场景下可以关闭

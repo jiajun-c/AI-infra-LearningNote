@@ -22,7 +22,7 @@ __global__ void create_tensor_kernel(float* global_ptr) {
         TiledMMA mma = make_tiled_mma(SM70_8x8x4_F32F16F16F32_NT{},
                                     Layout<Shape <_2,_2>,
                                             Stride<_2,_1>>{});   // 2x2 n-major layout of Atoms
-        // print_latex(mma);
+        print_latex(mma);
         // 演示：访问 Tensor 的第 0 个元素
         // 语法: tensor(坐标)
         printf("Element at index 0: %f\n", tensor(0, 1, 1));
