@@ -202,6 +202,8 @@ cute
 - 性能优化
 - [程序调试](./debug/README.md)
     - GDB
+- [cuda性能分析](./profile/cuda/README.md)
+
 
 ## NAS
 
@@ -236,3 +238,8 @@ https://zhuanlan.zhihu.com/p/665170554
     - 进程
     - 线程
     - 协程
+
+
+## XPU架构及其演进
+
+- [GPU](./xpu/gpu/README.md)

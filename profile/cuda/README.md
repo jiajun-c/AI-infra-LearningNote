@@ -49,4 +49,31 @@ nvtx.range_pop()
 ```
 
 
-## 2. 使用
+## 2. 理论性能分析
+
+### Flops 和 bandwidth
+
+PFlops = 1e3 TFlops = 1e3 GFlops = 1e3 MFlops = 1e3 KFlops
+
+一般GPU都会使用TFlops，带宽上回使用GB/s
+
+### 计算强度分析
+
+AI = FLOPS/Bytes
+
+以online softmax算子为例，其需要对每个元素进行一次max，sub，exp，div，add的操作，整体的时间复杂度在大约在5~10Flops
+
+访存量为 Fp16 下读写各一次，共4 Bytes/element
+
+算术强度 (AI): 10/4 = 2.5Flops/Bytes
+
+在H100上，其计算能力为312TFlops，带宽能力为2039GB/s
+
+计算和访存的拐点是 312*10e3/2038 = 153Flops/Bytes
+
+该算术强度AI远远小于访存的拐点，所以仅仅考虑访存的时间。
+
+需要的时间为等于访存的量除以带宽，以safe softmax为例，其理论访存次数主要取决于HBM上的访存次数，即2*N
+
+所以其时间可以计算为 2*N/bandwidth
+
