@@ -5,6 +5,109 @@ import torch
 # -----------------------------------------------------------------------------
 # 1. Triton Kernel 实现 (已修复指针计算 Bug)
 # -----------------------------------------------------------------------------
+
+@triton.jit
+def online_softmax_kernel(
+    X,              # 输入指针
+    Y,              # 输出指针
+    stride_row_x,   # 输入行步长
+    stride_row_y,   # 输出行步长
+    N,              # 列数 (Seq Len)
+    BLOCK_SIZE: tl.constexpr
+):
+    # 1. 获取当前行号
+    row_idx = tl.program_id(0)
+    
+    # 2. 定位到当前行的起始地址
+    x_row_ptr = X + row_idx * stride_row_x
+    y_row_ptr = Y + row_idx * stride_row_y
+    
+    # ============================================================
+    # Pass 1: 计算全局 Max (m) 和 全局 Sum (d)
+    # 使用 Online Softmax 算法，只需极小的 SRAM 空间即可处理无限长的 N
+    # ============================================================
+    
+    # 初始化全局统计量
+    # m_prev: 当前遇到的全局最大值
+    # d_prev: 当前基于 m_prev 的累加和 (denominator)
+    m_prev = -float('inf')
+    d_prev = 0.0
+
+    # 循环分块处理 (Tiling)
+    for start_n in range(0, N, BLOCK_SIZE):
+        offsets = start_n + tl.arange(0, BLOCK_SIZE)
+        mask = offsets < N
+        
+        # 加载当前块的数据
+        x_curr = tl.load(x_row_ptr + offsets, mask=mask, other=-float('inf')).to(tl.float32)
+        
+        # 计算当前块的局部统计量
+        m_curr = tl.max(x_curr, axis=0)
+        
+        # --------------------------------------------------------
+        # Online Softmax 核心更新逻辑
+        # --------------------------------------------------------
+        # 1. 更新全局最大值
+        m_new = tl.maximum(m_prev, m_curr)
+        
+        # 2. 计算缩放因子 (Rescaling Factors)
+        # 旧的分母需要衰减: exp(m_prev - m_new)
+        # 新的块需要缩放: exp(m_curr - m_new)
+        # 注意: 如果 m_new == m_prev，则 term1 为 1；如果 m_new == m_curr，则 term2 为 1
+        
+        d_curr = tl.sum(tl.exp(x_curr - m_new), axis=0) # 直接基于新 max 计算当前块贡献
+        
+        # 更新全局分母：旧分母缩放 + 新分母
+        d_prev = d_prev * tl.exp(m_prev - m_new) + d_curr
+        
+        # 更新状态
+        m_prev = m_new
+
+    # 循环结束后，m_prev 是真正的全局最大值，d_prev 是真正的全局分母
+    
+    # ============================================================
+    # Pass 2: 计算 Softmax 结果并写回
+    # 再次遍历数据 (IO 代价)，但这是 Standalone Softmax 处理超长序列无法避免的
+    # (除非像 FlashAttention 那样做算子融合)
+    # ============================================================
+    for start_n in range(0, N, BLOCK_SIZE):
+        offsets = start_n + tl.arange(0, BLOCK_SIZE)
+        mask = offsets < N
+        
+        # 重新加载数据
+        x_ptr = x_row_ptr + offsets
+        x_curr = tl.load(x_ptr, mask=mask, other=-float('inf')).to(tl.float32)
+        
+        # 归一化计算
+        # output = exp(x - global_max) / global_sum
+        out = tl.exp(x_curr - m_prev) / d_prev
+        
+        # 写回显存
+        y_ptr = y_row_ptr + offsets
+        tl.store(y_ptr, out, mask=mask)
+
+def online_softmax(x):
+    rows, cols = x.shape
+    # Block Size 可以固定一个较小的值（例如 1024 或 2048），不需要包含整个 N
+    # 这使得该 Kernel 可以处理 N = 100k 的情况
+    BLOCK_SIZE = 1024 
+    
+    # 确保 Block Size 不会比 cols 还大太多（优化小形状）
+    if cols < BLOCK_SIZE:
+        BLOCK_SIZE = triton.next_power_of_2(cols)
+
+    y = torch.empty_like(x)
+    
+    grid = (rows, )
+    
+    online_softmax_kernel[grid](
+        x, y,
+        x.stride(0), y.stride(0),
+        cols,
+        BLOCK_SIZE=BLOCK_SIZE,
+        num_warps=4 if BLOCK_SIZE < 2048 else 8
+    )
+    return y
 @triton.jit
 def softmax_tlkernel(
     X,
@@ -107,7 +210,7 @@ def benchmark_on_h100():
     x = torch.randn(BATCH, SEQ_LEN, device='cuda', dtype=torch.float16)
     
     # 1. 正确性验证
-    y_triton = softmax(x)
+    y_triton = online_softmax(x)
     y_torch = torch.softmax(x.float(), dim=1).half() # Torch softmax 在 fp16 下可能不稳定，转 fp32 算完转回
     
     if torch.allclose(y_triton, y_torch, atol=1e-2, rtol=1e-2):

@@ -93,6 +93,9 @@ cute
 - [随机数](./lang/Triton/random/README.md)
 
 ## 3. 大模型
+
+- [整体流程](./LLMArch/flow/README.md)
+
 - 编程框架
     - [PyTorch](./framework/pytorch/README.md)
         - [tensor](./framework/pytorch/tensor/README.md)
@@ -202,7 +205,7 @@ cute
 - 性能优化
 - [程序调试](./debug/README.md)
     - GDB
-- [cuda性能分析](./profile/cuda/README.md)
+- [cuda性能分析](./profileAndHand/cuda/README.md)
 
 
 ## NAS
@@ -226,7 +229,7 @@ https://zhuanlan.zhihu.com/p/665170554
 
 ## 性能优化
 
-[分析程序](./profile/improve/README.md)
+[分析程序](./profileAndHand/improve/README.md)
 
 
 ## 操作系统相关
