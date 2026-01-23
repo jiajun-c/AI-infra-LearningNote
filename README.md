@@ -152,7 +152,7 @@ cute
 ### 4.2 优化技术
 
 - [kv cache](./inference/kvcache/README.md)
-- [batch](./inference/)
+- [batch](./inference/batch/README.md)
 
 ### 4.3 显存优化
 
