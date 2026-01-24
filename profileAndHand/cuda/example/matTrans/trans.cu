@@ -17,7 +17,7 @@ __global__ void transposeNaive(const float *idata, float *odata, int width, int 
     if (x < width && y < height)
     {
         int index_in  = y * width + x;
-        int index_out = x * height + y;
+        int index_out = x * height + y;和 
         odata[index_out] = idata[index_in];
     }
 }

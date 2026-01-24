@@ -1,56 +1,56 @@
-#include "cute/layout.hpp"
-#include "cute/pointer.hpp"
 #include "cute/tensor_impl.hpp"
 #include <iostream>
-#include <vector>
 #include <cute/tensor.hpp>
+
 using namespace cute;
 
-__global__ void create_tensor_kernel(float* global_ptr) {
-    auto layout = make_layout(make_shape(2, 2, 2));
-    auto tensor = make_tensor(make_gmem_ptr(global_ptr), layout);
-    __shared__ float smem[64];
-    auto smemLayout = make_layout(make_shape(4, 4, 4));
-    auto tensor_smem = make_tensor(make_smem_ptr(smem), smemLayout);
-    if (threadIdx.x == 0 && blockIdx.x == 0) {
-        // 使用 CuTe 内置的 print 函数
-        printf("Layout info:\n");
-        print(layout); 
-        printf("\n\nTensor info:\n");
-        print(tensor);
-        printf("\n");
-        TiledMMA mma = make_tiled_mma(SM70_8x8x4_F32F16F16F32_NT{},
-                                    Layout<Shape <_2,_2>,
-                                            Stride<_2,_1>>{});   // 2x2 n-major layout of Atoms
-        // print_latex(mma);
-        // 演示：访问 Tensor 的第 0 个元素
-        // 语法: tensor(坐标)
-        printf("Element at index 0: %f\n", tensor(0, 1, 1));
-    }
-}
-
 int main() {
-    // 1. 在 Host 端分配显存
-    float* d_ptr;
-    size_t num_elements = 8;
-    size_t size_bytes = num_elements * sizeof(float);
+    // 1. 定义一个 Layout
+    // 形状: (4, 8)
+    // 步长: (1, 4) -> Column-Major (列主序)，即 LayoutLeft
+    auto layout = make_layout(make_shape(4, 8), LayoutLeft{});
     
-    cudaError_t err = cudaMalloc(&d_ptr, size_bytes);
-    if (err != cudaSuccess) {
-        std::cerr << "CUDA Malloc failed: " << cudaGetErrorString(err) << std::endl;
-        return -1;
-    }
+    // 2. 打印 Layout 信息
+    print("Layout: "); print(layout); print("\n");
+    // 输出: (_4,_8):(_1,_4)
 
-    // 初始化一些数据以便观察 (可选)
-    float h_data[8] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
-    cudaMemcpy(d_ptr, h_data, size_bytes, cudaMemcpyHostToDevice);
+    // 3. 模拟一段内存 (在 CPU 栈上)
+    int data[32];
+    for(int i = 0; i < 32; ++i) data[i] = i;
 
-    // 2. 启动 Kernel
-    create_tensor_kernel<<<1, 1>>>(d_ptr);
-    cudaDeviceSynchronize();
+    // 4. 创建 Tensor
+    auto tensor = make_tensor(&data[0], layout);
 
-    // 3. 释放资源
-    cudaFree(d_ptr);
+    // --- 演示三种访问 ---
 
+    // 目标：访问第 2 行，第 1 列的元素
+    // 在列主序中：Offset = row + col * stride_row = 2 + 1 * 4 = 6
+    int row = 2;
+    int col = 1;
+
+    // 方式 A: [] 线性索引
+    // 我们必须自己知道 offset 是 6
+    int val_linear = tensor[6]; 
+    std::cout << "Access via []: " << val_linear << std::endl;
+
+    // 方式 B: () 多维坐标
+    // 最常用的方式，直观
+    int val_multi = tensor(row, col);
+    std::cout << "Access via (): " << val_multi << std::endl;
+
+    // 方式 C: make_coord
+    // 显式打包坐标
+    auto coord = make_coord(row, col);
+    int val_coord = tensor(coord);
+    std::cout << "Access via make_coord: " << val_coord << std::endl;
+
+    // --- 进阶：切片 (Slicing) ---
+    // Tensor 的 () 不仅可以返回引用，还可以返回子 Tensor (Slice)
+    
+    // 取第 1 列的所有元素
+    // _ 类似于 Python 中的 : (冒号)
+    auto col_1_tensor = tensor(_, 1); 
+    print("Column 1 Slice: "); print(col_1_tensor); print("\n");
+    
     return 0;
 }

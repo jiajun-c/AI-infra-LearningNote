@@ -110,7 +110,6 @@ __global__ void matmul(
         // 这里的内层循环很小 (BK=8)，完全在寄存器和 L1 中完成
         #pragma unroll
         for (int i = 0; i < BK; ++i) {
-            
             // 1. 加载 A 的一列 (TM=8 个) 到寄存器
             // 线程负责 C 的 [ty*TM ... ty*TM+7][...]
             // 需要读取 A 的 [ty*TM ... ty*TM+7][i]
