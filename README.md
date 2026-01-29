@@ -66,7 +66,8 @@ cute
 - 类
     - [类的继承](./lang/cpp/class/inherit/README.md)
     - [虚](./lang/cpp/class/virtual/README.md)
-
+    - [模板](./lang/cpp/template/README.md)
+    
 - [运算符](./lang/cpp/operator/README.md)
     - 运算符重载
 
