@@ -58,3 +58,21 @@ int main() {
     return 0;
 }
 ```
+
+## TAD(模板推导)
+
+C++的模板可以根据输入的类型来做一个类型的推导，但是如何输入中没有变量可以用于推导，那么将会无法进行类型的推导
+
+```cpp
+#include <iostream>
+
+template <typename T>
+void foo(T x) {
+    std::cout << x << std::endl;
+}
+
+int main() {
+    foo(1.1);
+    foo(1);
+}
+```
