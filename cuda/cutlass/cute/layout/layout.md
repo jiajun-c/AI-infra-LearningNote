@@ -132,6 +132,42 @@ int main() {
 }
 ```
 
+获取到某个维度的大小，支持嵌套查询，比如 size<0, 1> 表示获取到第一个维度内的第一个维度
+
+```cpp
+#include "cute/layout.hpp"
+#include <iostream>
+#include <cute/tensor.hpp>
+
+using namespace cute;
+
+int main() {
+    auto shape = make_shape(make_shape(4, 5), 6);
+    auto layout = make_layout(shape);
+
+    print(size<0, 0>(layout));print("\n");
+}
+```
+
+对shape/layout 进行拆分，如下所示使用get获取到某个shape/layout
+```cpp
+#include "cute/layout.hpp"
+#include <iostream>
+#include <cute/tensor.hpp>
+
+using namespace cute;
+
+int main() {
+    auto shape = make_shape(make_shape(Int<2>{}, Int<3>{}), Int<4>{});
+    auto s0 = get<0>(shape);
+    print(s0); print("\n");
+
+    auto s1 = get<1>(shape);
+    print(s1); print("\n");
+}
+
+```
+
 ## 3. 函数复合
 
 函数复合操作使得我们可以以一种设定的视角去访问原先的数据，例如对矩阵进行reshape或者是转置
