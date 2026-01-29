@@ -113,6 +113,25 @@ int main() {
     print(ca);print("\n");
 ```
 
+获取layout/shape的维度的数量，`rank<int>()` 可以获取到某个维度的维度数量，例如如下所示的((4, 4), 2, 3)，其第一个内嵌维度的维度数量为2，其完整的内嵌维度数量为3, 非内嵌维度对应的维度数量为1 
+
+```cpp
+#include "cute/layout.hpp"
+#include <cute/tensor.hpp>
+#include <iostream>
+
+// using namespace std;
+using namespace cute;
+int main() {
+    auto shape = make_shape(make_shape(4, 4), 2, 3);
+    auto layout = make_layout(shape);
+
+    print(rank(layout)); print("\n");
+    print(rank<0>(layout)); print("\n");
+    print(rank<1>(layout)); print("\n");
+}
+```
+
 ## 3. 函数复合
 
 函数复合操作使得我们可以以一种设定的视角去访问原先的数据，例如对矩阵进行reshape或者是转置
