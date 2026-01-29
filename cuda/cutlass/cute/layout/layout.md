@@ -212,3 +212,41 @@ int main() {
     return 0;
 }
 ```
+
+## 5. 对Tensor进行分区
+
+使用ziptile的方式可以对矩阵创建一个二级的分区，适用于在大块的矩阵内划分小的分块。
+
+如下所示，将一个(8,24)的列主序的矩阵按照(4, 8)的分块大小进行分块，如下所示，后续可以访问第(0, 0)个块的第(0, 1)个元素，也就是8
+
+```cpp
+#include "cute/layout_composed.hpp"
+#include "cute/tensor_impl.hpp"
+#include <iostream>
+#include <cute/tensor.hpp>
+
+using namespace cute;
+
+int main() {
+    auto layout = make_layout(make_shape(8, 24), LayoutLeft{});
+    auto tiler = Shape<_4, _8>{};
+    int *data = new int[8*24];
+    for (int i = 0; i < 8*24; i++) data[i] = i;
+    Tensor a = make_tensor(data, layout);
+    Tensor tile_a = zipped_divide(a, tiler);
+    auto element= tile_a(make_coord(0, 1), make_coord(0, 0));
+    print(element);
+    return 0;
+}
+
+// 输出为8
+```
+
+这样写相对繁琐，我们也可以使用`local_tile`来进行优化写法
+
+如下所示获取到竖向第二个tile
+```cpp
+    auto tile_b = local_tile(a, tiler, make_coord(1, 0));
+
+    print(tile_b(0, 0));print("\n");
+```

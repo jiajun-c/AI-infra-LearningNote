@@ -158,5 +158,7 @@
     "barrier": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled",
-  "cmake.sourceDirectory": "/staff/chengjiajun/workspace/AI-infra-note/cuda/hopper/DistributedSM"
+  "cmake.sourceDirectory": "/staff/chengjiajun/workspace/AI-infra-note/cuda/hopper/DistributedSM",
+  "python-envs.defaultEnvManager": "ms-python.python:system",
+  "python-envs.pythonProjects": []
 }
