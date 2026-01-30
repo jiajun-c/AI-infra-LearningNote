@@ -1,32 +1,31 @@
+#include "cute/atom/mma_atom.hpp"
 #include "cute/layout.hpp"
-#include "cute/layout_composed.hpp"
-#include "cute/numeric/numeric_types.hpp"
+#include "cute/pointer.hpp"
+#include "cute/pointer_base.hpp"
+#include "cute/swizzle_layout.hpp"
 #include "cute/tensor_impl.hpp"
+#include "cute/util/print.hpp"
+#include "cute/util/print_tensor.hpp"
 #include <iostream>
 #include <cute/tensor.hpp>
 
 using namespace cute;
 
 int main() {
-    // 1. 定义一个 Layout
-    // 形状: (4, 8)
-    // 步长: (1, 4) -> Column-Major (列主序)，即 LayoutLeft
-    auto layout = make_layout(make_shape(8, 24), LayoutLeft{});
-    auto tiler = Shape<_4, _8>{};
-    int *data = new int[8*24];
-    for (int i = 0; i < 8*24; i++) data[i] = i;
-    Tensor a = make_tensor(data, layout);
-    Tensor tile_a = zipped_divide(a, tiler);
-    // 2. 打印 Layout 信息
-    auto tile_b = local_tile(a, tiler, make_coord(1, 0));
+    auto layout = make_layout(make_shape(Int<6>{}, Int<10>{}));
+    float* ptr = new float[60];
+    for (int i = 0; i < 60; i++) ptr[i] = i;
+    auto tensor = make_tensor(make_gmem_ptr(ptr), layout);
+    auto tier = make_shape(Int<3>{}, Int<5>{}, Int<5>{});
+    auto cta_coord = make_coord(0, 0, _);
+    auto fullcoord = local_tile(tensor, tier, cta_coord, Step<_1, _1, X>{});
 
-    print(tile_b(0, 0));print("\n");
-    auto element= tile_a(make_coord(0, 1), make_coord(0, 0));
-    print(element);
-    return 0;
+    auto cta_part_coord = make_coord(_, 0, _);
+    auto partTensor = local_tile(tensor, tier, cta_part_coord, Step<_1, X, _1>{});
+    print("full: ");print(fullcoord);print("\n");
+    print("part: ");print(partTensor);print("\n");
+
+    auto fullPartTensor = partTensor(_, _, 1, 1);
+    print(fullPartTensor);print("\n");
+    print_tensor(fullPartTensor);
 }
-
-// (2, 3)
-// (3, 4);
-
-// 3*24 + 4 = 72 + 4 = 76

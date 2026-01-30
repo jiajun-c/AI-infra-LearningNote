@@ -150,6 +150,7 @@ int main() {
 ```
 
 对shape/layout 进行拆分，如下所示使用get获取到某个shape/layout
+
 ```cpp
 #include "cute/layout.hpp"
 #include <iostream>
@@ -282,7 +283,7 @@ int main() {
 
 using namespace cute;
 
-int main() {
+int main() {  
     auto layout = make_layout(make_shape(8, 24), LayoutLeft{});
     auto tiler = Shape<_4, _8>{};
     int *data = new int[8*24];

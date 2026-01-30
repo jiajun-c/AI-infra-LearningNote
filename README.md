@@ -46,6 +46,7 @@
 cute
 - [layout](./cuda/cutlass/cute/layout/layout.md)
 - [tensor](./cuda/cutlass/cute/tensor/tensor.md)
+- [多维度分块](./cuda/cutlass/cute/multidimTile/README.md)
 
 ## 2. 编程语言
 
