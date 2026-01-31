@@ -96,3 +96,18 @@ int main() {
     return 0;
 }
 ```
+
+除开固定索引的方式对tensor进行访问，我们可以使用占位符的方式来获取一块的区域，如下所示，每个线程获取到一片长度为VecElem的空间
+
+```cpp
+    auto block_shape = make_shape(BlockThreads{}, VecElem{});
+    auto block_stride = make_stride(VecElem{}, Int<1>{});
+    // 构建 Global Tensor (指针偏移到当前 Block)
+    auto gIn  = make_tensor(make_gmem_ptr(d_in  + blk_idx * BLOCK_TILE_SIZE), 
+                            make_layout(block_shape, block_stride));
+    auto gOut = make_tensor(make_gmem_ptr(d_out + blk_idx * BLOCK_TILE_SIZE), 
+                            make_layout(block_shape, block_stride));
+
+    auto tIgIn  = gIn(threadIdx.x, _);
+    auto tOgOut = gOut(threadIdx.x, _);
+```

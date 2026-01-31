@@ -1,10 +1,3 @@
-# Cute 实现矩阵乘法
-
-我们可以利用cute的高层级api来做矩阵乘法，相比与cutlass的高层级设备端的矩阵乘法，层级略微更低一些
-
-我们先来看一个baseline的矩阵乘法如下所示，其以C的输出为中心，对A，B，C均按照32x32的shape进行分块
-
-```cpp
 #include "cute/layout.hpp"
 #include "cute/stride.hpp"
 #include <cute/tensor.hpp>
@@ -175,5 +168,3 @@ int main() {
     gemm(h_A, h_B, h_C);
     // printf("%f %f\n", h_C[0], h_C[1024]);
 }
-```
-

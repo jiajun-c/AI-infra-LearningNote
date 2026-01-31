@@ -1,10 +1,12 @@
 // 保存为 cute_gemm_demo.cu
 // 编译命令: nvcc cute_gemm_demo.cu -o cute_gemm -I /path/to/cutlass/include -arch=sm_80 --expt-relaxed-constexpr
 
+#include "cute/container/array_subbyte.hpp"
 #include "cute/numeric/numeric_types.hpp"
 #include "cute/pointer_base.hpp"
 #include "cute/pointer_sparse.hpp"
 #include "cute/pointer_swizzle.hpp"
+#include "cute/swizzle.hpp"
 #include "cute/util/print.hpp"
 #include <iostream>
 #include <vector>
@@ -58,6 +60,7 @@ gemm_device(ProblemShape shape_MNK, CtaTiler cta_tiler,
     Tensor tAsA = local_partition(sA, tA, threadIdx.x);
     if (blockIdx.x == 0 && blockIdx.y == 0 && threadIdx.x == 0) {
         print(gA);print(" ga\n");
+        print(tA);print("\n");
         print(sA);print("\n");
     }                  
     Tensor tBgB = local_partition(gB, tB, threadIdx.x);                  
@@ -68,7 +71,8 @@ gemm_device(ProblemShape shape_MNK, CtaTiler cta_tiler,
     // tC 定义了计算时的线程排布 (16x16)
     Tensor tCsA = local_partition(sA, tC, threadIdx.x, Step<_1, X>{});  
     if (blockIdx.x == 0 && blockIdx.y == 0 && threadIdx.x == 0) {
-        print(sA);print("\n");
+        print("sA\n");print(sA);print("\n");
+        print(tC);print("\n");
         print(tCsA);print("\n");
 
     }
