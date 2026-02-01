@@ -111,3 +111,28 @@ int main() {
     auto tIgIn  = gIn(threadIdx.x, _);
     auto tOgOut = gOut(threadIdx.x, _);
 ```
+
+## 3. Tensor的具体结构
+
+Tensor的本质是Engine和layout组成的，Engine负责数据的存储，Layout负责数据的布局
+如下所示，其最终由一个会落到一个rep_中
+
+```cpp
+template <class Engine, class Layout>
+struct Tensor
+{
+  using iterator     = typename Engine::iterator;
+  using value_type   = typename Engine::value_type;
+  using element_type = typename Engine::element_type;
+  using reference    = typename Engine::reference;
+
+  using engine_type  = Engine;
+  using layout_type  = Layout;
+  // ...
+  cute::tuple<layout_type, engine_type> rep_;
+}
+```
+
+cutlass中的Engine可以分为两类
+- ViewEngine：并不持有数据，值保存指针
+- ArrayEngine：保存实际的数据，使用cuda中的寄存器进行存储

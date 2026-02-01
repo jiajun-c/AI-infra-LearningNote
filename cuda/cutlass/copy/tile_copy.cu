@@ -20,7 +20,7 @@ __global__ void demo_tiled_copy_kernel() {
 
     // 创建 Tensor 视图 (列主序: M 维度连续)
     // 这种布局下，(0,0)=0, (1,0)=1, (2,0)=2... 方便我们观察连续性
-    auto tensor_S = make_tensor(make_smem_ptr(smem_data), make_layout(tensor_shape, GenColMajor{}));
+    Tensor tensor_S = make_tensor(make_smem_ptr(smem_data), make_layout(tensor_shape, GenColMajor{}));
 
     // 初始化：填充线性索引 (0, 1, 2, ... 1023)
     if (thread0()) {

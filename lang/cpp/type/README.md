@@ -1,5 +1,47 @@
 # 类型操作
 
+## typeid
+
+使用typeid可以打印简单对象的类型，如int，double这种，如下所示，打印处i表示int
+- i 代表 int
+- c 代表 char
+- f 代表 float
+- d 代表 double
+
+```cpp
+#include <cstdio>
+#include <cute/tensor.hpp>
+#include <typeinfo>
+
+// 定义一个打印类型的辅助函数
+template <typename T>
+__host__ __device__ void print_type_name() {
+#if defined(__PRETTY_FUNCTION__)
+    printf("Type is: %s\n", __PRETTY_FUNCTION__);
+#elif defined(__FUNCSIG__)
+    printf("Type is: %s\n", __FUNCSIG__);
+#else
+    printf("Type name not supported on this compiler.\n");
+#endif
+}
+
+// 使用 LayoutA_Padded 定义
+using namespace cute;
+using LayoutA_Padded = Layout<Shape<Int<4>, Int<4>>, Stride<Int<1>, Int<5>>>;
+
+int main() {
+    // 1. 获取 cosize_v 的类型
+    using TheType = decltype(cosize_v<LayoutA_Padded>);
+    int x = 10;
+    std::cout << "size type " << typeid((size(LayoutA_Padded{}))).name() << std::endl;
+    std::cout << "x type: " << typeid(int(x)).name() << std::endl;
+    // 2. 打印它
+    print_type_name<TheType>();
+
+    return 0;
+}
+```
+
 ## std::move
 
 std::move其实不一定实际对数据进行拷贝，他的原理是将输入的对象转换为右值引用然后调用移动构造函数，当系统内没有对应的移动构造/拷贝函数的时候则会调用深拷贝
