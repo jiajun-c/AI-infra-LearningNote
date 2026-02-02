@@ -163,4 +163,4 @@ simple_kernel() {
     int *dsmem = cluster.map_shared_rank(&array[0], neighbor_rank);
 ```
 
-完整的代码见`dsmem.cu` 中
+完整的代码见`dsmem.cu` 中。

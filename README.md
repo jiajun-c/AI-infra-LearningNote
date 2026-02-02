@@ -36,7 +36,8 @@
 ### Hopper 架构特性
 
 - [分布式共享内存](./cuda/hopper/DistributedSM/README.md)
-
+    - [算子优化](./cuda/dsmem/README.md)
+    
 - CCCL
     - [thrust](./cuda/cccl/thrust/README.md)
     - [cusparse](./cuda/cccl/cusparse/README.md)
