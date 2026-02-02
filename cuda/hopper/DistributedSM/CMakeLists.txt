@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.22)
 
 project(tma CXX CUDA)
-set(CMAKE_CUDA_ARCHITECTURES 60 61 70 90a)
+set(CMAKE_CUDA_ARCHITECTURES 90a)
 
 # find_package(cuBLAS REQUIRED)
 # include_directories(/home/star/workspace/cuda/cuda_blas/include)

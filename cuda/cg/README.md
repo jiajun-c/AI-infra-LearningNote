@@ -48,8 +48,104 @@ int main() {
 
 ### 1.2 集群组
 
+
+集群组可以将若干个thread_block组织为一个cluster_block, 将原本 grid->block 的形式转换为 grid -> cluster -> block, `__global__ void __cluster_dims__(2, 1, 1)` 将x轴上的两个block组织为一个cluster。
+
+
 集群组接口可以获取线程ID和块ID
 
-- thread_rank() 获取线程ID
+- thread_rank() 获取cluster中的线程ID
 - block_rank() 获取块ID
+- thread_count() 获取cluster中的线程数量
+- block_count() 获取集群中的块数量
 
+如下所示，使用block_rank获取ID，
+
+```cpp
+#include <cstdio>
+#define _CG_HAS_CLUSTER_GROUP
+#include <cooperative_groups.h>
+#include <iostream>
+
+using namespace std;
+
+namespace cg = cooperative_groups;
+
+__global__ void __cluster_dims__(2, 1, 1) 
+simple_kernel() {
+    cg::cluster_group cluster = cg::this_cluster();
+    unsigned int rank = cluster.block_rank();
+    if (threadIdx.x == 0) {
+        printf("block rank %d\n", rank);
+    }
+}
+
+int main() {
+
+    simple_kernel<<<4, 32>>>();
+    cudaDeviceSynchronize();
+}
+// 输出
+// block rank 0
+// block rank 1
+// block rank 0
+// block rank 1
+```
+
+来查看剩下两个接口
+
+```cpp
+__global__ void __cluster_dims__(2, 1, 1) 
+simple_kernel() {
+    cg::cluster_group cluster = cg::this_cluster();
+    unsigned int trank = cluster.thread_rank();
+    int thread_count = cluster.num_threads();
+    int block_count = cluster.num_blocks();
+    unsigned int rank = cluster.block_rank();
+    if (threadIdx.x == 0) {
+        printf("thread count %d block count %d\n", thread_count, block_count);
+        printf("block rank %d %d\n", rank, trank);
+    }
+}
+
+// thread count 64 block count 2
+// thread count 64 block count 2
+// thread count 64 block count 2
+// thread count 64 block count 2
+// block rank 0 0
+// block rank 1 32
+// block rank 0 0
+// block rank 1 32
+```
+
+集群组内部需要进行数据的同步，在这里主要解决`mbarrier`指令进行实现，cuda中对其进行了一些封装`cluster.barrier_arrive()` 表示已经执行到了这里，但是不强制进行同步，仍然可以执行下面的指令，直到`barrier_wait`才会强制数据进行同步。相比于syncthreads，这样的开销更小，同时也可以通过在中间插入一些计算，来隐藏延迟。
+
+```cpp
+    cluster.barrier_arrive(); 
+
+    // 4. 延迟隐藏 (Latency Hiding)
+    // 在等待其他 Block 准备好的间隙，做一些本地计算
+    local_processing(block);
+
+    // 5. 【核心知识点】映射远程 Shared Memory
+    // 目标：读取下一个 Rank 的数据 (Ring Pattern)
+    // Rank 0 -> 读 Rank 1
+    // Rank 1 -> 读 Rank 0
+    unsigned int neighbor_rank = (cluster.block_rank() + 1) % cluster.num_blocks();
+    
+    // map_shared_rank: 
+    // 替代了之前复杂的 __cvta_generic_to_shared + set_block_rank + cast
+    // 它直接返回一个指向 neighbor_rank 的 array[0] 的合法指针
+    int *dsmem = cluster.map_shared_rank(&array[0], neighbor_rank);
+
+    // 6. 阻塞等待 (Blocking Wait)
+    // 确保所有其他 Block 都执行到了 barrier_arrive()
+    // 这意味着它们的 Shared Memory 已经初始化完毕，可以安全读取了
+    cluster.barrier_wait();
+
+    // 7. 消费数据
+    process_shared_data(block, dsmem, debug_out);
+
+    // 8. 全局同步 (防止某些 Block 跑太快退出了，导致 Shared Memory 被回收)
+    cluster.sync();
+```
