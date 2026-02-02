@@ -149,3 +149,18 @@ simple_kernel() {
     // 8. 全局同步 (防止某些 Block 跑太快退出了，导致 Shared Memory 被回收)
     cluster.sync();
 ```
+
+接下来继续介绍分布式共享内存接口，这个是hopper架构之后引入的一个新特性，之前的共享内存访问仅限于当前的线程块内，分布式共享内存当前线程块可以访问其他线程的共享内存。
+
+如下所示，通过map_shared_rank获取到对应线程块所拥有的共享内存
+
+```cpp
+    unsigned int neighbor_rank = (cluster.block_rank() + 1) % cluster.num_blocks();
+    
+    // map_shared_rank: 
+    // 替代了之前复杂的 __cvta_generic_to_shared + set_block_rank + cast
+    // 它直接返回一个指向 neighbor_rank 的 array[0] 的合法指针
+    int *dsmem = cluster.map_shared_rank(&array[0], neighbor_rank);
+```
+
+完整的代码见`dsmem.cu` 中
