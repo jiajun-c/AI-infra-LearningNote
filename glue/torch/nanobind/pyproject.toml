@@ -1,0 +1,13 @@
+[build-system]
+# 编译时依赖：nanobind 和 scikit-build-core
+requires = ["scikit-build-core", "nanobind"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "my_ext"
+version = "0.0.1"
+
+# 配置 scikit-build-core
+[tool.scikit-build]
+# 指定 CMakeLists.txt 所在的目录
+cmake.source-dir = "."
