@@ -196,6 +196,8 @@ cute
 ### 5.3 通信库
 
 - [NCCL](./comm/CCL/NCCL/README.md)
+    - [配置](./comm/CCL/NCCL/config/README.md)
+    - [图接口](./comm/CCL/NCCL/graph/README.md)
 
 ## 6. Agent
 
