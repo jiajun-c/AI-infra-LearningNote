@@ -211,6 +211,10 @@ cute
     - GDB
 - [cuda性能分析](./profileAndHand/cuda/README.md)
 
+## 8 infra for infra
+
+[Python项目管理](./tools/pyproject/README.md)
+
 
 ## NAS
 
