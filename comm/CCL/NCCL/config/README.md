@@ -67,4 +67,35 @@ Verifying results...
 Verification Passed. 解释一下这个性能
 ```
 
-## 2. 
+## 2. 配置zero-CTA
+
+zero-CTA 会使用copyEngine进行数据拷贝，从而避免在通信时调用CTA
+进行。从而实现更好的计算与通信overlap
+
+```cpp
+ncclConfig_t config = NCCL_CONFIG_INITIALIZER;
+// NCCL_CTA_POLICY_ZERO to enable zero-CTA optimization whenever possible
+config.CTAPolicy = NCCL_CTA_POLICY_ZERO;
+CHECK(ncclCommInitRankConfig(&comm, nranks, id, rank, &config));
+
+void* src;
+void* dst;
+ncclWindow_t src_win;
+ncclWindow_t dst_win;
+
+CHECK(ncclMemAlloc(&src, src_size));
+CHECK(ncclMemAlloc(&dst, dst_size));
+
+// Register the buffers into NCCL symmetric window
+CHECK(ncclCommWindowRegister(comm, src, src_size, &src_win, NCCL_WIN_COLL_SYMMETRIC));
+CHECK(ncclCommWindowRegister(comm, dst, dst_size, &dst_win, NCCL_WIN_COLL_SYMMETRIC));
+
+CHECK(ncclAllGather(src, dst, 1, ncclInt8, comm, stream));
+CHECK(cudaStreamSynchronize(stream));
+
+CHECK(ncclCommWindowDeregister(comm, src_win));
+CHECK(ncclCommWindowDeregister(comm, dst_win));
+
+CHECK(ncclMemFree(src));
+CHECK(ncclMemFree(dst));
+```
