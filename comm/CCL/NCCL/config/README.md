@@ -99,3 +99,25 @@ CHECK(ncclCommWindowDeregister(comm, dst_win));
 CHECK(ncclMemFree(src));
 CHECK(ncclMemFree(dst));
 ```
+
+在zero-CTA目录下存放了zero-CTA的测试代码，在compute-bounded 的算子内使用其可以得到很好的优化效果。
+
+如下所示，可以发现使用user buffer，减少CTA的效果其实都是不如zero-CTA的
+
+```shell
+# 8XH200
+--- Phase 1: Unregistered (Standard CTA) ---
+Time: 127.322 ms | Avg: 63.661 us
+
+--- Phase 2: Registered (Standard CTA) ---
+Time: 122.088 ms | Avg: 61.044 us
+
+--- Phase 3: Registered (Min-CTA / 1 Channel) ---
+Re-initializing NCCL with 1 Channel...
+Time: 121.281 ms | Avg: 60.641 us
+
+--- Phase 4: Zero-CTA (Alloc + WinRegister) ---
+Re-initializing NCCL for Zero-CTA...
+Registering Windows...
+Time: 113.748 ms | Avg: 56.874 us
+```
