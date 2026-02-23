@@ -156,6 +156,7 @@ cute
 
 - [kv cache](./inference/kvcache/README.md)
 - [batch](./inference/batch/README.md)
+- [chunked prefill](./inference/chunkPrefill/README.md)
 
 ### 4.3 显存优化
 
