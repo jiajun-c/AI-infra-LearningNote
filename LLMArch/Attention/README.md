@@ -102,7 +102,76 @@ class MultiHeadAttention(nn.Module):
 
 ## 4. Multi Query Attention
 
-Multi Query Attention 中所有的查询头都被分到一组内
+Multi Query Attention (MQA) 是一种优化的注意力机制，通过共享键和值头来减少内存占用和计算量。
+
+### 4.1 MQA 原理
+
+在 MHA 中，每个查询头都有对应的键头和值头。而在 MQA 中：
+- **所有查询头共享单个键头和值头**
+- Q 矩阵形状保持不变：`(hidden_dim, hidden_dim)`
+- K, V 矩阵形状变为：`(hidden_dim, head_dim)`
+
+### 4.2 MQA 优势
+
+- **内存效率**: KV cache 大小显著减少
+- **推理速度**: 减少内存带宽需求，提高解码速度
+- **质量保持**: 实验表明质量下降很小
+
+### 4.3 MQA 实现
+
+```python3
+class MultiQueryAttention(nn.Module):
+    def __init__(self, hidden_dim, nums_head):
+        super().__init__()
+        assert hidden_dim % nums_head == 0
+
+        self.hidden_dim = hidden_dim
+        self.nums_head = nums_head
+        self.head_dim = hidden_dim // nums_head
+
+        # Q 保持多头，K, V 为单头
+        self.q_proj = nn.Linear(hidden_dim, hidden_dim)
+        self.k_proj = nn.Linear(hidden_dim, self.head_dim)
+        self.v_proj = nn.Linear(hidden_dim, self.head_dim)
+        self.o_proj = nn.Linear(hidden_dim, hidden_dim)
+
+    def forward(self, X, attention_mask=None):
+        batch_size, seq, _ = X.size()
+
+        q = self.q_proj(X)
+        k = self.k_proj(X)
+        v = self.v_proj(X)
+
+        # Q: (batch, seq, nums_head, head_dim)
+        q = q.view(batch_size, seq, self.nums_head, self.head_dim).transpose(1, 2)
+        # K, V: (batch, seq, 1, head_dim) -> (batch, 1, seq, head_dim)
+        k = k.view(batch_size, seq, 1, self.head_dim).transpose(1, 2)
+        v = v.view(batch_size, seq, 1, self.head_dim).transpose(1, 2)
+
+        # K, V 通过广播与所有 Q 头计算 attention
+        attention_score = (q @ k.transpose(2, 3)) / math.sqrt(self.head_dim)
+
+        if attention_mask is not None:
+            attention_score = attention_score.masked_fill(
+                attention_mask == 0, float("-inf")
+            )
+
+        attention_weight = torch.softmax(attention_score, dim=-1)
+        output = attention_weight @ v  # (batch, nums_head, seq, head_dim)
+
+        output = output.transpose(1, 2).contiguous()
+        output = output.view(batch_size, seq, -1)
+        return self.o_proj(output)
+```
+
+### 4.4 MHA vs MQA vs GQA 对比
+
+| 类型 | Q 头数 | K 头数 | V 头数 | KV Cache 大小 |
+|------|--------|--------|--------|--------------|
+| MHA  | N      | N      | N      | N × 2       |
+| MQA  | N      | 1      | 1      | 2           |
+| GQA  | N      | G      | G      | G × 2       |
+
 
 
 ## 5. Group query attention
