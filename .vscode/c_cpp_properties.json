@@ -7,6 +7,8 @@
                 "/staff/chengjiajun/local/libtorch/include/**",
                 ":~/miniconda3/envs/pytorch/include/**",
                 "/staff/chengjiajun/miniconda3/envs/pytorch/include/**",
+                "/volume/code/chengjiajun/workspace/cutlass/include/**",
+                "/volume/code/chengjiajun/workspace/cutlass/tools/util/include/**",
                 "/staff/chengjiajun/local/include"
             ],
             "compilerPath": "/usr/bin/gcc",

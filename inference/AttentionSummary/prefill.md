@@ -384,16 +384,41 @@ if __name__ == "__main__":
     print(f"Decode 输出：{out.shape}")
 ```
 
-## 总结：Attention 演进路线
+但是我们可以发现MQA的结构模型效果下降过大，因为key和value都只剩下一个头了（：
 
-| 变体 | KV Cache 大小 | 优点 | 缺点 |
-|------|---------------|------|------|
-| **Standard Attention** | 无 | 实现简单 | 无法用于自回归生成 |
-| **Multi-Head Attention (MHA)** | $2 \times B \times L \times H \times D$ | 多子空间信息捕捉 | KV Cache 显存占用大 |
-| **Multi-Query Attention (MQA)** | $2 \times B \times L \times D$ | KV Cache 节省 $H$ 倍 | 表达能力略有损失 |
+在此基础上为了在显存和模型效果之间达到平衡实现GQA
 
-### 后续演进方向
+### GQA实现
 
-- **GQA (Grouped-Query Attention)**：MQA 和 MHA 的折中方案，Q 分成多组，每组共享一个 K/V 头
-- **FlashAttention**：通过 IO 感知优化，减少 HBM 访问，提升计算效率
-- **Chunked Prefill**：将长 Prefill 分块处理，平衡显存和延迟
+GQA(group query attention)在两种策略中进行了折中，一组query的head共享一个kv的head
+
+省略实现（：太简单了
+
+## 离开蛮荒时代
+
+上述的工作已经很久远了，现在让我们来看一些更新的进展，接下来的工作主要是从长序列优化/计算性能优化/缓存优化等角度来出发
+
+## Attention长序列
+
+### SWA(近视眼到上帝之眼)
+
+SWA的思想其实很巧妙，大模型的结构是堆叠的，所以即使这一层只能看到[0, 3]的token，但是其将[0, 3]的token进行了压缩得到了信息传入到下一层，下一层可以根据该信息结合其他区域的信息得到结果
+
+## Flash系列
+
+### FlashAttention V1
+
+### FlashAttention V2
+
+### FlashAttention V3
+
+### FlashDecode
+
+## KV cache 优化
+
+### Paged Attention
+
+### MLA 
+
+### CLA
+

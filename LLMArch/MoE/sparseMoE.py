@@ -22,11 +22,6 @@ class SparseMOE(nn.Module):
         # 3. 对权重做 Softmax (通常只在选中的 Top-k 里做归一化)
         routing_weights = F.softmax(routing_weights, dim=-1)
         
-        # --- 这里的实现稍微有点 trick，为了演示逻辑 ---
-        # 在真实的高效 MoE 中，我们会把 x 重新排序发给专家。
-        # 这里为了简单，我们还是遍历专家，但使用 mask 把它"伪装"成稀疏的，
-        # 或者只计算选中的部分。
-        
         final_output = torch.zeros(x.shape[0], self.experts[0].linear.out_features)
         
         # 遍历每一个 Batch 里的样本
@@ -61,3 +56,5 @@ def test_sparse_moe():
     print("Output:", out)
 
 test_sparse_moe()
+
+http:///bhzhao/sico.git

@@ -1,6 +1,6 @@
 # MoE (Mixed of Experts)
 
-混合专家模型是一种深度学习架构，其将神经网络划分为若干个专家，同时使用门控网络的方式来选择输入样本应该由哪些专家进行计算
+混合专家模型是一种深度学习架构，其将神经网络划分为若干个专家，同时使用门控网络的方式来选择输入样本应该由哪些专家进行计算(token level)
 其相比于稠密模型，预训练速度更快，与具有相同参数数量的模型相比，推理速度更快，其缺点在于需要大量显存，因为所有的专家系统都
 需要被加载到内存中
 
@@ -50,101 +50,73 @@ class BasicMOE(nn.Module):
 
 ## 2. 稀疏MoE
 
-在基础的MoE中，其会选择全部的专家进行输出，而在稀疏的MoE中，其会选择topK的输出结果进行加权求和，并把输入的样本变为大模型中真实的输入shape
+在基础的MoE中，其会选择全部的专家进行输出，而在稀疏的MoE中，其会选择topK的输出结果选择专家，在这里其实就有两种设计思路
+
+1. 先确定expert，再确定每个expert要处理的token，然后进行计算
+2. 先确定token， 再确定每个token要被哪些expert计算
+
+先确定token的版本如下所示
 
 ```python3
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from basic import *
-
-class MoERouter(nn.Module):
-    def __init__(self, hidden_dim, expert_number, top_k):
-        super().__init__()
-        self.gate = nn.Linear(hidden_dim, expert_number)
-        self.expert_number = expert_number
-        self.top_k = top_k
-    
-    def forward(self, hidden_states):
-        router_logits = self.gate(hidden_states)
-        
-        routing_probs = F.softmax(router_logits, dim=-1, dtype=torch.float)
-        
-        router_weights, selected_experts = torch.topk(
-            routing_probs,
-            self.top_k,
-            dim=-1
-        )
-        # (b*s, topk)
-        router_weights = router_weights / router_weights.sum(dim=-1, keepdim=True)
-        router_weights = router_weights.to(hidden_states.dtype)
-
-        expert_mask = F.one_hot(
-            selected_experts,
-            num_classes=self.expert_number
-        )
-        # (b*s, topk, expert_number)
-
-        expert_mask = expert_mask.permute(2, 1, 0)
-        # (expert_number, topk, b*s)
-        return router_logits, router_weights, selected_experts, expert_mask
-
-class MOEConfig:
-    def __init__(
-        self,
-        hidden_dim,
-        expert_number,
-        top_k,
-        shared_experts_number =2,
-    ):
-        self.hidden_dum = hidden_dim
-        self.expert_number = expert_number
-        self.top_k = top_k
-        self.shared_experts_number = shared_experts_number
 
 class SparseMOE(nn.Module):
-    def __init__(self, config:MOEConfig):
+    def __init__(self, feature_in, feature_out, expert_number, top_k=2):
         super().__init__()
-        self.hidden_dim = config.hidden_dum
-        self.expert_number = config.expert_number
-        self.top_k = config.top_k
+        self.experts = nn.ModuleList([
+            BasicExpert(feature_in, feature_out) for _ in range(expert_number)
+        ])
+        self.gate = nn.Linear(feature_in, expert_number)
+        self.top_k = top_k
+
+    def forward(self, x):
+        # 1. 计算路由分数 (Batch, Expert_Num)
+        router_logits = self.gate(x)
         
-        self.experts = nn.ModuleList(
-            [
-                BasicExpert(self.hidden_dim, self.hidden_dim) for _ in range(self.expert_number)
-            ]
-        )
-        self.router = MoERouter(self.hidden_dim, self.expert_number, self.top_k)
+        # 2. 【核心】只选分数最高的 Top-k 个专家
+        # indices: 选中的专家ID, values: 对应的分数
+        routing_weights, selected_experts = torch.topk(router_logits, self.top_k, dim=-1)
+        
+        # 3. 对权重做 Softmax (通常只在选中的 Top-k 里做归一化)
+        routing_weights = F.softmax(routing_weights, dim=-1)
+        
+        final_output = torch.zeros(x.shape[0], self.experts[0].linear.out_features)
+        
+        # 遍历每一个 Batch 里的样本
+        for i in range(x.shape[0]):
+            # 对于第 i 个样本，只计算它选中的那 k 个专家
+            for k in range(self.top_k):
+                expert_idx = selected_experts[i, k].item() # 拿到专家ID
+                weight = routing_weights[i, k]             # 拿到权重
+                
+                # 【关键】只运行选中的专家
+                expert_out = self.experts[expert_idx](x[i].unsqueeze(0))
+                
+                # 加权累加
+                final_output[i] += weight * expert_out.squeeze()
+                
+        return final_output
+
+class BasicExpert(nn.Module):
+    def __init__(self, feature_in, feature_out):
+        super().__init__()
+        self.linear = nn.Linear(feature_in, feature_out)
     
     def forward(self, x):
-        batch_size, seq_len, hidden_dim = x.size()
-        hidden_states = x.view(-1, hidden_dim)
-        
-        router_logits, router_weights, selected_experts_indices, expert_mask = self.router(hidden_states)
-        final_hidden_states = torch.zeros(
-            (batch_size * seq_len, hidden_dim),
-            dtype=hidden_states.dtype,
-            device=hidden_states.device
-        )
-        for expert_idx in range(self.expert_number):
-            expert_layer = self.experts[expert_idx]
-            idx, top_x = torch.where(expert_mask[expert_idx])
-            current_state = hidden_states.unsqueeze(
-                0
-            )[:, top_x, :].reshape(-1, hidden_dim) 
-            current_hidden_states = expert_layer(
-                current_state
-            ) * router_weights[top_x, idx].unsqueeze(-1)  # （selected_token_number, 1） 这里有广播
-            final_hidden_states.index_add_(0, top_x, current_hidden_states.to(hidden_states.dtype))
-            
-        return final_hidden_states, router_logits # shape 是 (b * s, expert_number)
-def test_token_level_moe():
-    x = torch.rand(2, 4, 16)
-    config = MOEConfig(16, 2, 2)
-    token_level_moe = SparseMOE(config)
-    out = token_level_moe(x)
-    print(out[0].shape, out[1].shape)
+        return self.linear(x)
 
+def test_sparse_moe():
+    x = torch.randn(2, 4)
+    # 假设有 10 个专家，但每个样本只用 2 个
+    moe = SparseMOE(4, 3, expert_number=10, top_k=2)
+    out = moe(x)
+    print("Output shape:", out.shape)
+    print("Output:", out)
 
-test_token_level_moe()
+test_sparse_moe()
 ```
+
+先确定expert的版本如下所示
+
