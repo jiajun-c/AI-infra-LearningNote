@@ -158,3 +158,30 @@ __global__ void one_thread_copy_kernel(const TA* g_in, TA* g_out, int M, int N) 
     }
 }
 ```
+
+如果是涉及到block层级，那么需要先在block层级进行划分，在block层级得到local_tile，再按照上面的思路进行线程负载的划分拷贝
+
+```cuda
+template <int bM, int bN>
+__global__ void grid_block_copy_ce(float* in, float* out, int M, int N) {
+    auto layout = make_layout(make_shape(M, N), GenRowMajor{});
+    auto gIn = make_tensor(make_gmem_ptr(in), layout);
+    auto gOut = make_tensor(make_gmem_ptr(out), layout);
+
+    auto tile_shape = make_shape(Int<bM>{}, Int<bN>{});
+    auto tile_coord = make_coord(blockIdx.x, blockIdx.y);
+
+    auto gIn_b = local_tile(gIn, tile_shape, tile_coord);
+    auto gOut_b = local_tile(gOut, tile_shape, tile_coord);
+
+    auto copyA = make_tiled_copy(
+        Copy_Atom<UniversalCopy<uint128_t>, float>{}, 
+        Layout<Shape<_32, _8>, Stride<_8, _1>>{}, // Thread Layout: M-major (ColMajor)
+        Layout<Shape<_1,_4>>{}                   // Value  Layout: M-major (ColMajor)
+    );
+    auto thr_copy = copyA.get_slice(threadIdx.x);
+    auto tgIn = thr_copy.partition_S(gIn_b);   // Source (源) 切分
+    auto tgOut = thr_copy.partition_D(gOut_b); // Destination (目标) 切分
+    copy(tgIn, tgOut);
+}
+```
