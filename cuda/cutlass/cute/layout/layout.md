@@ -392,3 +392,54 @@ gmem_ptr[32b](0x55a5e3137400) o (_2,_2):(_2,_16):
   0.00e+00  1.60e+01
   2.00e+00  1.80e+01
 ```
+
+## 6. 任务划分
+
+在上面的分区其实是在grid层级做的工作，其只是创建了一片tensor，而将其划分到每个线程上则是`local_partition` 需要做的工作。
+
+local_partiton 的定义如下所示，其会根据Partition_Layout将一段内的空间分配给不同的线程，这样能更好地进行访存合并
+
+
+```cpp
+Tensor local_tensor = local_partition(
+    Tensor_to_partition,  // 参数1：你要切的那个大张量 (Global / Shared)
+    Partition_Layout,     // 参数2：切分蓝图 (比如 TiledCopy 或 TiledMMA)
+    Thread_Index          // 参数3：当前执行者的 ID (通常是 threadIdx.x)
+);
+```
+
+```cpp
+template <typename T>
+__global__ void inspect_partition_kernel(T const* in_ptr, T* out_ptr, int N) {
+    // 1. 定义全局输入 Tensor
+    Tensor g_in = make_tensor(make_gmem_ptr(in_ptr), make_shape(N));
+    Tensor g_out = make_tensor(make_gmem_ptr(out_ptr), make_shape(N));
+
+    Tensor b_in = local_tile(g_in, make_shape(N), make_coord(blockIdx.x));
+    Tensor b_out = local_tile(g_out, make_shape(N), make_coord(blockIdx.x));
+
+    auto layout = make_layout(make_shape(Int<256>{}));
+    auto thr_in = local_partition(b_in, layout,threadIdx.x);
+    auto thr_out = local_partition(b_out, layout,threadIdx.x);
+
+    int out_offset = blockIdx.x * 1024 + threadIdx.x * size(thr_in); // 加上 block 偏移
+    
+    for (int i = 0; i < size(thr_in); i++) {
+        out_ptr[out_offset + i] = thr_in(i);
+    }
+    // copy(thr_in, thr_out);
+}
+```
+
+输出如下所示
+
+```shell
+=== local_partition 数据分发透视表 ===
+Thread 0 拿到的 4 个元素: [ 0 256 512 768 ]
+Thread 1 拿到的 4 个元素: [ 1 257 513 769 ]
+Thread 2 拿到的 4 个元素: [ 2 258 514 770 ]
+Thread 3 拿到的 4 个元素: [ 3 259 515 771 ]
+...
+Thread 254 拿到的 4 个元素: [ 254 510 766 1022 ]
+Thread 255 拿到的 4 个元素: [ 255 511 767 1023 ]
+```

@@ -1,151 +1,109 @@
 #include <iostream>
 #include <vector>
-#include <thrust/host_vector.h>
-#include <thrust/device_vector.h>
-
 #include <cute/tensor.hpp>
 
-#define CUTE_CHECK_LAST() { \
-    cudaError_t err = cudaGetLastError(); \
-    if (err != cudaSuccess) { \
-        std::cerr << "CUDA Error: " << cudaGetErrorString(err) << std::endl; \
-        exit(1); \
-    } \
-}
+using namespace cute;
 
-// 修正点1: 强制 Shared Memory 对齐，防止 cp.async 报错
-// 使用 union 技巧确保指针是 128-bit (16 Byte) 对齐的
-template<typename T>
-struct alignas(16) AlignedStorage {
-    T data;
-};
+using TA = float;
+constexpr int M = 16;
+constexpr int N = 8; // 16x8 = 128 elements
 
-template <class TiledCopy>
-__global__ void test_async_copy_kernel(float const* d_in, float* d_out, int N, TiledCopy copy_op) {
-    using namespace cute;
+// ==============================================================================
+// 异步拷贝 Kernel: 从 Global Memory 异步搬运到 Shared Memory
+// ==============================================================================
+__global__ void async_copy_kernel(const TA* g_in, TA* g_out) {
+    __shared__ TA smem[M * N];
+    int tid = threadIdx.x;
 
-    // 我们将数据指针强转为 uint128_t* 来看待
-    // 这样 1 个元素 = 4 个 float
-    using GlobalType = uint128_t; 
+    // 1. 包装张量 (行优先)
+    Tensor g_in_tensor  = make_tensor(make_gmem_ptr(g_in),  make_layout(Shape<_16, _8>{}, LayoutRight{}));
+    Tensor s_tensor     = make_tensor(make_smem_ptr(smem),  make_layout(Shape<_16, _8>{}, LayoutRight{}));
+    Tensor g_out_tensor = make_tensor(make_gmem_ptr(g_out), make_layout(Shape<_16, _8>{}, LayoutRight{}));
 
-    // 1. 定义 Tensor
-    // 注意：这里 shape 是 (N / 4)，因为我们现在的视角是 128-bit 宽度的元素
-    Tensor mIn  = make_tensor(make_gmem_ptr((GlobalType const*)d_in),  make_shape(N / 4));
-    Tensor mOut = make_tensor(make_gmem_ptr((GlobalType*)d_out), make_shape(N / 4));
+    // 2. 构建异步拷贝蓝图 (Global -> Shared)
+    // 关键点：使用 SM80_CP_ASYNC_CACHEGLOBAL 指令，每次拷贝 uint128_t (16 bytes = 4 个 float)
+// 完美的 TiledCopy 蓝图：契合 Row-Major (16x8)
+    auto copy_async = make_tiled_copy(
+        Copy_Atom<SM80_CP_ASYNC_CACHEGLOBAL<uint128_t>, TA>{}, 
+        
+        // 【线程布局 ThreadLayout】
+        // 32 个线程排成 16 行 2 列，且行优先 (Stride<_2, _1>)
+        // 这样线程 0,1 负责第 0 行；线程 2,3 负责第 1 行...
+        Layout<Shape<_16, _2>, Stride<_2, _1>>{}, 
+        
+        // 【值布局 ValueLayout】
+        // 每个线程在 N 维度 (连续维度) 上抓取 4 个元素
+        Layout<Shape<_1, _4>>{}   
+    );
 
-    // 计算当前 Block 负责的 128-bit 元素个数 (128 个线程 * 1 = 128 个 uint128_t)
-    auto elems_128b_per_block = size(TiledCopy{}); 
+    auto thr_copy = copy_async.get_thread_slice(tid);
+
+    // 3. 切分数据源 (Source: Global)
+    Tensor tAgA_src = thr_copy.partition_S(g_in_tensor);
+
+
+    // =======================================================================
+    // 💥💥💥 引爆开关：请在这里切换注释！ 💥💥💥
+    // =======================================================================
+
+    // ✅ 正确示范：使用 _D 切分目的地 (Shared)
+    Tensor tAsA_dst = thr_copy.partition_S(s_tensor);
+
+    // ❌ 错误示范：使用 _S 切分目的地 (Shared)。解开这行注释，注释掉上面那行，去编译试试！
+    // Tensor tAsA_dst = thr_copy.partition_S(s_tensor);
+
+    // =======================================================================
+
+
+    // 4. 触发拷贝 (带蓝图的 copy)
+    cute::copy(copy_async, tAgA_src, tAsA_dst);
     
-    int bid = blockIdx.x;
-    // 越界保护
-    if (bid * elems_128b_per_block >= 1024*1024) return;
-
-    // 2. 切分 Global Tile
-    Tensor gIn_tile  = local_tile(mIn,  make_shape(elems_128b_per_block), make_coord(bid));
-    Tensor gOut_tile = local_tile(mOut, make_shape(elems_128b_per_block), make_coord(bid));
-
-    // 3. 定义 Shared Memory
-    // 修正点2: 必须确保容量足够且对齐
-    extern __shared__ uint128_t smem_buffer[]; 
-    Tensor sMem = make_tensor(make_smem_ptr(smem_buffer), make_shape(elems_128b_per_block));
-
-    // 4. 线程划分
-    auto loader = copy_op.get_slice(threadIdx.x);
-    Tensor tIg = loader.partition_S(gIn_tile);
-    Tensor tIs = loader.partition_D(sMem);
-
-    // =========================================================
-    // 异步拷贝
-    // =========================================================
-    
-    // 发起拷贝: Global (uint128_t) -> Shared (uint128_t)
-    copy(copy_op, tIg, tIs); 
-
+    // 5. 提交并等待异步拷贝完成
     cp_async_fence();
     cp_async_wait<0>();
-    __syncthreads(); 
+    __syncthreads();
 
-    // =========================================================
-    // 写回 Global (用于验证)
-    // =========================================================
+    // 6. 验证：用普通的同步拷贝把 Shared Memory 写回 Global Memory 的 out 中
+    auto copy_sync = make_tiled_copy(Copy_Atom<DefaultCopy, TA>{}, Layout<Shape<_32, _1>>{}, Layout<Shape<_4, _1>>{});
+    auto thr_copy_sync = copy_sync.get_thread_slice(tid);
     
-    Tensor tOs = loader.partition_S(sMem);      
-    Tensor tOg = loader.partition_D(gOut_tile); 
-
-    copy(tOs, tOg); 
+    // 这里的写回操作，严谨地遵循了 源用S，目标用D 的规矩
+    Tensor tAsA_src2 = thr_copy_sync.partition_D(s_tensor);
+    Tensor tAgA_dst2 = thr_copy_sync.partition_D(g_out_tensor);
+    cute::copy(copy_sync, tAsA_src2, tAgA_dst2);
 }
 
 int main() {
-    using namespace cute;
+    int num_elements = M * N;
+    size_t bytes = num_elements * sizeof(TA);
 
-    // 检查架构
-    cudaDeviceProp props;
-    cudaGetDeviceProperties(&props, 0);
-    if (props.major < 8) {
-        std::cout << "Need Ampere (SM80)+ GPU" << std::endl;
-        return 0;
-    }
+    std::vector<TA> h_in(num_elements);
+    std::vector<TA> h_out(num_elements, 0.0f);
+    for (int i = 0; i < num_elements; ++i) h_in[i] = static_cast<TA>(i);
 
-    int N = 1024 * 1024; // 1M floats
-    // 确保 N 是 4 的倍数 (128-bit 对齐)
-    assert(N % 4 == 0);
+    TA *d_in, *d_out;
+    cudaMalloc(&d_in, bytes);
+    cudaMalloc(&d_out, bytes);
+    cudaMemcpy(d_in, h_in.data(), bytes, cudaMemcpyHostToDevice);
 
-    // 策略定义
-    using BlockThreads = Int<128>;
-    
-    // 修正点3: 明确 CopyOp 的语义
-    // Atom: 使用 uint128_t 进行拷贝
-    // ValLayout: 每个线程处理 1 个 uint128_t (即 1 个 128-bit 向量)
-    using CopyOp = decltype(make_tiled_copy(
-        Copy_Atom<SM80_CP_ASYNC_CACHEALWAYS<uint128_t>, uint128_t>{}, 
-        Layout<Shape<BlockThreads>>{}, // Thread Layout: 128
-        Layout<Shape<_1>>{}            // Val Layout: 1 个 uint128_t
-    ));
-    
-    int tile_size_128b = size(CopyOp{}); // 应该是 128
-    int tile_size_floats = tile_size_128b * 4; // 真实 float 数量 = 512
-    
-    // 修正点4: 计算字节数时使用 16 字节
-    size_t smem_size_bytes = tile_size_128b * sizeof(uint128_t);
-
-    std::cout << "Threads per Block: " << size(BlockThreads{}) << std::endl;
-    std::cout << "Elements(128b) per Tile: " << tile_size_128b << std::endl;
-    std::cout << "Elements(float) per Tile: " << tile_size_floats << std::endl;
-    std::cout << "Smem per Block: " << smem_size_bytes << " bytes" << std::endl;
-
-    // 准备数据
-    thrust::host_vector<float> h_in(N);
-    for(int i=0; i<N; ++i) h_in[i] = static_cast<float>(i);
-    
-    thrust::device_vector<float> d_in = h_in;
-    thrust::device_vector<float> d_out(N, -1.0f);
-
-    int num_blocks = (N / 4 + tile_size_128b - 1) / tile_size_128b;
-    
-    test_async_copy_kernel<<<num_blocks, 128, smem_size_bytes>>>(
-        thrust::raw_pointer_cast(d_in.data()),
-        thrust::raw_pointer_cast(d_out.data()),
-        N,
-        CopyOp{}
-    );
-    CUTE_CHECK_LAST();
+    std::cout << "🚀 Launching Async CuTe Kernel..." << std::endl;
+    async_copy_kernel<<<1, 32>>>(d_in, d_out);
     cudaDeviceSynchronize();
 
-    // 验证
-    thrust::host_vector<float> h_out = d_out;
-    bool correct = true;
-    for(int i=0; i<N; ++i) {
-        if (h_out[i] != h_in[i]) {
-            std::cout << "Mismatch at " << i << ": expected " << h_in[i] 
-                      << ", got " << h_out[i] << std::endl;
-            correct = false;
+    cudaMemcpy(h_out.data(), d_out, bytes, cudaMemcpyDeviceToHost);
+
+    // 简单验证
+    bool success = true;
+    for (int i = 0; i < num_elements; ++i) {
+        if (h_in[i] != h_out[i]) {
+            std::cerr << "Mismatch at index " << i << std::endl;
+            success = false;
             break;
         }
     }
+    if (success) std::cout << "✅ Async Copy execution verified successfully!" << std::endl;
 
-    if (correct) {
-        std::cout << "Success! cp.async vector copy works." << std::endl;
-    }
-
+    cudaFree(d_in);
+    cudaFree(d_out);
     return 0;
 }

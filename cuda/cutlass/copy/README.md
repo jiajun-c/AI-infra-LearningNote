@@ -161,7 +161,7 @@ __global__ void one_thread_copy_kernel(const TA* g_in, TA* g_out, int M, int N) 
 
 如果是涉及到block层级，那么需要先在block层级进行划分，在block层级得到local_tile，再按照上面的思路进行线程负载的划分拷贝
 
-```cuda
+```cpp
 template <int bM, int bN>
 __global__ void grid_block_copy_ce(float* in, float* out, int M, int N) {
     auto layout = make_layout(make_shape(M, N), GenRowMajor{});
