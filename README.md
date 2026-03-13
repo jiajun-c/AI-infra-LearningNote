@@ -229,7 +229,6 @@ AI-infra-LearningNote/
 
 ### 6.1 推理框架
 - [TensorRT](./inference/TensorRT/README.md)
-- [vLLM](./inference/vllm/README.md)
 
 ### 6.2 批处理策略
 - [批处理技术](./inference/batch/README.md)
