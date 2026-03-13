@@ -314,6 +314,8 @@ AI-infra-LearningNote/
 - [梯度机制](./framework/pytorch/grad/)
 - [优化器](./framework/pytorch/optimizer/)
 - [装饰器](./framework/pytorch/decorator/)
+- memory
+  - [模型训推显存](./framework/pytorch/memory/model/README.md)
 
 ### 10.2 DeepSpeed
 - [DeepSpeed 基础](./framework/deepspeed/README.md) ⚠️ TODO
