@@ -24,3 +24,52 @@ GemmUniversal::Arguments args{
     }
 };
 ```
+
+gemm的层级分为下面的几种
+- Device：`cutlass::gemm::device::GemmUniversalAdapter`
+- Kernel: `cutlass::gemm::kernel::GemmUniversal`
+- Collective: 
+    - `cutlass::gemm::collective::CollectiveMma`
+    - `cutlass::epilogue::collective::DefaultEpilogue`
+    - `cutlass::epilogue::collective::Epilogue`
+- Tiled (MMA and Copy)
+    - `cute::TiledMma` and `cute::TiledCopy`
+    - `cute::gemm()` and `cute::copy()`
+
+如果要实例化一个矩阵乘法，其顺序为
+- 编写包括主循环和后处理部分
+- 把他们组合起来去构建一个kernel类型
+- 包装kernel为一个device层级的适配器
+
+如下所示第一步是建立主循环，第二步是建立epilogue，第三步组合成一个GemmKernel，最后暴露成一个device侧的GemmHandle
+
+```cpp
+// Step 1: Generate the required collective layer mainloop specialization
+using CollectiveMainloop = typename cutlass::gemm::collective::CollectiveBuilder<
+    ArchTag, OperatorClass,
+    ElementA, LayoutA, AlignmentA,
+    ElementB, LayoutB, AlignmentB,
+    ElementAccumulator,
+    TilesShape, ClusterShape,
+    cutlass::gemm::collective::StageCountAuto,
+    cutlass::gemm::collective::KernelScheduleAuto
+  >::CollectiveOp;
+
+// Step 2: Specify the collective layer epilogue type
+using CollectiveEpilogue = cutlass::epilogue::collective::DefaultEpilogue<
+    ElementC,
+    cutlass::gemm::TagToStrideC_t<LayoutC>,
+    cutlass::gemm::TagToStrideC_t<LayoutC>,
+    cutlass::epilogue::thread::LinearCombination<ElementC, 1, ElementAccumulator, ElementAccumulator>>;
+
+// Step 3: Compose the mainloop and epilogue together at the kernel layer
+using GemmKernel = cutlass::gemm::kernel::GemmUniversal<
+    cute::Shape<int,int,int,int>, // ProblemShape [M,N,K,L]
+    CollectiveMainloop,
+    CollectiveEpilogue
+>;
+
+// Step 4: Wrap up the kernel::GemmUniversal kernel class
+// with the device adapter to obtain a host-side handle to the kernel
+using GemmHandle = cutlass::gemm::device::GemmUniversalAdapter<GemmKernel>;
+```
