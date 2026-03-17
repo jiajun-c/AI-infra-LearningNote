@@ -53,6 +53,9 @@ AI-infra-LearningNote/
 - **BLAS 算子**: [HGEMV](./01-cuda/blas/hgemv/README.md) | HGEMM ⚠️ TODO
 - **逐元素算子**: [Element-wise](./01-cuda/op/element_wise/README.md)
 
+### Ampere 架构特性
+- [cp.async 异步拷贝与流水线](./01-cuda/ampere/cpasync/README.md) - cp.async 指令、3-Stage Pipeline、性能对比
+
 ### Hopper 架构特性
 - [分布式共享内存 (DSMEM)](./01-cuda/hopper/DistributedSM/README.md)
 - [TMA (Tensor Memory Accelerator)](./01-cuda/hopper/TMA/README.md)
@@ -279,4 +282,4 @@ AI-infra-LearningNote/
 
 ---
 
-最后更新：2026-03-14
+最后更新：2026-03-17
