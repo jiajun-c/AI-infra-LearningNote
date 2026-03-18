@@ -152,8 +152,9 @@ cutlass::DeviceAllocation<typename Gemm::EpilogueOutputOp::ElementOutput> block_
 using RasterOrderOptions = typename cutlass::gemm::kernel::detail::PersistentTileSchedulerSm90Params::RasterOrderOptions;
 
 // --------------------------------------------------------------------------
-// 2. 极简版参数配置结构 (抛弃了繁琐的命令行解析)
+// 2. 参数配置结构（支持命令行解析）
 // --------------------------------------------------------------------------
+// 用法: ./demo [-m M] [-n N] [-k K] [-alpha A] [-beta B] [-iterations I]
 struct Options {
   int m = 5120;
   int n = 4096;
@@ -161,7 +162,7 @@ struct Options {
   float alpha = 1.0f;
   float beta  = 0.0f;
   int iterations = 100; // 测速循环次数
-  
+
   // 调度器参数
   RasterOrderOptions raster = RasterOrderOptions::Heuristic;
   int swizzle = 1;
@@ -170,6 +171,36 @@ struct Options {
     uint64_t flop = uint64_t(2) * m * n * k;
     double gflop = double(flop) / double(1.0e9);
     return gflop / runtime_s;
+  }
+
+  void parse(int argc, char** argv) {
+    for (int i = 1; i < argc; ++i) {
+      std::string arg(argv[i]);
+      if ((arg == "-m" || arg == "--m") && i + 1 < argc) {
+        m = std::atoi(argv[++i]);
+      } else if ((arg == "-n" || arg == "--n") && i + 1 < argc) {
+        n = std::atoi(argv[++i]);
+      } else if ((arg == "-k" || arg == "--k") && i + 1 < argc) {
+        k = std::atoi(argv[++i]);
+      } else if ((arg == "-alpha" || arg == "--alpha") && i + 1 < argc) {
+        alpha = std::atof(argv[++i]);
+      } else if ((arg == "-beta" || arg == "--beta") && i + 1 < argc) {
+        beta = std::atof(argv[++i]);
+      } else if ((arg == "-iterations" || arg == "--iterations") && i + 1 < argc) {
+        iterations = std::atoi(argv[++i]);
+      } else if (arg == "-h" || arg == "--help") {
+        std::cout << "CUTLASS 3.x SM90 GEMM Benchmark\n"
+                  << "用法: ./demo [选项]\n"
+                  << "  -m <int>          矩阵 M 维度 (默认: 5120)\n"
+                  << "  -n <int>          矩阵 N 维度 (默认: 4096)\n"
+                  << "  -k <int>          矩阵 K 维度 (默认: 4096)\n"
+                  << "  -alpha <float>    alpha 系数   (默认: 1.0)\n"
+                  << "  -beta <float>     beta 系数    (默认: 0.0)\n"
+                  << "  -iterations <int> 测速迭代次数 (默认: 100)\n"
+                  << "  -h, --help        显示帮助信息\n";
+        exit(0);
+      }
+    }
   }
 };
 
@@ -438,7 +469,7 @@ bool verify_cutlass_vs_cublas(const Options &options, float *d_cublas_output) {
 // --------------------------------------------------------------------------
 // 6. Main 纯净入口 — CUTLASS vs cuBLAS 性能对比
 // --------------------------------------------------------------------------
-int main() {
+int main(int argc, char** argv) {
   if (__CUDACC_VER_MAJOR__ < 12) {
     std::cerr << "This example requires CUDA 12 or newer.\n";
     return 0;
@@ -452,6 +483,11 @@ int main() {
   }
 
   Options options;
+  options.parse(argc, argv);
+
+  std::cout << "配置: M=" << options.m << " N=" << options.n << " K=" << options.k
+            << " alpha=" << options.alpha << " beta=" << options.beta
+            << " iterations=" << options.iterations << std::endl;
 
   // ---- CUTLASS SM90 GEMM ----
   double cutlass_avg_ms = 0.0, cutlass_gflops = 0.0;

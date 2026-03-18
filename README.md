@@ -16,7 +16,8 @@ AI-infra-LearningNote/
 ├── 06-agent/          # AI Agent 与向量检索
 ├── 07-system/         # 系统与硬件架构
 ├── 08-tools/          # 开发工具与第三方库
-└── 09-profile/        # 性能分析与调试
+├── 09-profile/        # 性能分析与调试
+└── cuda/              # CUTLASS/CuTe 实践代码
 ```
 
 ---
@@ -58,7 +59,8 @@ AI-infra-LearningNote/
 
 ### Hopper 架构特性
 - [分布式共享内存 (DSMEM)](./01-cuda/hopper/DistributedSM/README.md)
-- [TMA (Tensor Memory Accelerator)](./01-cuda/hopper/TMA/README.md)
+- [TMA (Tensor Memory Accelerator)](./01-cuda/hopper/TMA/README.md) - DMA 数据搬运、TMA 硬件引擎、调试示例
+- [WGMMA (Warp Group MMA)](./01-cuda/hopper/wgmma/) - Warp Group 级矩阵乘加速指令
 - [Cluster 调度](./01-cuda/cutlass/cluster/)
 
 ### CCCL 库
@@ -82,6 +84,9 @@ AI-infra-LearningNote/
 - [Copy 机制](./01-cuda/cutlass/copy/README.md)
 - [转置优化](./01-cuda/cutlass/trans/)
 - [MMA 操作](./01-cuda/cutlass/cute/mma/)
+
+### CuTe 实践
+- [Reduce 实现](./cuda/cutlass/cute/practice/) - 基于 CuTe 抽象的 Block 级 Reduce 实现
 
 ---
 
@@ -135,6 +140,7 @@ AI-infra-LearningNote/
 - **归一化**: [Norm 层](./03-llm/arch/Norm/README.md)
 - **模型中间表示 (IR)**: [IR 基础](./03-llm/IR/README.md) | [PNNX](./03-llm/IR/PNNX/README.md) | [ONNX](./03-llm/IR/ONNX/README.md)
 - **模型保存与加载**: [模型保存/加载](./03-llm/model/save_load/README.md)
+- **权重形状分析**: [Weight Shape 分析](./03-llm/model/weightShape/) - LLM 线性层权重维度分析与 GEMM 模式识别
 - **学习率调度**: [学习率调度器](./03-llm/model/learningRT/README.md)
 
 ### 4.2 深度学习基础 (foundation/)

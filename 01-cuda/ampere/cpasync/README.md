@@ -16,6 +16,8 @@ Global Memory $\rightarrow$ L2 Cache $\rightarrow$ Registers $\rightarrow$ Share
 
 Global Memory $\rightarrow$ L2 Cache $\rightarrow$ Shared Memory
 
+尽管其是bypass寄存器，但是其走的仍然是SM内部的LD/ST单元网格，而且需要每个线程都去参与搬运
+
 ## 指令语法
 
 cp.async 指令声明如下所示

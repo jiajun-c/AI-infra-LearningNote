@@ -1,6 +1,10 @@
-# Hopper 架构 TMA(Tensor memory access)
+# TMA(Tensor memory access)
 
-TMA的出现是为了优化多维度的显存块拷贝，对于非连续的多端显存，其会在Host显式地计算显存块之间地地址映射关系，然后调用TMA的异步拷贝接口完成多维度的拷贝，同时其支持将数据从共享内存直接拷贝到全局的内存
+TMA是hopper架构下加入的新特性，其数据通路为
 
-对于连续的内存拷贝，将会调用 `memcpy_async`
+Global Memory (DRAM) $\rightarrow$ L2 Cache $\rightarrow$ TMA Hardware Engine $\rightarrow$ Shared Memory (SRAM)
+
+其和cp.async的区别有两点
+- 走的是DMA而不是通过LD/ST数据通路，使得其不会去阻塞其他的访存请求
+- 只需要由一个CTA中一个线程去发起请求就可以获取到整个CTA所需要的数据量
 

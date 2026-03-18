@@ -136,3 +136,19 @@ struct Tensor
 cutlass中的Engine可以分为两类
 - ViewEngine：并不持有数据，值保存指针
 - ArrayEngine：保存实际的数据，使用cuda中的寄存器进行存储
+
+获取tensor的dim信息，如下所示，使用rank可以获取到维度信息，返回的维度数量的类型为 `Int<N>{}`
+
+```cpp
+#include <cute/tensor.hpp>
+
+using namespace cute;
+
+int main() {
+    auto shape = make_shape(1, 2, 3);
+    print(rank(shape));
+    if (rank(shape) == Int<3>{}) {
+        printf("equal to three\n");
+    }
+}
+```
