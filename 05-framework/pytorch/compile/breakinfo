@@ -1,0 +1,30 @@
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code] TRACED GRAPH
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]  ===== __compiled_fn_1_5b915a88_11da_4adc_934d_149352653ecd =====
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]  /opt/conda/envs/vllm/lib/python3.13/site-packages/torch/fx/_lazy_graph_module.py class GraphModule(torch.nn.Module):
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]     def forward(self, L_a_: "f32[10][1]cpu", L_b_: "f32[10][1]cpu"):
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]         l_a_ = L_a_
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]         l_b_ = L_b_
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]         
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]          # File: /volume/code/chengjiajun/workspace/AI-infra-LearningNote/05-framework/pytorch/compile/graphbreak.py:4 in bar, code: x = a / (torch.abs(a) + 1)
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]         abs_1: "f32[10][1]cpu" = torch.abs(l_a_)
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]         add: "f32[10][1]cpu" = abs_1 + 1;  abs_1 = None
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]         x: "f32[10][1]cpu" = l_a_ / add;  l_a_ = add = None
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]         
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]          # File: /volume/code/chengjiajun/workspace/AI-infra-LearningNote/05-framework/pytorch/compile/graphbreak.py:5 in bar, code: if b.sum() < 0:
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]         sum_1: "f32[][]cpu" = l_b_.sum();  l_b_ = None
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]         lt: "b8[][]cpu" = sum_1 < 0;  sum_1 = None
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]         return (lt, x)
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code]         
+V0322 10:41:52.115000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [0/0] [__graph_code] 
+V0322 10:42:00.350000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code] TRACED GRAPH
+V0322 10:42:00.350000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]  ===== __compiled_fn_5_dee9be25_fd69_41ab_9ee9_a67fed5cd5b8 =====
+V0322 10:42:00.350000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]  /opt/conda/envs/vllm/lib/python3.13/site-packages/torch/fx/_lazy_graph_module.py class GraphModule(torch.nn.Module):
+V0322 10:42:00.350000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]     def forward(self, L_x_: "f32[10][1]cpu", L_b_: "f32[10][1]cpu"):
+V0322 10:42:00.350000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         l_x_ = L_x_
+V0322 10:42:00.350000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         l_b_ = L_b_
+V0322 10:42:00.350000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         
+V0322 10:42:00.350000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]          # File: /volume/code/chengjiajun/workspace/AI-infra-LearningNote/05-framework/pytorch/compile/graphbreak.py:7 in torch_dynamo_resume_in_bar_at_5, code: return x * b
+V0322 10:42:00.350000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         mul: "f32[10][1]cpu" = l_x_ * l_b_;  l_x_ = l_b_ = None
+V0322 10:42:00.350000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         return (mul,)
+V0322 10:42:00.350000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         
+V0322 10:42:00.350000 171012 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code] 
