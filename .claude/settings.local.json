@@ -3,7 +3,8 @@
     "allow": [
       "Bash(nvidia-smi --query-gpu=driver_version,cuda_version --format=csv)",
       "Bash(python -c \"import torch; print\\(f''PyTorch version: {torch.__version__}''\\); print\\(f''CUDA available: {torch.cuda.is_available\\(\\)}''\\); print\\(f''CUDA version \\(torch\\): {torch.version.cuda if torch.cuda.is_available\\(\\) else \"\"N/A\"\"}''\\)\")",
-      "Bash(git push origin main)"
+      "Bash(git push origin main)",
+      "Skill(commit-commands:commit)"
     ]
   }
 }
