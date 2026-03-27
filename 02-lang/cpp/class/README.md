@@ -6,6 +6,16 @@ C++类特性
 - 多态：通过函数重载和虚函数，实现接口的多态性，使得统一接口可以有不同的实现
 - 抽象：隐藏方法的实现，让调用者只需要关心方法提供了哪些功能，并不需要了解功能是如何实现的
 
+## 0. 基础结构
+
+- 默认构造函数 className()
+- 析构函数    ~className()
+- 拷贝构造函数 className(const className& other)
+- 移动构造函数 className(className&& other) noexpect
+- 拷贝赋值运算符 className& operator=(const className& other)
+- 移动赋值运算符 className& operator=(className&& other) noexpect
+
+
 ## 1. 封装
 
 封装在我们平时的实现中较为常见，也是C++的核心特性，通过限制外部成员对数据的访问，但是提供外部成员操作数据的接口，使得外部成员对数据的访问更加安全。
