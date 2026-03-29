@@ -47,7 +47,7 @@ class FlashAttention(object):
         Algorithm 1 is on the 5th page of the orginal paper of FLASH-ATTENTION.
         """
 
-        self._validity_check(q, k, v)
+        self._validity_check(q, k, v)e
         batch_size, q_len, hidden_size = q.shape
         k_len = k.shape[1]
 

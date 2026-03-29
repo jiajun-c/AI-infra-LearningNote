@@ -17,7 +17,8 @@ AI-infra-LearningNote/
 ├── 07-system/         # 系统与硬件架构
 ├── 08-tools/          # 开发工具与第三方库
 ├── 09-profile/        # 性能分析与调试
-└── cuda/              # CUTLASS/CuTe 实践代码
+├── cuda/              # CUTLASS/CuTe 实践代码
+└── dao/               # 算子开发范式与任务划分
 ```
 
 ---
@@ -25,10 +26,11 @@ AI-infra-LearningNote/
 ## 1. CUDA 编程 (01-cuda/)
 
 ### 架构与基础
-- [CUDA 架构演进](./01-cuda/arch/README.md) - Tesla 到 Blackwell 架构
+- [Blackwell 架构](./01-cuda/blackwell/README.md) - UMMA 指令、双 SM 协同、TMA 到 TMem
 - [启动配置](./01-cuda/launch/README.md)
 - [Stream 管理](./01-cuda/stream/README.md)
 - [合作组 (Cooperative Groups)](./01-cuda/cg/README.md)
+- [JIT 编译 (NVRTC)](./01-cuda/jit/README.md) - 运行时特化、动态代码生成、架构自适应
 
 ### 核心原语
 - [Warp 原语](./01-cuda/primitives/README.md) - shfl, ballot, any, all 等
@@ -52,7 +54,9 @@ AI-infra-LearningNote/
 
 ### CUDA 算子实现
 - **BLAS 算子**: [HGEMV](./01-cuda/blas/hgemv/README.md) | HGEMM ⚠️ TODO
-- **逐元素算子**: [Element-wise](./01-cuda/op/element_wise/README.md)
+- **逐元素算子**: [Element-wise](./01-cuda/op/element_wise/README.md) | [Vectorize Element-wise](./01-cuda/op/element_wise/vectorize/README.md)
+- **Reduce 算子**: [ReduceMin](./01-cuda/op/reduce/) | [ReduceMax](./01-cuda/op/reduce/)
+- **Softmax 算子**: [Softmax](./01-cuda/op/softmax/) - CUDA 与 Triton 实现
 
 ### Ampere 架构特性
 - [cp.async 异步拷贝与流水线](./01-cuda/ampere/cpasync/README.md) - cp.async 指令、3-Stage Pipeline、性能对比
@@ -61,6 +65,7 @@ AI-infra-LearningNote/
 - [分布式共享内存 (DSMEM)](./01-cuda/hopper/DistributedSM/README.md)
 - [TMA (Tensor Memory Accelerator)](./01-cuda/hopper/TMA/README.md) - DMA 数据搬运、TMA 硬件引擎、调试示例
 - [WGMMA (Warp Group MMA)](./01-cuda/hopper/wgmma/) - Warp Group 级矩阵乘加速指令
+- [Pipeline 双缓冲](./01-cuda/hopper/pipe/README.md) - PipelineState、ClusterBarrier、生产者-消费者双缓冲
 - [Cluster 调度](./01-cuda/cutlass/cluster/)
 
 ### CCCL 库
@@ -75,10 +80,12 @@ AI-infra-LearningNote/
 - [Layout 布局](./01-cuda/cutlass/cute/layout/layout.md)
 - [Tensor 操作](./01-cuda/cutlass/cute/tensor/tensor.md)
 - [多维度分块](./01-cuda/cutlass/cute/multidimTile/README.md)
+- [_v/_t 后缀约定](./01-cuda/cutlass/cute/vt/README.md) - 编译期值提取
 
 ### GEMM 实现
 - [高层 CuTe GEMM](./01-cuda/cutlass/gemm/cuteHigh/README.md)
 - [Device 层 GEMM](./01-cuda/cutlass/gemm/device/README.md)
+- [CUTLASS 3.x GEMM](./01-cuda/cutlass/gemm/cutlass3.x/README.md) - CuTe Layout 统一体系
 
 ### 其他主题
 - [Copy 机制](./01-cuda/cutlass/copy/README.md)
@@ -95,8 +102,9 @@ AI-infra-LearningNote/
 ### C++
 - **基础**: [类型系统](./02-lang/cpp/type/README.md) | [命名空间](./02-lang/cpp/namespace/README.md) | [类型转换](./02-lang/cpp/cast/README.md) | [自动类型推导](./02-lang/cpp/auto/README.md) | [Lambda 表达式](./02-lang/cpp/lamda/)
 - **内存管理**: [内存管理](./02-lang/cpp/memory/README.md)
-- **面向对象**: [类继承](./02-lang/cpp/class/inherit/README.md) | [虚函数](./02-lang/cpp/class/virtual/README.md) | [模板](./02-lang/cpp/template/README.md)
+- **面向对象**: [类继承](./02-lang/cpp/class/inherit/README.md) | [虚函数](./02-lang/cpp/class/virtual/README.md) | [三/五法则](./02-lang/cpp/class/rules/README.md) | [模板](./02-lang/cpp/template/README.md)
 - **元编程**: [元编程](./02-lang/cpp/metaprogam/README.md)
+- **智能指针**: [shared_ptr / unique_ptr](./02-lang/cpp/point/)
 - **STL**: [vector](./02-lang/cpp/stl/vector/README.md) | [map](./02-lang/cpp/stl/map/README.md) | [unordered_map](./02-lang/cpp/stl/unordered_map/README.md) | [bitsets](./02-lang/cpp/stl/bitsets/README.md)
 - **运算符**: [运算符重载](./02-lang/cpp/operator/README.md)
 - **异步**: [future](./02-lang/cpp/async/future/README.md)
@@ -117,6 +125,7 @@ AI-infra-LearningNote/
 - [LayerNorm](./02-lang/Triton/layernorm/)
 - [Softmax](./02-lang/Triton/softmax/)
 - [Autotune](./02-lang/Triton/autotune/)
+- [Kernel Fusion](./02-lang/Triton/fusion/permuteFusion/README.md) - Permute Fusion 四种方案对比
 
 ### CUTLASS
 - [入门指南](./02-lang/cutlass/start/)
@@ -197,6 +206,8 @@ AI-infra-LearningNote/
 - [计算图](./05-framework/pytorch/graph/README.md)
 - [分布式训练](./05-framework/pytorch/dist/README.md)
 - [显存管理](./05-framework/pytorch/memory/model/README.md)
+- [torch.compile 优化](./05-framework/pytorch/compile/README.md) - JIT 编译优化、Graph Break 分析
+- [自定义 CUDA 算子](./05-framework/pytorch/custom_ops/README.md) - pybind vs torch.library 绑定方式与 CUDA Graph 兼容性
 
 ### DeepSpeed
 - [DeepSpeed 基础](./05-framework/deepspeed/README.md) ⚠️ TODO
@@ -258,6 +269,13 @@ AI-infra-LearningNote/
 
 ---
 
+## 10. 算子开发范式 (dao/)
+
+- [算子开发范式](./dao/README.md) - 算子开发思考
+- [任务划分策略](./dao/partition/README.md) - 维度中心 vs 硬件中心 vs Split-K
+
+---
+
 ## 待办事项
 
 ### 文档完善
@@ -277,6 +295,20 @@ AI-infra-LearningNote/
 - [x] `04-comm/CCL/NCCL/` - AllGather 和点对点通信
 - [x] `03-llm/model/save_load/` - 模型保存/加载文档
 - [x] `03-llm/train/EP/` - EP 并行文档
+- [x] `01-cuda/blackwell/` - Blackwell 架构文档 (UMMA、双 SM 协同)
+- [x] `01-cuda/jit/` - CUDA JIT 编译 (NVRTC) 文档
+- [x] `01-cuda/hopper/pipe/` - Hopper 双缓冲流水线示例
+- [x] `01-cuda/op/softmax/` - Softmax 算子实现
+- [x] `01-cuda/op/reduce/` - Reduce 算子实现
+- [x] `01-cuda/op/element_wise/vectorize/` - Vectorize Element-wise 算子
+- [x] `02-lang/Triton/fusion/` - Triton Kernel Fusion (Permute Fusion)
+- [x] `02-lang/cpp/class/rules/` - C++ 三/五法则
+- [x] `02-lang/cpp/point/` - 智能指针 (shared_ptr/unique_ptr)
+- [x] `05-framework/pytorch/compile/` - torch.compile 优化
+- [x] `05-framework/pytorch/custom_ops/` - 自定义 CUDA 算子绑定
+- [x] `01-cuda/cutlass/gemm/cutlass3.x/` - CUTLASS 3.x GEMM
+- [x] `01-cuda/cutlass/cute/vt/` - CuTe _v/_t 后缀约定
+- [x] `dao/` - 算子开发范式与任务划分
 
 ---
 
@@ -288,4 +320,4 @@ AI-infra-LearningNote/
 
 ---
 
-最后更新：2026-03-17
+最后更新：2026-03-29
