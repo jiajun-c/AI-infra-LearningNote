@@ -1,8 +1,3 @@
-# Triton 实现 Hopper 架构下的matmul
-
-先来看一下最简单版本的实现，直接通过tl.load 去读取分块然后进行计算
-
-```python
 import triton
 import triton.language as tl
 import torch
@@ -57,6 +52,3 @@ def simple_matmul(A_ptr: torch.Tensor,
     c_ptrs = C_Ptr + offset_m[:, None] * stride_cm + offset_n[None, :] * stride_cn
     c_mask = (offset_m[:, None] < M) & (offset_n[None, :] < N)
     tl.store(c_ptrs, c, mask=c_mask)
-```
-
-假设希望去使用TMA的话，那么需要去使用`make_block_ptr`的方式去触发TMA，见

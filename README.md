@@ -120,7 +120,7 @@ AI-infra-LearningNote/
 - [硬件信息](./02-lang/Triton/hardware/README.md)
 - [性能测试](./02-lang/Triton/benchmark/README.md)
 - [随机数生成](./02-lang/Triton/random/README.md)
-- [矩阵乘法](./02-lang/Triton/matmul/)
+- [矩阵乘法](./02-lang/Triton/matmul/README.md)
 - [FlashAttention](./02-lang/Triton/FlashAttention/)
 - [LayerNorm](./02-lang/Triton/layernorm/)
 - [Softmax](./02-lang/Triton/softmax/)
