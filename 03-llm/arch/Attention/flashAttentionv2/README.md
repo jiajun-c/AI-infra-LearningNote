@@ -77,7 +77,7 @@ import triton.language as tl
 
 # ==========================================
 # Part 1: Triton Kernel (针对 [N, d] 输入)
-# ==========================================
+# =========================================
 
 @triton.jit
 def _flash_attn_nd_kernel(
@@ -111,9 +111,9 @@ def _flash_attn_nd_kernel(
     q = tl.load(q_ptrs, mask=offs_m[:, None] < N, other=0.0)
 
     # 4. 初始化统计量 (m, l, acc)
-    m_i = tl.zeros([BLOCK_M], dtype=tl.float32) - float("inf")
-    l_i = tl.zeros([BLOCK_M], dtype=tl.float32)
-    acc = tl.zeros([BLOCK_M, d], dtype=tl.float32)
+    m_i = tl.zeros([BLOCK_M], dtype=tl.float32) - float("inf") # 当前的最大值
+    l_i = tl.zeros([BLOCK_M], dtype=tl.float32)                # 分母
+    acc = tl.zeros([BLOCK_M, d], dtype=tl.float32)             # 累加值
 
     # 5. 遍历 K 和 V (对应算法中的 j 循环)
     # 我们遍历整个 N 长度
