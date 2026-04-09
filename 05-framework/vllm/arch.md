@@ -199,3 +199,23 @@
 
 假设不需要抢占请求那么说明现在的系统处于一个比较空闲的状态可以调度waiting队列的请求
 
+
+### 2.2 执行器
+
+执行器分为下面的几种
+
+- uni：单进程模式，单机单卡
+- mp：多进程模式，多个本地进程
+- ray：Ray 框架调度进程
+- external_launcher：外部启动器模式
+
+不同的执行器都需要实现下面的几种
+
+- `determine_available_memory`: 用于探测可用显存
+- `_init_executor`: 初始化模型
+- `get_kv_cache_specs`: 获取KV缓存规范
+- `check_health` 检查执行器的运行状态
+- `execute_model` 执行模型
+....
+
+具体的执行器实现在 `vllm/vllm/v1/executor` 下面
