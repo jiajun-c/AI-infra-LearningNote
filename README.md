@@ -193,7 +193,8 @@ AI-infra-LearningNote/
 
 ### 通信后端
 - [Gloo](./04-comm/backend/gloo/README.md)
-- [NCCL](./04-comm/CCL/NCCL/README.md) | [配置选项](./04-comm/CCL/NCCL/config/README.md) | [图接口](./04-comm/CCL/NCCL/graph/README.md)
+- [NCCL](./04-comm/CCL/NCCL/README.md) | [配置选项](./04-comm/CCL/NCCL/config/README.md) | [图接口](./04-comm/CCL/NCCL/graph/README.md) | [One-shot 通信](./04-comm/CCL/NCCL/oneshot/README.md) | [对称内存](./04-comm/CCL/NCCL/symm/README.md)
+- [NVSHMEM](./04-comm/nvshem/README.md) - 单边通信、GPU原生通信
 
 ### 集合通信原语
 - [集合通信原语](./04-comm/collective/README.md) - All-Gather, Reduce-Scatter, All-Reduce, Broadcast, Send/Recv
@@ -208,6 +209,7 @@ AI-infra-LearningNote/
 - [显存管理](./05-framework/pytorch/memory/model/README.md)
 - [torch.compile 优化](./05-framework/pytorch/compile/README.md) - JIT 编译优化、Graph Break 分析
 - [自定义 CUDA 算子](./05-framework/pytorch/custom_ops/README.md) - pybind vs torch.library 绑定方式与 CUDA Graph 兼容性
+- [nn.Linear 源码分析](./05-framework/pytorch/linear/README.md) - Linear 层调用链路与 cuBLASLt 后端
 
 ### DeepSpeed
 - [DeepSpeed 基础](./05-framework/deepspeed/README.md) ⚠️ TODO
@@ -269,7 +271,7 @@ AI-infra-LearningNote/
 
 ---
 
-## 10. 算子开发范式 (dao/)
+## 10. 算子开发范式 (dao)
 
 - [算子开发范式](./dao/README.md) - 算子开发思考
 - [任务划分策略](./dao/partition/README.md) - 维度中心 vs 硬件中心 vs Split-K
@@ -309,6 +311,10 @@ AI-infra-LearningNote/
 - [x] `01-cuda/cutlass/gemm/cutlass3.x/` - CUTLASS 3.x GEMM
 - [x] `01-cuda/cutlass/cute/vt/` - CuTe _v/_t 后缀约定
 - [x] `dao/` - 算子开发范式与任务划分
+- [x] `04-comm/CCL/NCCL/oneshot/` - NCCL one-shot 通信
+- [x] `04-comm/CCL/NCCL/symm/` - 对称内存
+- [x] `04-comm/nvshem/` - NVSHMEM 单边通信
+- [x] `05-framework/pytorch/linear/` - PyTorch Linear 层源码分析
 
 ---
 
@@ -320,4 +326,4 @@ AI-infra-LearningNote/
 
 ---
 
-最后更新：2026-03-29
+最后更新：2026-04-10
