@@ -68,6 +68,9 @@ AI-infra-LearningNote/
 - [Pipeline 双缓冲](./01-cuda/hopper/pipe/README.md) - PipelineState、ClusterBarrier、生产者-消费者双缓冲
 - [Cluster 调度](./01-cuda/cutlass/cluster/)
 
+### 低精度编程
+- [FP8 类型转换](./01-cuda/lowprec/fp8/README.md) - e5m2/e4m3 格式、FP8-Half 转换指令
+
 ### CCCL 库
 - [Thrust](./01-cuda/cccl/thrust/README.md)
 - [cuSPARSE](./01-cuda/cccl/cusparse/README.md)
@@ -199,6 +202,9 @@ AI-infra-LearningNote/
 ### 集合通信原语
 - [集合通信原语](./04-comm/collective/README.md) - All-Gather, Reduce-Scatter, All-Reduce, Broadcast, Send/Recv
 
+### 通信计算重叠
+- [通信计算重叠](./04-comm/overlap/) - MLP 层间通信与计算重叠优化
+
 ---
 
 ## 6. 深度学习框架 (05-framework/)
@@ -210,6 +216,7 @@ AI-infra-LearningNote/
 - [torch.compile 优化](./05-framework/pytorch/compile/README.md) - JIT 编译优化、Graph Break 分析
 - [自定义 CUDA 算子](./05-framework/pytorch/custom_ops/README.md) - pybind vs torch.library 绑定方式与 CUDA Graph 兼容性
 - [nn.Linear 源码分析](./05-framework/pytorch/linear/README.md) - Linear 层调用链路与 cuBLASLt 后端
+- [SM 配置](./05-framework/pytorch/hardware/README.md) - Persistent Kernel SM 占用、_SMCarveout_EXPERIMENTAL
 
 ### DeepSpeed
 - [DeepSpeed 基础](./05-framework/deepspeed/README.md) ⚠️ TODO
