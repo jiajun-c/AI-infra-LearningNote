@@ -77,6 +77,9 @@ AI-infra-LearningNote/
 - [Pipeline 双缓冲](./01-cuda/hopper/pipe/README.md) - PipelineState、ClusterBarrier、生产者-消费者双缓冲
 - [Cluster 调度](./01-cuda/cutlass/cluster/)
 
+### 低精度编程
+- [FP8 类型转换](./01-cuda/lowprec/fp8/README.md) - e5m2/e4m3 格式、FP8-Half 转换指令
+
 ### CCCL 库
 - [Thrust](./01-cuda/cccl/thrust/README.md)
 - [cuSPARSE](./01-cuda/cccl/cusparse/README.md)
@@ -239,6 +242,8 @@ AI-infra-LearningNote/
 - [torch.compile 优化](./05-framework/pytorch/compile/README.md) - JIT 编译优化、Graph Break 分析
 - [自定义 CUDA 算子](./05-framework/pytorch/custom_ops/README.md) - pybind vs torch.library 绑定方式与 CUDA Graph 兼容性
 - [对称内存](./05-framework/pytorch/symmMem/README.md)
+- [nn.Linear 源码分析](./05-framework/pytorch/linear/README.md) - Linear 层调用链路与 cuBLASLt 后端
+- [SM 配置](./05-framework/pytorch/hardware/README.md) - Persistent Kernel SM 占用、_SMCarveout_EXPERIMENTAL
 
 ### DeepSpeed
 - [DeepSpeed 基础](./05-framework/deepspeed/README.md) ⚠️ TODO
@@ -304,7 +309,7 @@ AI-infra-LearningNote/
 
 ---
 
-## 10. 算子开发范式 (dao/)
+## 10. 算子开发范式 (dao)
 
 - [算子开发范式](./dao/README.md) - 算子开发思考
 - [任务划分策略](./dao/partition/README.md) - 维度中心 vs 硬件中心 vs Split-K
@@ -353,6 +358,10 @@ AI-infra-LearningNote/
 - [x] `07-system/` - 系统与硬件架构整理
 - [x] `01-cuda/op/transpose/` - 矩阵转置算子优化
 - [x] `01-cuda/cutlass/cute/layout/` - CuTe Layout 详解
+- [x] `04-comm/CCL/NCCL/oneshot/` - NCCL one-shot 通信
+- [x] `04-comm/CCL/NCCL/symm/` - 对称内存
+- [x] `04-comm/nvshem/` - NVSHMEM 单边通信
+- [x] `05-framework/pytorch/linear/` - PyTorch Linear 层源码分析
 
 ---
 
