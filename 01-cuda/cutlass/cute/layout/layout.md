@@ -451,3 +451,7 @@ Thread 255 拿到的 4 个元素: [ 255 511 767 1023 ]
 ```cpp
 auto gK = local_tile(K, make_shape(_1{}, _1{}, Int<BlockKV>{}, Int<HeadDim>{}), make_coord(bx, by, _, 0))(0, 0, _, _, _);
 ```
+
+首先进行分块，分块的大小为, [1, 1, BLOCK_KV, HeadDim]， 产生的分块数量为 [B, H, BLOCK_KV, HeadDim, TILE_NUM] 选择B维度的第bx个，H维度的第by个，后面几个维度都选择，
+
+所以最后选择出来的分块就是 `[BLOCK_KV, HeadDim, TILE_NUM]`
