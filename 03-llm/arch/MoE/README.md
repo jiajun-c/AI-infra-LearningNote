@@ -8,7 +8,7 @@
 
 一个简单的专家模型如下所示，其中只有一个线性层
 
-```python3
+```python
 class BasicExpert(nn.Module):
     def __init__(self, feature_in, feature_out):
         super().__init__()
@@ -21,7 +21,7 @@ class BasicExpert(nn.Module):
 
 使用一个`gate`来选择使用的专家，将专家们的输入和权重相乘，得到最后的输出。
 
-```python3
+```python
 class BasicMOE(nn.Module):
     def __init__(self, feature_in, feature_out, expert_number):
         super().__init__()
@@ -57,7 +57,7 @@ class BasicMOE(nn.Module):
 
 先确定token的版本如下所示
 
-```python3
+```python
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

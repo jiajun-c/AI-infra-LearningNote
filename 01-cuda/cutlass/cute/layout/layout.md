@@ -443,3 +443,11 @@ Thread 3 拿到的 4 个元素: [ 3 259 515 771 ]
 Thread 254 拿到的 4 个元素: [ 254 510 766 1022 ]
 Thread 255 拿到的 4 个元素: [ 255 511 767 1023 ]
 ```
+
+## 7 索引
+
+以下面的代码为例子，
+
+```cpp
+auto gK = local_tile(K, make_shape(_1{}, _1{}, Int<BlockKV>{}, Int<HeadDim>{}), make_coord(bx, by, _, 0))(0, 0, _, _, _);
+```

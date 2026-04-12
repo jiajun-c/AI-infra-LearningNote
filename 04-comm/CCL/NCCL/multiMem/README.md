@@ -1,0 +1,4 @@
+# MultiMem
+
+MultiMem对应的层级是nvswitch，在NvLink的通信域内进行AllReduce的操作，发起通信的同时在NVSwitch上来进行计算，从而避免使用GPU的SM来进行规约
+

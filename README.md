@@ -35,7 +35,7 @@ AI-infra-LearningNote/
 ### 核心原语
 - [Warp 原语](./01-cuda/primitives/README.md) - shfl, ballot, any, all 等
 - [Reduce 优化](./01-cuda/reduce/README.md) - Warp/Block 级别 ReduceSum
-- [Vectorize 访问](./01-cuda/vectorize/README.md)
+- [Vectorize 访问](./01-cuda/op/element_wise/vectorize/README.md)
 
 ### TensorCore 编程
 - [TensorCore 指令](./01-cuda/tensorCore/README.md) - mma 指令、数据布局、访存优化
@@ -52,11 +52,20 @@ AI-infra-LearningNote/
 - [异步内存操作](./01-cuda/sync/mem/README.md)
 - [块内同步](./01-cuda/sync/inner/README.md)
 
+### 其他特性
+- [DSMEM 分布式共享内存](./01-cuda/dsmem/README.md)
+- [Fuse 算子融合](./01-cuda/fuse/README.md)
+- [性能测试](./01-cuda/bench/README.md)
+
+### CUDA 算子实现 (续)
+- [矩阵转置](./01-cuda/op/transpose/README.md) - 共享内存分块、Bank Conflict 避免、向量化访存优化
+
 ### CUDA 算子实现
 - **BLAS 算子**: [HGEMV](./01-cuda/blas/hgemv/README.md) | HGEMM ⚠️ TODO
 - **逐元素算子**: [Element-wise](./01-cuda/op/element_wise/README.md) | [Vectorize Element-wise](./01-cuda/op/element_wise/vectorize/README.md)
 - **Reduce 算子**: [ReduceMin](./01-cuda/op/reduce/) | [ReduceMax](./01-cuda/op/reduce/)
 - **Softmax 算子**: [Softmax](./01-cuda/op/softmax/) - CUDA 与 Triton 实现
+- **TopK 算子**: [TopK](./01-cuda/op/topk/) - TopK 实现与带宽测试
 
 ### Ampere 架构特性
 - [cp.async 异步拷贝与流水线](./01-cuda/ampere/cpasync/README.md) - cp.async 指令、3-Stage Pipeline、性能对比
@@ -104,23 +113,25 @@ AI-infra-LearningNote/
 - **内存管理**: [内存管理](./02-lang/cpp/memory/README.md)
 - **面向对象**: [类继承](./02-lang/cpp/class/inherit/README.md) | [虚函数](./02-lang/cpp/class/virtual/README.md) | [三/五法则](./02-lang/cpp/class/rules/README.md) | [模板](./02-lang/cpp/template/README.md)
 - **元编程**: [元编程](./02-lang/cpp/metaprogam/README.md)
-- **智能指针**: [shared_ptr / unique_ptr](./02-lang/cpp/point/)
+- **智能指针**: [shared_ptr / unique_ptr](./02-lang/cpp/point/README.md)
 - **STL**: [vector](./02-lang/cpp/stl/vector/README.md) | [map](./02-lang/cpp/stl/map/README.md) | [unordered_map](./02-lang/cpp/stl/unordered_map/README.md) | [bitsets](./02-lang/cpp/stl/bitsets/README.md)
 - **运算符**: [运算符重载](./02-lang/cpp/operator/README.md)
 - **异步**: [future](./02-lang/cpp/async/future/README.md)
-- **GCC 扩展**: [内建函数](./02-lang/cpp/gcc/builtin/)
+- **GCC 扩展**: [内建函数](./02-lang/cpp/gcc/builtin/README.md)
+- **Keywords**: [关键字](./02-lang/cpp/keywords/README.md)
+- **引用**: [引用](./02-lang/cpp/reference/README.md)
 
 ### Python
 - [数据类型](./02-lang/python/type/README.md)
 - [类系统](./02-lang/python/class/README.md) | [抽象基类](./02-lang/python/class/abc/README.md)
-- [全局变量](./02-lang/python/global/)
+- [全局变量](./02-lang/python/global/README.md)
 
 ### Triton
 - [基础语法](./02-lang/Triton/basic/README.md)
-- [硬件信息](./02-lang/Triton/hardware/README.md)
+- [硬件信息](./02-lang/Triton/hardware/)
 - [性能测试](./02-lang/Triton/benchmark/README.md)
 - [随机数生成](./02-lang/Triton/random/README.md)
-- [矩阵乘法](./02-lang/Triton/matmul/README.md)
+- [矩阵乘法](./02-lang/Triton/matmul/README.md) - Hopper 架构 matmul 实现与 TMA 使用
 - [FlashAttention](./02-lang/Triton/FlashAttention/)
 - [LayerNorm](./02-lang/Triton/layernorm/)
 - [Softmax](./02-lang/Triton/softmax/)
@@ -128,7 +139,7 @@ AI-infra-LearningNote/
 - [Kernel Fusion](./02-lang/Triton/fusion/permuteFusion/README.md) - Permute Fusion 四种方案对比
 
 ### CUTLASS
-- [入门指南](./02-lang/cutlass/start/)
+- [入门指南](./02-lang/cutlass/README.md)
 
 ---
 
@@ -142,8 +153,11 @@ AI-infra-LearningNote/
   - [FlashAttention V1](./03-llm/arch/Attention/FlashAttention/README.md)
   - [FlashAttention V2](./03-llm/arch/Attention/flashAttentionv2/README.md)
   - [Ring Attention](./03-llm/arch/Attention/ring-attention/README.md)
+  - [Softmax Attention](./03-llm/arch/Attention/softmax/README.md)
   - [Block-wise Attention](./03-llm/arch/Attention/blockWiseAttention/)
   - [Unpad Attention](./03-llm/arch/Attention/unpad/)
+  - [Padding 处理](./03-llm/arch/Attention/pad.md)
+  - [FlashAttention 全文](./03-llm/arch/Attention/FlashAttention/full.md)
 - **MoE**: [MoE 基础](./03-llm/arch/MoE/README.md)
 - **线性层**: [线性层](./03-llm/arch/Linear/README.md)
 - **归一化**: [Norm 层](./03-llm/arch/Norm/README.md)
@@ -176,6 +190,8 @@ AI-infra-LearningNote/
   - [QAT](./03-llm/inference/quant/QAT/README.md) | [AWQ](./03-llm/inference/quant/AWQ/README.md) | [SmoothQuant](./03-llm/inference/quant/smooth/README.md) | [WNAM](./03-llm/inference/quant/WNAM/README.md)
   - [k-means 量化](./03-llm/inference/quant/kmeans/README.md)
   - 非线性量化 ⚠️ TODO | 二值量化 ⚠️ TODO
+- **性能分析**: [Profile](./03-llm/inference/profile/README.md)
+- **Attention 优化**: [Prefill 机制](./03-llm/inference/AttentionSummary/prefill.md)
 
 ### 4.5 其他主题
 - **多模态**: [ViT](./03-llm/multimodal/vit/README.md) | [CLIP](./03-llm/multimodal/clip/README.md)
@@ -193,21 +209,36 @@ AI-infra-LearningNote/
 
 ### 通信后端
 - [Gloo](./04-comm/backend/gloo/README.md)
-- [NCCL](./04-comm/CCL/NCCL/README.md) | [配置选项](./04-comm/CCL/NCCL/config/README.md) | [图接口](./04-comm/CCL/NCCL/graph/README.md)
+- [NCCL](./04-comm/CCL/NCCL/README.md)
+  - [配置选项](./04-comm/CCL/NCCL/config/README.md)
+  - [图接口](./04-comm/CCL/NCCL/graph/README.md)
+  - [对称内存](./04-comm/CCL/NCCL/symmetric/README.md)
+  - [多卡内存访问](./04-comm/CCL/NCCL/multiMem/README.md)
+  - [环形缓冲](./04-comm/CCL/NCCL/buffer/README.md)
+  - [零拷贝](./04-comm/CCL/NCCL/zero-CTA/zero.cu) // TODO
 
 ### 集合通信原语
 - [集合通信原语](./04-comm/collective/README.md) - All-Gather, Reduce-Scatter, All-Reduce, Broadcast, Send/Recv
+
+### 计算通信重叠
+- [Overlap 机制](./04-comm/overlap/README.md) - 计算与通信解耦、chunk 级流水线
 
 ---
 
 ## 6. 深度学习框架 (05-framework/)
 
 ### PyTorch
+- [框架概述](./05-framework/pytorch/README.md)
+- [Tensor 操作](./05-framework/pytorch/tensor/README.md)
 - [计算图](./05-framework/pytorch/graph/README.md)
+- [梯度机制](./05-framework/pytorch/grad/README.md)
+- [优化器](./05-framework/pytorch/optimizer/README.md)
+- [装饰器](./05-framework/pytorch/decorator/README.md)
 - [分布式训练](./05-framework/pytorch/dist/README.md)
 - [显存管理](./05-framework/pytorch/memory/model/README.md)
 - [torch.compile 优化](./05-framework/pytorch/compile/README.md) - JIT 编译优化、Graph Break 分析
 - [自定义 CUDA 算子](./05-framework/pytorch/custom_ops/README.md) - pybind vs torch.library 绑定方式与 CUDA Graph 兼容性
+- [对称内存](./05-framework/pytorch/symmMem/README.md)
 
 ### DeepSpeed
 - [DeepSpeed 基础](./05-framework/deepspeed/README.md) ⚠️ TODO
@@ -231,19 +262,23 @@ AI-infra-LearningNote/
 
 ## 8. 系统与硬件 (07-system/)
 
+### 概述
+- [系统与硬件概述](./07-system/README.md)
+- [GPU 架构](./07-system/gpu/README.md)
+- [NPU](./07-system/npu/README.md)
+
 ### 内存系统
+- [内存系统概述](./07-system/memory/README.md)
 - [页表](./07-system/memory/pagetable.md)
 - [TLB](./07-system/memory/tlb.md)
-- [Cache 一致性](./07-system/cache/coherent/)
+- [Cache 一致性](./07-system/cache/coherent/README.md)
 
 ### 进程与线程
 - [进程/线程/协程](./07-system/process/README.md)
 
 ### 硬件架构
-- [GPU 架构](./07-system/gpu/README.md)
 - [CPU (鲲鹏)](./07-system/cpu/kunpeng.md)
-- [NPU](./07-system/npu/README.md)
-- [ARM SME](./07-system/matrixUnit/arm_sme/)
+- [ARM SME](./07-system/matrixUnit/arm_sme/README.md)
 
 ---
 
@@ -301,14 +336,23 @@ AI-infra-LearningNote/
 - [x] `01-cuda/op/softmax/` - Softmax 算子实现
 - [x] `01-cuda/op/reduce/` - Reduce 算子实现
 - [x] `01-cuda/op/element_wise/vectorize/` - Vectorize Element-wise 算子
+- [x] `01-cuda/op/topk/` - TopK 算子实现与带宽测试
 - [x] `02-lang/Triton/fusion/` - Triton Kernel Fusion (Permute Fusion)
+- [x] `02-lang/Triton/matmul/` - Triton 矩阵乘法实现
 - [x] `02-lang/cpp/class/rules/` - C++ 三/五法则
 - [x] `02-lang/cpp/point/` - 智能指针 (shared_ptr/unique_ptr)
+- [x] `02-lang/cpp/keywords/` - C++ 关键字
+- [x] `02-lang/cpp/reference/` - C++ 引用
 - [x] `05-framework/pytorch/compile/` - torch.compile 优化
 - [x] `05-framework/pytorch/custom_ops/` - 自定义 CUDA 算子绑定
+- [x] `05-framework/pytorch/symmMem/` - 对称内存
 - [x] `01-cuda/cutlass/gemm/cutlass3.x/` - CUTLASS 3.x GEMM
 - [x] `01-cuda/cutlass/cute/vt/` - CuTe _v/_t 后缀约定
 - [x] `dao/` - 算子开发范式与任务划分
+- [x] `04-comm/overlap/` - 计算通信 overlap 机制
+- [x] `07-system/` - 系统与硬件架构整理
+- [x] `01-cuda/op/transpose/` - 矩阵转置算子优化
+- [x] `01-cuda/cutlass/cute/layout/` - CuTe Layout 详解
 
 ---
 
@@ -320,4 +364,4 @@ AI-infra-LearningNote/
 
 ---
 
-最后更新：2026-03-29
+最后更新：2026-04-12
