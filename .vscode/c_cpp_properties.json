@@ -4,8 +4,8 @@
             "name": "linux-gcc-x64",
             "includePath": [
                 "${workspaceFolder}/**",
+                "/usr/local/cuda/include/**",
                 "/staff/chengjiajun/local/libtorch/include/**",
-                ":~/miniconda3/envs/pytorch/include/**",
                 "/staff/chengjiajun/miniconda3/envs/pytorch/include/**",
                 "/volume/code/chengjiajun/workspace/cutlass/include/**",
                 "/volume/code/chengjiajun/workspace/cutlass/tools/util/include/**",

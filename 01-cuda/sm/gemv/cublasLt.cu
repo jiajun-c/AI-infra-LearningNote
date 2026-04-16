@@ -128,7 +128,7 @@ int main() {
         }
 
         // 预热 (Warm-up)
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 1; i++) {
             CHECK_CUBLASLT(cublasLtMatmul(
                 handle, matmulDesc, &alpha, 
                 d_A, layoutA, d_x, layoutB, &beta, 
@@ -139,7 +139,7 @@ int main() {
         CHECK_CUDA(cudaDeviceSynchronize());
 
         // 计时测试
-        const int num_iters = 20;
+        const int num_iters = 1;
         CHECK_CUDA(cudaEventRecord(start));
         for (int i = 0; i < num_iters; i++) {
             CHECK_CUBLASLT(cublasLtMatmul(

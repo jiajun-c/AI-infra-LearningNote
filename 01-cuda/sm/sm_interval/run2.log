@@ -1,0 +1,201 @@
+Device: NVIDIA H100 80GB HBM3 | Total SMs: 132
+========================================================
+Active SMs: 66 (of 132)
+Threads/block: 256
+========================================================
+
+--------------------------------------------------------
+Shape: 512 x 1024 | Bytes: 0.0020 GB
+--------------------------------------------------------
+正确性验证：
+  Sequential SM: PASS
+  Interleaved SM: PASS
+  Standard: PASS
+
+性能对比：
+  Sequential SM (SM 0-65):     0.0042 ms, 498.32 GB/s
+  Interleaved SM (SM 0,2,..):  0.0045 ms, 466.32 GB/s
+  Standard (blockIdx):         0.0043 ms, 493.82 GB/s
+
+  Interleaved vs Sequential: -32.00 GB/s (-6.42%)
+  Standard vs Sequential:    -4.49 GB/s (-0.90%)
+
+--------------------------------------------------------
+Shape: 1024 x 1024 | Bytes: 0.0039 GB
+--------------------------------------------------------
+正确性验证：
+  Sequential SM: PASS
+  Interleaved SM: PASS
+  Standard: PASS
+
+性能对比：
+  Sequential SM (SM 0-65):     0.0061 ms, 693.94 GB/s
+  Interleaved SM (SM 0,2,..):  0.0064 ms, 661.77 GB/s
+  Standard (blockIdx):         0.0061 ms, 692.84 GB/s
+
+  Interleaved vs Sequential: -32.17 GB/s (-4.64%)
+  Standard vs Sequential:    -1.10 GB/s (-0.16%)
+
+--------------------------------------------------------
+Shape: 1024 x 2048 | Bytes: 0.0078 GB
+--------------------------------------------------------
+正确性验证：
+  Sequential SM: PASS
+  Interleaved SM: PASS
+  Standard: PASS
+
+性能对比：
+  Sequential SM (SM 0-65):     0.0092 ms, 917.61 GB/s
+  Interleaved SM (SM 0,2,..):  0.0094 ms, 892.65 GB/s
+  Standard (blockIdx):         0.0091 ms, 927.99 GB/s
+
+  Interleaved vs Sequential: -24.96 GB/s (-2.72%)
+  Standard vs Sequential:    +10.38 GB/s (+1.13%)
+
+--------------------------------------------------------
+Shape: 2048 x 2048 | Bytes: 0.0156 GB
+--------------------------------------------------------
+正确性验证：
+  Sequential SM: PASS
+  Interleaved SM: PASS
+  Standard: PASS
+
+性能对比：
+  Sequential SM (SM 0-65):     0.0157 ms, 1070.58 GB/s
+  Interleaved SM (SM 0,2,..):  0.0159 ms, 1056.36 GB/s
+  Standard (blockIdx):         0.0156 ms, 1079.72 GB/s
+
+  Interleaved vs Sequential: -14.22 GB/s (-1.33%)
+  Standard vs Sequential:    +9.14 GB/s (+0.85%)
+
+--------------------------------------------------------
+Shape: 2048 x 4096 | Bytes: 0.0313 GB
+--------------------------------------------------------
+正确性验证：
+  Sequential SM: PASS
+  Interleaved SM: PASS
+  Standard: PASS
+
+性能对比：
+  Sequential SM (SM 0-65):     0.0348 ms, 963.76 GB/s
+  Interleaved SM (SM 0,2,..):  0.0294 ms, 1140.28 GB/s
+  Standard (blockIdx):         0.0277 ms, 1213.68 GB/s
+
+  Interleaved vs Sequential: +176.52 GB/s (+18.32%)
+  Standard vs Sequential:    +249.91 GB/s (+25.93%)
+
+--------------------------------------------------------
+Shape: 4096 x 4096 | Bytes: 0.0625 GB
+--------------------------------------------------------
+正确性验证：
+  Sequential SM: PASS
+  Interleaved SM: PASS
+  Standard: PASS
+
+性能对比：
+  Sequential SM (SM 0-65):     0.1117 ms, 600.96 GB/s
+  Interleaved SM (SM 0,2,..):  0.1125 ms, 597.06 GB/s
+  Standard (blockIdx):         0.1122 ms, 598.67 GB/s
+
+  Interleaved vs Sequential: -3.89 GB/s (-0.65%)
+  Standard vs Sequential:    -2.29 GB/s (-0.38%)
+
+--------------------------------------------------------
+Shape: 4096 x 8192 | Bytes: 0.1250 GB
+--------------------------------------------------------
+正确性验证：
+  Sequential SM: PASS
+  Interleaved SM: PASS
+  Standard: PASS
+
+性能对比：
+  Sequential SM (SM 0-65):     0.2180 ms, 615.77 GB/s
+  Interleaved SM (SM 0,2,..):  0.2179 ms, 616.26 GB/s
+  Standard (blockIdx):         0.2181 ms, 615.49 GB/s
+
+  Interleaved vs Sequential: +0.48 GB/s (+0.08%)
+  Standard vs Sequential:    -0.28 GB/s (-0.05%)
+
+--------------------------------------------------------
+Shape: 8192 x 8192 | Bytes: 0.2501 GB
+--------------------------------------------------------
+正确性验证：
+  Sequential SM: PASS
+  Interleaved SM: PASS
+  Standard: PASS
+
+性能对比：
+  Sequential SM (SM 0-65):     0.4262 ms, 630.00 GB/s
+  Interleaved SM (SM 0,2,..):  0.4318 ms, 621.75 GB/s
+  Standard (blockIdx):         0.4310 ms, 623.03 GB/s
+
+  Interleaved vs Sequential: -8.26 GB/s (-1.31%)
+  Standard vs Sequential:    -6.97 GB/s (-1.11%)
+
+--------------------------------------------------------
+Shape: 8192 x 16384 | Bytes: 0.5001 GB
+--------------------------------------------------------
+正确性验证：
+  Sequential SM: PASS
+  Interleaved SM: PASS
+  Standard: PASS
+
+性能对比：
+  Sequential SM (SM 0-65):     0.8430 ms, 636.94 GB/s
+  Interleaved SM (SM 0,2,..):  0.8554 ms, 627.72 GB/s
+  Standard (blockIdx):         0.8540 ms, 628.77 GB/s
+
+  Interleaved vs Sequential: -9.22 GB/s (-1.45%)
+  Standard vs Sequential:    -8.17 GB/s (-1.28%)
+
+--------------------------------------------------------
+Shape: 16384 x 16384 | Bytes: 1.0001 GB
+--------------------------------------------------------
+正确性验证：
+  Sequential SM: PASS
+  Interleaved SM: PASS
+  Standard: PASS
+
+性能对比：
+  Sequential SM (SM 0-65):     1.6545 ms, 649.05 GB/s
+  Interleaved SM (SM 0,2,..):  1.6570 ms, 648.07 GB/s
+  Standard (blockIdx):         1.6705 ms, 642.86 GB/s
+
+  Interleaved vs Sequential: -0.98 GB/s (-0.15%)
+  Standard vs Sequential:    -6.19 GB/s (-0.95%)
+
+--------------------------------------------------------
+Shape: 16384 x 32768 | Bytes: 2.0002 GB
+--------------------------------------------------------
+正确性验证：
+  Sequential SM: PASS
+  Interleaved SM: PASS
+  Standard: PASS
+
+性能对比：
+  Sequential SM (SM 0-65):     3.2945 ms, 651.91 GB/s
+  Interleaved SM (SM 0,2,..):  3.2957 ms, 651.67 GB/s
+  Standard (blockIdx):         3.3253 ms, 645.87 GB/s
+
+  Interleaved vs Sequential: -0.24 GB/s (-0.04%)
+  Standard vs Sequential:    -6.04 GB/s (-0.93%)
+
+--------------------------------------------------------
+Shape: 32768 x 32768 | Bytes: 4.0002 GB
+--------------------------------------------------------
+正确性验证：
+  Sequential SM: PASS
+  Interleaved SM: PASS
+  Standard: PASS
+
+性能对比：
+  Sequential SM (SM 0-65):     6.5777 ms, 653.00 GB/s
+  Interleaved SM (SM 0,2,..):  6.5732 ms, 653.44 GB/s
+  Standard (blockIdx):         6.6202 ms, 648.81 GB/s
+
+  Interleaved vs Sequential: +0.44 GB/s (+0.07%)
+  Standard vs Sequential:    -4.19 GB/s (-0.64%)
+
+========================================================
+测试完成!
+========================================================

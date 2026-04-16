@@ -60,6 +60,14 @@ AI-infra-LearningNote/
 ### CUDA 算子实现 (续)
 - [矩阵转置](./01-cuda/op/transpose/README.md) - 共享内存分块、Bank Conflict 避免、向量化访存优化
 
+### SM (Streaming Multiprocessor) 编程
+- **SM 控制**: [libsmctrl](./01-cuda/sm/libsmctrl/) - SM 掩码校准、SM 数量限制
+- **SM 放置策略**:
+  - [SM 间隔放置分析](./01-cuda/sm/sm_interval/detailed_analysis.md) - H100 缓存架构与 SM 放置策略详解
+  - [性能对比总结](./01-cuda/sm/sm_interval/performance_summary.md) - Sequential vs Interleaved 性能对比
+  - [SMID vs BlockIdx](./01-cuda/sm/sm_interval/smid_vs_blockidx_analysis.md) - 任务分配策略对比
+  - [H100 缓存分析](./01-cuda/sm/sm_interval/h100_cache_analysis.md) - L2 Partition 机制与性能影响
+
 ### CUDA 算子实现
 - **BLAS 算子**: [HGEMV](./01-cuda/blas/hgemv/README.md) | HGEMM ⚠️ TODO
 - **逐元素算子**: [Element-wise](./01-cuda/op/element_wise/README.md) | [Vectorize Element-wise](./01-cuda/op/element_wise/vectorize/README.md)
@@ -326,6 +334,7 @@ AI-infra-LearningNote/
 
 ### 已完成
 - [x] 项目结构重构 - 统一目录命名与分类
+- [x] `01-cuda/sm/` - SM 编程系列 (SM 放置策略、SMID vs BlockIdx、L2 缓存分析)
 - [x] `01-cuda/launch/` - 启动配置文档
 - [x] `01-cuda/memory/cache/` - Cache 优化文档
 - [x] `05-framework/vllm/` - vLLM 架构文档
@@ -373,4 +382,4 @@ AI-infra-LearningNote/
 
 ---
 
-最后更新：2026-04-12
+最后更新：2026-04-15
