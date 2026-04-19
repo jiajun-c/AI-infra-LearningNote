@@ -219,6 +219,12 @@ decode和prefill阶段的特性不同，prefill阶段需要保证尽量减少通
 
 会先分为一个逻辑kv cache，然后会去判断哪些block是真的属于本地的，token 按条带轮询分配给各 rank，rank r 只写入 token_pos % N == r 的 token，其余位置为 PAD，不占实际 KV Cache 存储。
 
+## 4.5 DCP 的妙用
+
+对于MLA的模型，其没有head维度了，所以使用TP=8的时候会将KV cache给重复到八卡上无法在head维度上做切分。
+
+使用DCP可以刚好解决这一维度，在seqlen的维度上进行切分
+
 ## 5. EP
 
 一个EP组内包括 DP * PCP * TP,EP组的排布方式上有两种
