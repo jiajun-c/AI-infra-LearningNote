@@ -27,6 +27,7 @@ AI-infra-LearningNote/
 
 ### 架构与基础
 - [Blackwell 架构](./01-cuda/blackwell/README.md) - UMMA 指令、双 SM 协同、TMA 到 TMem
+- [硬件架构](./01-cuda/hardware/README.md) - GPU 层级结构：GPC/TPC/SM
 - [启动配置](./01-cuda/launch/README.md)
 - [Stream 管理](./01-cuda/stream/README.md)
 - [合作组 (Cooperative Groups)](./01-cuda/cg/README.md)
@@ -61,7 +62,8 @@ AI-infra-LearningNote/
 - [矩阵转置](./01-cuda/op/transpose/README.md) - 共享内存分块、Bank Conflict 避免、向量化访存优化
 
 ### SM (Streaming Multiprocessor) 编程
-- **SM 控制**: [libsmctrl](./01-cuda/sm/libsmctrl/) - SM 掩码校准、SM 数量限制
+- **SM 控制库**: [libsmctrl](./01-cuda/sm/libsmctrl/) - SM 掩码校准、SM 数量限制
+  - [H100 SM 掩码映射校准](./01-cuda/sm/libsmctrl/h100_sm_mask_calibration.md) - 掩码位与物理 TPC 映射关系分析
 - **SM 放置策略**:
   - [SM 间隔放置分析](./01-cuda/sm/sm_interval/detailed_analysis.md) - H100 缓存架构与 SM 放置策略详解
   - [性能对比总结](./01-cuda/sm/sm_interval/performance_summary.md) - Sequential vs Interleaved 性能对比
@@ -239,7 +241,10 @@ AI-infra-LearningNote/
 ## 6. 深度学习框架 (05-framework/)
 
 ### PyTorch
-- [框架概述](./05-framework/pytorch/README.md)
+- [框架概述](./05-framework/pytorch/overview/README.md) - PyTorch 整体架构：Python 前端/绑定层/ATen/c10/后端
+- [Stream 机制](./05-framework/pytorch/stream/README.md) - CUDA Stream 基础上的内存分配与同步
+- [Context 机制](./05-framework/pytorch/context/README.md) - 全局单例 Context 配置管理
+- [Green Context](./05-framework/pytorch/context/greenctx.md) - CUDA 13.0+ SM 隔离与管理机制
 - [Tensor 操作](./05-framework/pytorch/tensor/README.md)
 - [计算图](./05-framework/pytorch/graph/README.md)
 - [梯度机制](./05-framework/pytorch/grad/README.md)
@@ -247,17 +252,24 @@ AI-infra-LearningNote/
 - [装饰器](./05-framework/pytorch/decorator/README.md)
 - [分布式训练](./05-framework/pytorch/dist/README.md)
 - [显存管理](./05-framework/pytorch/memory/model/README.md)
+  - [Python GC 机制](./05-framework/pytorch/memory/gc/README.md) - 引用计数、循环引用与 gc.collect
+  - [显存监控](./05-framework/pytorch/memory/monitor/README.md) - memory_allocated/reserved 接口与监控工具
 - [torch.compile 优化](./05-framework/pytorch/compile/README.md) - JIT 编译优化、Graph Break 分析
 - [自定义 CUDA 算子](./05-framework/pytorch/custom_ops/README.md) - pybind vs torch.library 绑定方式与 CUDA Graph 兼容性
 - [对称内存](./05-framework/pytorch/symmMem/README.md)
 - [nn.Linear 源码分析](./05-framework/pytorch/linear/README.md) - Linear 层调用链路与 cuBLASLt 后端
+  - [SM Carveout 机制](./05-framework/pytorch/linear/sm-carveout.md) - cuBLASLt SM 数量控制实验性功能
 - [SM 配置](./05-framework/pytorch/hardware/README.md) - Persistent Kernel SM 占用、_SMCarveout_EXPERIMENTAL
+
+### Megatron-LM
+- [Megatron 架构](./05-framework/megtron/README.md) - TP/PP/DP/CP/EP 并行策略与整体架构
 
 ### DeepSpeed
 - [DeepSpeed 基础](./05-framework/deepspeed/README.md) ⚠️ TODO
 
 ### vLLM
 - [vLLM 框架](./05-framework/vllm/README.md)
+- [vLLM 并行策略](./05-framework/vllm/parallel.md) - TP/PP/DP/CP/EP 并行布局与 DCP/PCP 详解
 
 ---
 
@@ -335,6 +347,12 @@ AI-infra-LearningNote/
 ### 已完成
 - [x] 项目结构重构 - 统一目录命名与分类
 - [x] `01-cuda/sm/` - SM 编程系列 (SM 放置策略、SMID vs BlockIdx、L2 缓存分析)
+- [x] `01-cuda/hardware/` - GPU 硬件架构文档 (GPC/TPC/SM 层级)
+- [x] `01-cuda/sm/libsmctrl/` - H100 SM 掩码映射校准
+- [x] `05-framework/pytorch/overview/` - PyTorch 框架概述
+- [x] `05-framework/pytorch/stream/` - PyTorch Stream 机制
+- [x] `05-framework/pytorch/context/` - PyTorch Context 与 Green Context
+- [x] `05-framework/pytorch/linear/sm-carveout/` - SM Carveout 机制详解
 - [x] `01-cuda/launch/` - 启动配置文档
 - [x] `01-cuda/memory/cache/` - Cache 优化文档
 - [x] `05-framework/vllm/` - vLLM 架构文档
@@ -371,6 +389,10 @@ AI-infra-LearningNote/
 - [x] `04-comm/CCL/NCCL/symm/` - 对称内存
 - [x] `04-comm/nvshem/` - NVSHMEM 单边通信
 - [x] `05-framework/pytorch/linear/` - PyTorch Linear 层源码分析
+- [x] `05-framework/megtron/` - Megatron-LM 架构 (TP/PP/DP/CP/EP 并行策略)
+- [x] `05-framework/pytorch/memory/gc/` - Python GC 机制与显存释放
+- [x] `05-framework/pytorch/memory/monitor/` - 显存监控接口与工具
+- [x] `05-framework/vllm/parallel.md` - vLLM 并行策略 (DCP/PCP/EP/EPLB)
 
 ---
 
@@ -382,4 +404,4 @@ AI-infra-LearningNote/
 
 ---
 
-最后更新：2026-04-15
+最后更新：2026-04-19
