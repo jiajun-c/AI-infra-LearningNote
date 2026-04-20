@@ -17,6 +17,8 @@ AI-infra-LearningNote/
 ├── 07-system/         # 系统与硬件架构
 ├── 08-tools/          # 开发工具与第三方库
 ├── 09-profile/        # 性能分析与调试
+├── 010-dist/          # 分布式训练专题
+├── concept/           # 基础概念
 ├── cuda/              # CUTLASS/CuTe 实践代码
 └── dao/               # 算子开发范式与任务划分
 ```
@@ -267,6 +269,9 @@ AI-infra-LearningNote/
 ### DeepSpeed
 - [DeepSpeed 基础](./05-framework/deepspeed/README.md) ⚠️ TODO
 
+### Slime
+- [Slime 框架](./05-framework/slime/README.md) - 训练/推理混合调度、GRPO 训练流程、Reward 计算
+
 ### vLLM
 - [vLLM 框架](./05-framework/vllm/README.md)
 - [vLLM 并行策略](./05-framework/vllm/parallel.md) - TP/PP/DP/CP/EP 并行布局与 DCP/PCP 详解
@@ -336,6 +341,19 @@ AI-infra-LearningNote/
 
 ---
 
+## 11. 分布式训练专题 (010-dist/)
+
+- [FSDP](./010-dist/fsdp/README.md) - Full Sharded Data Parallelism：按层分片、All-Gather 重建
+- [分布式转置](./010-dist/trans/README.md) - 矩阵转置与 All-to-All 通信等价关系
+
+---
+
+## 12. 基础概念 (concept/)
+
+- [基础概念](./concept/README.md) - pre-training / SFT / RL 阶段概念梳理
+
+---
+
 ## 待办事项
 
 ### 文档完善
@@ -393,6 +411,10 @@ AI-infra-LearningNote/
 - [x] `05-framework/pytorch/memory/gc/` - Python GC 机制与显存释放
 - [x] `05-framework/pytorch/memory/monitor/` - 显存监控接口与工具
 - [x] `05-framework/vllm/parallel.md` - vLLM 并行策略 (DCP/PCP/EP/EPLB)
+- [x] `010-dist/fsdp/` - FSDP 全分片数据并行文档
+- [x] `010-dist/trans/` - 分布式转置与 All-to-All 等价关系
+- [x] `05-framework/slime/` - Slime 框架 (训练/推理调度、GRPO)
+- [x] `concept/` - 基础概念（pre-training / SFT / RL）
 
 ---
 
@@ -404,4 +426,4 @@ AI-infra-LearningNote/
 
 ---
 
-最后更新：2026-04-19
+最后更新：2026-04-20
