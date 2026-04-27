@@ -48,6 +48,7 @@ AI-infra-LearningNote/
 - [Bank 冲突优化](./01-cuda/memory/bank/README.md)
 - [Cache 优化](./01-cuda/memory/cache/README.md)
 - [内存空间转换](./01-cuda/memory/convert/README.md)
+- [Pin Memory (锁页内存)](./01-cuda/pin/README.md) - 锁页内存分配与 DMA 直传
 
 ### 异步操作
 - [Pipeline 机制](./01-cuda/sync/pipe/README.md)
@@ -140,6 +141,7 @@ AI-infra-LearningNote/
 - [数据类型](./02-lang/python/type/README.md)
 - [类系统](./02-lang/python/class/README.md) | [抽象基类](./02-lang/python/class/abc/README.md)
 - [全局变量](./02-lang/python/global/README.md)
+- [异步编程](./02-lang/python/async/README.md) - asyncio、async/await、事件循环
 
 ### Triton
 - [基础语法](./02-lang/Triton/basic/README.md)
@@ -209,7 +211,7 @@ AI-infra-LearningNote/
 - **Attention 优化**: [Prefill 机制](./03-llm/inference/AttentionSummary/prefill.md)
 
 ### 4.5 其他主题
-- **多模态**: [ViT](./03-llm/multimodal/vit/README.md) | [CLIP](./03-llm/multimodal/clip/README.md)
+- **多模态**: [ViT](./03-llm/multimodal/vit/README.md) | [CLIP](./03-llm/multimodal/clip/README.md) | [TextEncoder](./03-llm/multimodal/textEncoder/README.md) | [VAE](./03-llm/multimodal/vae/README.md)
 - **强化学习**: [RL 基础](./03-llm/RL/README.md)
 - **知识蒸馏 (KD)**
 - **神经架构搜索 (NAS)**: [OFA 网络](./03-llm/NAS/README.md)
@@ -256,9 +258,12 @@ AI-infra-LearningNote/
 - [显存管理](./05-framework/pytorch/memory/model/README.md)
   - [Python GC 机制](./05-framework/pytorch/memory/gc/README.md) - 引用计数、循环引用与 gc.collect
   - [显存监控](./05-framework/pytorch/memory/monitor/README.md) - memory_allocated/reserved 接口与监控工具
+  - [Pin 内存实现](./05-framework/pytorch/memory/pin/README.md) - PyTorch Pin Memory 底层实现详解
+- [重计算机制](./05-framework/pytorch/recompute/README.md) - 训练显存节省策略
 - [torch.compile 优化](./05-framework/pytorch/compile/README.md) - JIT 编译优化、Graph Break 分析
 - [自定义 CUDA 算子](./05-framework/pytorch/custom_ops/README.md) - pybind vs torch.library 绑定方式与 CUDA Graph 兼容性
 - [对称内存](./05-framework/pytorch/symmMem/README.md)
+- [C++ Storage 类](./05-framework/pytorch/cpp/storage/README.md) - PyTorch C++ 层 Storage 数据结构
 - [nn.Linear 源码分析](./05-framework/pytorch/linear/README.md) - Linear 层调用链路与 cuBLASLt 后端
   - [SM Carveout 机制](./05-framework/pytorch/linear/sm-carveout.md) - cuBLASLt SM 数量控制实验性功能
 - [SM 配置](./05-framework/pytorch/hardware/README.md) - Persistent Kernel SM 占用、_SMCarveout_EXPERIMENTAL
@@ -274,7 +279,10 @@ AI-infra-LearningNote/
 
 ### vLLM
 - [vLLM 框架](./05-framework/vllm/README.md)
+- [vLLM 架构](./05-framework/vllm/arch.md) - vLLM 整体架构设计
 - [vLLM 并行策略](./05-framework/vllm/parallel.md) - TP/PP/DP/CP/EP 并行布局与 DCP/PCP 详解
+- [vLLM 显存分配](./05-framework/vllm/memory.md) - KV Cache 显存分配机制
+- [vLLM Sleep Mode](./05-framework/vllm/sleep.md) - 暂时释放 GPU 显存给其他任务（RLHF 等）
 
 ---
 
@@ -305,6 +313,10 @@ AI-infra-LearningNote/
 
 ### 进程与线程
 - [进程/线程/协程](./07-system/process/README.md)
+
+### OS I/O
+- [AIO 异步 I/O](./07-system/os/aio/README.md) - 传统 IO 与异步 IO 模型
+- [io_uring](./07-system/os/io_uring/README.md) - 高性能 I/O 框架，替代 libaio
 
 ### 硬件架构
 - [CPU (鲲鹏)](./07-system/cpu/kunpeng.md)
@@ -415,6 +427,19 @@ AI-infra-LearningNote/
 - [x] `010-dist/trans/` - 分布式转置与 All-to-All 等价关系
 - [x] `05-framework/slime/` - Slime 框架 (训练/推理调度、GRPO)
 - [x] `concept/` - 基础概念（pre-training / SFT / RL）
+- [x] `01-cuda/pin/` - CUDA Pin Memory 锁页内存
+- [x] `02-lang/python/async/` - Python 异步编程 (asyncio/async/await)
+- [x] `03-llm/multimodal/textEncoder/` - TextEncoder 架构与跨模态对齐
+- [x] `03-llm/multimodal/vit/` - ViT 算法文档
+- [x] `03-llm/multimodal/vae/` - VAE 文档
+- [x] `05-framework/pytorch/memory/pin/` - PyTorch Pin Memory 底层实现
+- [x] `05-framework/pytorch/cpp/storage/` - PyTorch C++ Storage 类
+- [x] `05-framework/pytorch/recompute/` - torch 重计算机制
+- [x] `05-framework/vllm/arch.md` - vLLM 架构文档
+- [x] `05-framework/vllm/memory.md` - vLLM 显存分配机制
+- [x] `05-framework/vllm/sleep.md` - vLLM Sleep Mode
+- [x] `07-system/os/aio/` - AIO 异步 I/O
+- [x] `07-system/os/io_uring/` - io_uring 高性能 I/O
 
 ---
 
@@ -426,4 +451,4 @@ AI-infra-LearningNote/
 
 ---
 
-最后更新：2026-04-20
+最后更新：2026-04-27
