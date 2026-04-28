@@ -141,7 +141,19 @@ AI-infra-LearningNote/
 - [数据类型](./02-lang/python/type/README.md)
 - [类系统](./02-lang/python/class/README.md) | [抽象基类](./02-lang/python/class/abc/README.md)
 - [全局变量](./02-lang/python/global/README.md)
+- [迭代器协议](./02-lang/python/iter/README.md) - `__iter__` / `__next__`、迭代器与可迭代对象
+- [yield 生成器](./02-lang/python/yield/README.md) - yield/send/throw/close、yield from、手写事件循环
+  - [Lab1: 生成器基础](./02-lang/python/yield/lab1_generator.py) - next() 推进、StopIteration、内存对比
+  - [Lab2: send() 双向通道](./02-lang/python/yield/lab2_send.py) - yield 左右两侧、启动约束
+  - [Lab3: yield from](./02-lang/python/yield/lab3_yield_from.py) - 展平、send 透传、捕获 return 值
+  - [Lab4: throw/close](./02-lang/python/yield/lab4_throw_close.py) - 异常注入、GeneratorExit、finally 清理
+  - [Lab5: 手写 asyncio](./02-lang/python/yield/lab5_mini_asyncio.py) - 用生成器实现事件循环
 - [异步编程](./02-lang/python/async/README.md) - asyncio、async/await、事件循环
+  - [Lab1: 协程基础](./02-lang/python/async/lab1_coroutine.py) - 协程不是线程、await 让出点
+  - [Lab2: 事件循环调度](./02-lang/python/async/lab2_event_loop.py) - 调度顺序、sleep(0) 语义
+  - [Lab3: I/O 并发](./02-lang/python/async/lab3_io_concurrency.py) - gather 并发、串行 vs 并发对比
+  - [Lab4: Task 取消与超时](./02-lang/python/async/lab4_task_cancel.py) - cancel/wait_for/shield
+  - [Lab5: 生产者消费者](./02-lang/python/async/lab5_producer_consumer.py) - Queue 背压、task_done/join
 
 ### Triton
 - [基础语法](./02-lang/Triton/basic/README.md)
@@ -259,7 +271,7 @@ AI-infra-LearningNote/
   - [Python GC 机制](./05-framework/pytorch/memory/gc/README.md) - 引用计数、循环引用与 gc.collect
   - [显存监控](./05-framework/pytorch/memory/monitor/README.md) - memory_allocated/reserved 接口与监控工具
   - [Pin 内存实现](./05-framework/pytorch/memory/pin/README.md) - PyTorch Pin Memory 底层实现详解
-- [重计算机制](./05-framework/pytorch/recompute/README.md) - 训练显存节省策略
+- [重计算机制](./05-framework/pytorch/recompute/README.md) - 训练显存节省策略（含前向/反向显存分解 demo）
 - [torch.compile 优化](./05-framework/pytorch/compile/README.md) - JIT 编译优化、Graph Break 分析
 - [自定义 CUDA 算子](./05-framework/pytorch/custom_ops/README.md) - pybind vs torch.library 绑定方式与 CUDA Graph 兼容性
 - [对称内存](./05-framework/pytorch/symmMem/README.md)
@@ -283,6 +295,9 @@ AI-infra-LearningNote/
 - [vLLM 并行策略](./05-framework/vllm/parallel.md) - TP/PP/DP/CP/EP 并行布局与 DCP/PCP 详解
 - [vLLM 显存分配](./05-framework/vllm/memory.md) - KV Cache 显存分配机制
 - [vLLM Sleep Mode](./05-framework/vllm/sleep.md) - 暂时释放 GPU 显存给其他任务（RLHF 等）
+
+### SGLang
+- [权重加载流程](./05-framework/sglang/weightLoad/README.md) - safetensors 迭代器、loader 选择、load_weights 调用链
 
 ---
 
@@ -315,8 +330,8 @@ AI-infra-LearningNote/
 - [进程/线程/协程](./07-system/process/README.md)
 
 ### OS I/O
-- [AIO 异步 I/O](./07-system/os/aio/README.md) - 传统 IO 与异步 IO 模型
-- [io_uring](./07-system/os/io_uring/README.md) - 高性能 I/O 框架，替代 libaio
+- [AIO 异步 I/O](./07-system/os/aio/README.md) - libaio 四核心 API、O_DIRECT、滑动窗口读取 demo
+- [io_uring](./07-system/os/io_uring/README.md) - SQ/CQ 共享内存环形队列、裸 syscall demo、与 libaio 对比
 
 ### 硬件架构
 - [CPU (鲲鹏)](./07-system/cpu/kunpeng.md)
@@ -373,6 +388,7 @@ AI-infra-LearningNote/
 - [ ] `05-framework/deepspeed/` - 完善 DeepSpeed 文档
 - [ ] `03-llm/inference/quant/non-linear/` - 添加非线性量化文档
 - [ ] `03-llm/inference/quant/binary/` - 添加二值量化文档
+- 详细待学习清单见 [TODO.md](./TODO.md)
 
 ### 已完成
 - [x] 项目结构重构 - 统一目录命名与分类
@@ -438,16 +454,9 @@ AI-infra-LearningNote/
 - [x] `05-framework/vllm/arch.md` - vLLM 架构文档
 - [x] `05-framework/vllm/memory.md` - vLLM 显存分配机制
 - [x] `05-framework/vllm/sleep.md` - vLLM Sleep Mode
-- [x] `07-system/os/aio/` - AIO 异步 I/O
-- [x] `07-system/os/io_uring/` - io_uring 高性能 I/O
-
----
-
-## 参考资源
-
-- [NVIDIA CUDA 文档](https://docs.nvidia.com/cuda/)
-- [PyTorch 文档](https://pytorch.org/docs/)
-- [Hugging Face](https://huggingface.co/docs)
+- [x] `02-lang/python/yield/` - yield 生成器五个 Lab（基础/send/yield from/throw-close/手写事件循环）
+- [x] `02-lang/python/iter/` - 迭代器协议
+- [x] `05-framework/sglang/weightLoad/` - SGLang 权重加载流程（safetensors 迭代器、loader 调用链）
 
 ---
 
