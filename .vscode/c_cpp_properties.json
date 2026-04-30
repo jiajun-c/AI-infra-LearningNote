@@ -7,9 +7,10 @@
                 "/usr/local/cuda/include/**",
                 "/staff/chengjiajun/local/libtorch/include/**",
                 "/staff/chengjiajun/miniconda3/envs/pytorch/include/**",
+                "/volume/code/chengjiajun/cutlass/include/**",
                 "/volume/code/chengjiajun/workspace/cutlass/include/**",
                 "/volume/code/chengjiajun/workspace/cutlass/tools/util/include/**",
-                "/staff/chengjiajun/local/include"
+                "/volume/code/chengjiajun/cutlass/include"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "${default}",

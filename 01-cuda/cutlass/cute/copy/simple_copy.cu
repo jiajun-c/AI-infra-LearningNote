@@ -15,6 +15,8 @@ __global__ void copy_kernel(float* d_in, float* d_out, int M, int N) {
 
     Tensor g_in_full = make_tensor(make_gmem_ptr(d_in), global_layout);
     Tensor g_out_full = make_tensor(make_gmem_ptr(d_out), global_layout);
+
+    
     auto tiler = Shape<_4, _8>{};
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
     if (tid < M*N/(4*8)) {
