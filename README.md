@@ -49,6 +49,7 @@ AI-infra-LearningNote/
 - [Cache 优化](./01-cuda/memory/cache/README.md)
 - [内存空间转换](./01-cuda/memory/convert/README.md)
 - [Pin Memory (锁页内存)](./01-cuda/pin/README.md) - 锁页内存分配与 DMA 直传
+- [VMM 虚拟内存管理](./01-cuda/memory/vmm/README.md) - 物理块与虚拟地址解耦、动态扩展数组、多 GPU P2P 共享
 
 ### 异步操作
 - [Pipeline 机制](./01-cuda/sync/pipe/README.md)
@@ -457,7 +458,8 @@ AI-infra-LearningNote/
 - [x] `02-lang/python/yield/` - yield 生成器五个 Lab（基础/send/yield from/throw-close/手写事件循环）
 - [x] `02-lang/python/iter/` - 迭代器协议
 - [x] `05-framework/sglang/weightLoad/` - SGLang 权重加载流程（safetensors 迭代器、loader 调用链）
+- [x] `01-cuda/memory/vmm/` - CUDA VMM 虚拟内存管理（物理块/VA解耦、动态扩展、多GPU P2P共享）
 
 ---
 
-最后更新：2026-04-27
+最后更新：2026-05-06
