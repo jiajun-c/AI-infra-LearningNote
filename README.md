@@ -11,6 +11,7 @@ AI-infra-LearningNote/
 ├── 01-cuda/           # CUDA 编程与 GPU 底层
 ├── 02-lang/           # 编程语言 (C++/Python/Triton)
 ├── 03-llm/            # 大模型（架构 + 训练 + 推理）
+├── 03-multi/          # 多模态模型 Infra（图文/视频/音频）
 ├── 04-comm/           # 通信库与集合通信原语
 ├── 05-framework/      # 深度学习框架
 ├── 06-agent/          # AI Agent 与向量检索
@@ -128,7 +129,7 @@ AI-infra-LearningNote/
 ### C++
 - **基础**: [类型系统](./02-lang/cpp/type/README.md) | [命名空间](./02-lang/cpp/namespace/README.md) | [类型转换](./02-lang/cpp/cast/README.md) | [自动类型推导](./02-lang/cpp/auto/README.md) | [Lambda 表达式](./02-lang/cpp/lamda/)
 - **内存管理**: [内存管理](./02-lang/cpp/memory/README.md)
-- **面向对象**: [类继承](./02-lang/cpp/class/inherit/README.md) | [虚函数](./02-lang/cpp/class/virtual/README.md) | [三/五法则](./02-lang/cpp/class/rules/README.md) | [模板](./02-lang/cpp/template/README.md)
+- **面向对象**: [类继承](./02-lang/cpp/class/inherit/README.md) | [虚函数](./02-lang/cpp/class/virtual/README.md) | [三/五法则](./02-lang/cpp/class/rules/README.md) | [静态成员](./02-lang/cpp/class/member/README.md) | [模板](./02-lang/cpp/template/README.md)
 - **元编程**: [元编程](./02-lang/cpp/metaprogam/README.md)
 - **智能指针**: [shared_ptr / unique_ptr](./02-lang/cpp/point/README.md)
 - **STL**: [vector](./02-lang/cpp/stl/vector/README.md) | [map](./02-lang/cpp/stl/map/README.md) | [unordered_map](./02-lang/cpp/stl/unordered_map/README.md) | [bitsets](./02-lang/cpp/stl/bitsets/README.md)
@@ -224,7 +225,7 @@ AI-infra-LearningNote/
 - **Attention 优化**: [Prefill 机制](./03-llm/inference/AttentionSummary/prefill.md)
 
 ### 4.5 其他主题
-- **多模态**: [ViT](./03-llm/multimodal/vit/README.md) | [CLIP](./03-llm/multimodal/clip/README.md) | [TextEncoder](./03-llm/multimodal/textEncoder/README.md) | [VAE](./03-llm/multimodal/vae/README.md)
+- **多模态**: [ViT](./03-multi/arch/vit/README.md) | [CLIP](./03-multi/arch/clip/README.md) | [TextEncoder](./03-multi/arch/textEncoder/README.md) | [VAE](./03-multi/arch/vae/README.md)
 - **强化学习**: [RL 基础](./03-llm/RL/README.md)
 - **知识蒸馏 (KD)**
 - **神经架构搜索 (NAS)**: [OFA 网络](./03-llm/NAS/README.md)
@@ -235,7 +236,35 @@ AI-infra-LearningNote/
 
 ---
 
-## 5. 模型通信 (04-comm/)
+## 5. 多模态模型 Infra (03-multi/)
+
+> 聚焦多模态（图文/视频/音频）在推理与训练侧的 infra 实现，完整学习路径见 [03-multi/README.md](./03-multi/README.md)
+
+### 模型架构
+- [ViT](./03-multi/arch/vit/README.md) - Vision Transformer，patch embedding 与位置编码
+- [CLIP](./03-multi/arch/clip/README.md) - 图文对比学习对齐
+- [VAE](./03-multi/arch/vae/README.md) - 图像压缩到 latent space
+- [TextEncoder](./03-multi/arch/textEncoder/README.md) - 跨模态文本编码器
+- DiT ⚠️ TODO | LLaVA 系列 ⚠️ TODO | Qwen-VL ⚠️ TODO
+
+### 推理优化
+- 视觉 token Prefill 优化 ⚠️ TODO
+- 多模态 KV Cache 与 prefix cache ⚠️ TODO
+- Token 压缩（ToMe/Pooling）⚠️ TODO
+- 视觉预处理异步 Pipeline ⚠️ TODO
+
+### 训练
+- 多模态数据加载 ⚠️ TODO
+- 编码器冻结与梯度流控制 ⚠️ TODO
+- 多模态微调策略 ⚠️ TODO
+
+### 并行与部署
+- 视觉编码器张量并行 ⚠️ TODO
+- 编码-解码分离部署（disaggregated prefill）⚠️ TODO
+
+---
+
+## 6. 模型通信 (04-comm/) 
 
 ### 通信后端
 - [Gloo](./04-comm/backend/gloo/README.md)
@@ -255,7 +284,7 @@ AI-infra-LearningNote/
 
 ---
 
-## 6. 深度学习框架 (05-framework/)
+## 7. 深度学习框架 (05-framework/)
 
 ### PyTorch
 - [框架概述](./05-framework/pytorch/overview/README.md) - PyTorch 整体架构：Python 前端/绑定层/ATen/c10/后端
@@ -265,7 +294,7 @@ AI-infra-LearningNote/
 - [Tensor 操作](./05-framework/pytorch/tensor/README.md)
 - [计算图](./05-framework/pytorch/graph/README.md)
 - [梯度机制](./05-framework/pytorch/grad/README.md)
-- [优化器](./05-framework/pytorch/optimizer/README.md)
+- [优化器](./05-framework/pytorch/optimizer/README.md) - SGD/Adam/AdamW 原理、自适应学习率、自定义优化器、Scheduler
 - [装饰器](./05-framework/pytorch/decorator/README.md)
 - [分布式训练](./05-framework/pytorch/dist/README.md)
 - [显存管理](./05-framework/pytorch/memory/model/README.md)
@@ -302,7 +331,7 @@ AI-infra-LearningNote/
 
 ---
 
-## 7. AI Agent (06-agent/)
+## 8. AI Agent (06-agent/)
 
 ### Agent 框架
 - [LangChain](./06-agent/langchain/README.md)
@@ -314,7 +343,7 @@ AI-infra-LearningNote/
 
 ---
 
-## 8. 系统与硬件 (07-system/)
+## 9. 系统与硬件 (07-system/)
 
 ### 概述
 - [系统与硬件概述](./07-system/README.md)
@@ -340,7 +369,7 @@ AI-infra-LearningNote/
 
 ---
 
-## 9. 工具与性能分析 (08-tools/ & 09-profile/)
+## 10. 工具与性能分析 (08-tools/ & 09-profile/)
 
 ### 开发工具 (08-tools/)
 - [Python 项目管理](./08-tools/pyproject/README.md)
@@ -362,21 +391,21 @@ AI-infra-LearningNote/
 
 ---
 
-## 10. 算子开发范式 (dao)
+## 11. 算子开发范式 (dao)
 
 - [算子开发范式](./dao/README.md) - 算子开发思考
 - [任务划分策略](./dao/partition/README.md) - 维度中心 vs 硬件中心 vs Split-K
 
 ---
 
-## 11. 分布式训练专题 (010-dist/)
+## 12. 分布式训练专题 (010-dist/)
 
 - [FSDP](./010-dist/fsdp/README.md) - Full Sharded Data Parallelism：按层分片、All-Gather 重建
 - [分布式转置](./010-dist/trans/README.md) - 矩阵转置与 All-to-All 通信等价关系
 
 ---
 
-## 12. 基础概念 (concept/)
+## 13. 基础概念 (concept/)
 
 - [基础概念](./concept/README.md) - pre-training / SFT / RL 阶段概念梳理
 
@@ -446,9 +475,10 @@ AI-infra-LearningNote/
 - [x] `concept/` - 基础概念（pre-training / SFT / RL）
 - [x] `01-cuda/pin/` - CUDA Pin Memory 锁页内存
 - [x] `02-lang/python/async/` - Python 异步编程 (asyncio/async/await)
-- [x] `03-llm/multimodal/textEncoder/` - TextEncoder 架构与跨模态对齐
-- [x] `03-llm/multimodal/vit/` - ViT 算法文档
-- [x] `03-llm/multimodal/vae/` - VAE 文档
+- [x] `03-multi/arch/textEncoder/` - TextEncoder 架构与跨模态对齐
+- [x] `03-multi/arch/vit/` - ViT 算法文档
+- [x] `03-multi/arch/vae/` - VAE 文档
+- [x] `03-multi/` - 多模态 Infra 学习目录（arch/encode/inference/train/parallel/memory）
 - [x] `05-framework/pytorch/memory/pin/` - PyTorch Pin Memory 底层实现
 - [x] `05-framework/pytorch/cpp/storage/` - PyTorch C++ Storage 类
 - [x] `05-framework/pytorch/recompute/` - torch 重计算机制
@@ -460,6 +490,9 @@ AI-infra-LearningNote/
 - [x] `05-framework/sglang/weightLoad/` - SGLang 权重加载流程（safetensors 迭代器、loader 调用链）
 - [x] `01-cuda/memory/vmm/` - CUDA VMM 虚拟内存管理（物理块/VA解耦、动态扩展、多GPU P2P共享）
 
+- [x] `05-framework/pytorch/optimizer/` - 优化器文档（SGD/AdaGrad/RMSProp/Adam/AdamW/Scheduler/自定义优化器）
+- [x] `02-lang/cpp/class/member/` - C++ 静态成员
+
 ---
 
-最后更新：2026-05-06
+最后更新：2026-05-08

@@ -1,5 +1,7 @@
 # torch重计算
 
+https://pytorch.org/blog/activation-checkpointing-techniques/
+
 torch的重计算机制是为了节省训练时的显存，在默认的情况下前向的过程中会存储下每一层的激活值。会导致显存值爆增
 
 ```python3
@@ -70,3 +72,78 @@ python3 example_auto_budget.py
 | 需要修改模型代码 | 是 | 否 |
 | 决策依据 | 人工判断 | 编译器基于 flop/memory 自动优化 |
 | 适用条件 | 任何 PyTorch | 需要 `torch.compile` |
+
+## `torch._functorch.config` 其他重要特性
+
+该模块是 AOT Autograd 的全局配置中心，除 `activation_memory_budget` 外还有以下值得关注的参数：
+
+### 重计算细粒度控制（ban_recompute_* 系列）
+
+这组 bool flag 控制分区器在做激活检查点时哪些算子"禁止被选为重计算"：
+
+| 配置项 | 默认 | 含义 |
+|---|---|---|
+| `ban_recompute_used_far_apart` | `True` | 禁止重计算"距离反向用点很远"的节点，避免长链重计算 |
+| `ban_recompute_long_fusible_chains` | `True` | 禁止重计算过长的可融合算子链，防止反向重计算链过深 |
+| `ban_recompute_materialized_backward` | `True` | 禁止重计算反向中必须物化的节点（被非融合算子使用的节点） |
+| `ban_recompute_not_in_allowlist` | `True` | 只允许重计算白名单内的算子（elementwise、激活函数等），其余禁止 |
+| `ban_recompute_reductions` | `True` | 禁止重计算 reduction（结果小但重算代价高） |
+| `recompute_views` | `False` | 是否重计算 view 算子（view 本身免费，建议保持 True 等价的默认行为） |
+
+全部关闭 ban_recompute 限制可用 `aggressive_recomputation = True`，会大幅增加重计算覆盖面，牺牲性能换显存。
+
+### activation_memory_budget 求解器
+
+```python
+# 运行时代价估算方式
+activation_memory_budget_runtime_estimator = "flops"   # 默认：用 flop count 估算
+# 可选 "profile"（实际 benchmark 每个算子）或 "testing"（全部返回 1）
+
+# 背包求解算法
+activation_memory_budget_solver = "dp"   # 默认：量化 DP（推荐）
+# 可选 "greedy"（贪心，速度快但质量差）或 "ilp"（整数线性规划，需 scipy）
+```
+
+### 调试与可视化
+
+```python
+# 打印分区器调试信息
+debug_partitioner = True   # 或设环境变量 AOT_PARTITIONER_DEBUG=1
+
+# 生成 memory budget vs recompute runtime 的 Pareto 前沿 SVG 图
+# 帮助选择合适的 budget 值
+visualize_memory_budget_pareto = True   # 或 PARTITIONER_MEMORY_BUDGET_PARETO=1
+memory_budget_pareto_dir = "/tmp/pareto"   # SVG 输出目录
+```
+
+### 其他实用配置
+
+```python
+# 激活 aggressive 重计算模式：关闭大部分 ban_recompute 限制
+# 效果类似把 budget 调得很低，但不受背包约束，可能节省更多显存
+aggressive_recomputation = False   # 默认关闭
+
+# 参数权重视为"免费保存"（不计入显存预算）
+# 关闭后分区器会尝试重计算参数相关节点，通常不建议改动
+treat_parameters_as_free_to_save = True
+
+# 分区前对图做公共子表达式消除，减少冗余算子
+cse = True
+
+# 多机训练时禁止优化 collective 算子（allreduce 等），避免不同 rank 决策不一致导致 NCCL hang
+unsafe_allow_optimization_of_collectives = False   # 必须保持 False
+```
+
+### 使用方式
+
+```python
+from torch._functorch import config as functorch_config
+
+# 必须在 torch.compile 之前设置
+functorch_config.activation_memory_budget = 0.3
+functorch_config.activation_memory_budget_runtime_estimator = "flops"
+functorch_config.activation_memory_budget_solver = "dp"
+functorch_config.aggressive_recomputation = False
+
+model = torch.compile(model)
+```
