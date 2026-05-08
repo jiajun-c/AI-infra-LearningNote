@@ -119,3 +119,5 @@
 - [ ] **instant_tensor 源码**：分布式 safetensors 加载，多文件并发 AIO，pinned memory 直接 DMA
 - [ ] **vLLM CPU offload 实现**：KV cache swap 的 AIO 写入路径
 - [ ] **asyncio 与 uvloop**：基于 libuv 的事件循环替换，吞吐对比
+
+https://alessiodevoto.github.io/ 
