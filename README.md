@@ -245,9 +245,14 @@ AI-infra-LearningNote/
 - [CLIP](./03-multi/arch/clip/README.md) - 图文对比学习对齐
 - [VAE](./03-multi/arch/vae/README.md) - 图像压缩到 latent space
 - [TextEncoder](./03-multi/arch/textEncoder/README.md) - 跨模态文本编码器
-- DiT ⚠️ TODO | LLaVA 系列 ⚠️ TODO | Qwen-VL ⚠️ TODO
+- [LDM](./03-multi/arch/ldm/README.md) - 潜空间扩散模型，Cross-Attention 条件控制
+- [DiT](./03-multi/arch/dit/README.md) - Diffusion Transformer，用 Transformer 替换 U-Net 骨干
+- [ADM](./03-multi/arch/adm/README.md) - Ablated Diffusion Model
+- LLaVA 系列 ⚠️ TODO | Qwen-VL ⚠️ TODO
 
 ### 推理优化
+- [DiT Cache](./03-multi/inference/dit-cache/README.md) - 相邻时间步 Attention/MLP 输出缓存策略
+- [Text2X 生成概述](./03-multi/inference/t2x/README.md) - 文本到多模态生成任务综述
 - 视觉 token Prefill 优化 ⚠️ TODO
 - 多模态 KV Cache 与 prefix cache ⚠️ TODO
 - Token 压缩（ToMe/Pooling）⚠️ TODO
@@ -308,6 +313,7 @@ AI-infra-LearningNote/
 - [C++ Storage 类](./05-framework/pytorch/cpp/storage/README.md) - PyTorch C++ 层 Storage 数据结构
 - [nn.Linear 源码分析](./05-framework/pytorch/linear/README.md) - Linear 层调用链路与 cuBLASLt 后端
   - [SM Carveout 机制](./05-framework/pytorch/linear/sm-carveout.md) - cuBLASLt SM 数量控制实验性功能
+- [FLOPs 计数器](./05-framework/pytorch/flopsCounter/README.md) - FlopCounterMode 接口与模型 FLOPs 统计
 - [SM 配置](./05-framework/pytorch/hardware/README.md) - Persistent Kernel SM 占用、_SMCarveout_EXPERIMENTAL
 
 ### Megatron-LM
@@ -492,7 +498,13 @@ AI-infra-LearningNote/
 
 - [x] `05-framework/pytorch/optimizer/` - 优化器文档（SGD/AdaGrad/RMSProp/Adam/AdamW/Scheduler/自定义优化器）
 - [x] `02-lang/cpp/class/member/` - C++ 静态成员
+- [x] `03-multi/arch/dit/` - DiT (Diffusion Transformer) 架构文档
+- [x] `03-multi/arch/ldm/` - LDM (Latent Diffusion Model) 文档
+- [x] `03-multi/arch/adm/` - ADM (Ablated Diffusion Model) 文档
+- [x] `03-multi/inference/dit-cache/` - DiT Cache 策略（相邻时间步 Attention/MLP 缓存）
+- [x] `03-multi/inference/t2x/` - Text2X 生成任务综述
+- [x] `05-framework/pytorch/flopsCounter/` - FLOPs 计数器（FlopCounterMode）
 
 ---
 
-最后更新：2026-05-08
+最后更新：2026-05-10
