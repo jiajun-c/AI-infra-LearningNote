@@ -1,510 +1,109 @@
 # AI-infra-LearningNote
 
-AI 基础设施学习笔记 - 涵盖 CUDA 编程、大模型架构、训练推理优化、通信库等核心主题
+AI 基础设施学习笔记，聚焦 GPU 编程、LLM 训练与推理、通信系统、深度学习框架和性能分析。
+
+这个仓库不是一个单一软件项目，而是一个持续演进的知识库：每个目录对应一个主题，README 负责解释核心概念、源码链路、实验代码或性能现象。
 
 ---
 
-## 项目结构
+## 如何使用
 
-```
+如果你刚开始看，可以按下面的路线进入：
+
+1. **GPU / CUDA Infra**：从 [CUDA 硬件架构](./01-cuda/hardware/README.md) 开始，再看 [内存层次](./01-cuda/memory/cache/README.md)、[TensorCore](./01-cuda/tensorCore/README.md)、[CUTLASS / CuTe](./01-cuda/cutlass/gemm/cutlass3.x/README.md)。
+2. **LLM Training Infra**：先看 [Attention](./03-llm/arch/Attention/README.md)、[MoE](./03-llm/arch/MoE/README.md)，再进入 [TP](./03-llm/parallel/TP/README.md)、[PP](./03-llm/parallel/PP/README.md)、[FSDP](./03-llm/parallel/FSDP/README.md)。
+3. **LLM Inference Infra**：从 [KV Cache](./03-llm/inference/kvcache/README.md)、[Continuous Batching](./03-llm/inference/contiuousBatching/README.md)、[Chunked Prefill](./03-llm/inference/chunkPrefill/README.md) 和 [FlashDecode](./03-llm/inference/flashDecode/README.md) 入手。
+4. **Framework / Serving**：看 [PyTorch 架构](./05-framework/pytorch/overview/README.md)、[torch.compile](./05-framework/pytorch/compile/README.md)、[vLLM](./05-framework/vllm/README.md)、[SGLang 权重加载](./05-framework/sglang/weightLoad/README.md)。
+5. **Training Compute / Scaling Law**：看 [Chinchilla Scaling Law](./011-train/scalingLaw/README.md)，理解固定训练算力下参数量和训练 token 数的分配。
+6. **系统与调优**：看 [通信原语](./04-comm/collective/README.md)、[NCCL](./04-comm/CCL/NCCL/README.md)、[系统与硬件](./07-system/README.md)、[CUDA Profiling](./09-profile/cuda/README.md)。
+
+---
+
+## 目录地图
+
+```text
 AI-infra-LearningNote/
-├── 01-cuda/           # CUDA 编程与 GPU 底层
-├── 02-lang/           # 编程语言 (C++/Python/Triton)
-├── 03-llm/            # 大模型（架构 + 训练 + 推理）
-├── 03-multi/          # 多模态模型 Infra（图文/视频/音频）
-├── 04-comm/           # 通信库与集合通信原语
-├── 05-framework/      # 深度学习框架
-├── 06-agent/          # AI Agent 与向量检索
-├── 07-system/         # 系统与硬件架构
-├── 08-tools/          # 开发工具与第三方库
-├── 09-profile/        # 性能分析与调试
-├── 010-dist/          # 分布式训练专题
-├── concept/           # 基础概念
-├── cuda/              # CUTLASS/CuTe 实践代码
-└── dao/               # 算子开发范式与任务划分
+├── 01-cuda/       CUDA 编程、GPU 架构、算子、CUTLASS/CuTe
+├── 02-lang/       C++、Python、Triton 与底层编程语言基础
+├── 03-llm/        LLM 架构、训练、推理、量化、并行与评测
+├── 03-multi/      多模态模型 Infra，含 ViT/CLIP/VAE/DiT/LDM
+├── 04-comm/       通信后端、NCCL、集合通信与计算通信重叠
+├── 05-framework/  PyTorch、vLLM、SGLang、Megatron、DeepSpeed
+├── 06-agent/      Agent 框架与向量检索
+├── 07-system/     CPU/GPU/NPU、内存系统、OS I/O、进程模型
+├── 08-tools/      编译器、项目管理、第三方库与工程工具
+├── 09-profile/    性能分析、调试、优化方法与评测工具
+├── 010-dist/      分布式训练专题
+├── 011-train/     训练算力、Scaling Law 与训练策略
+├── concept/       pre-training / SFT / RL 等基础概念
+├── cuda/          CUTLASS / CuTe 实践代码
+└── dao/           算子开发范式与任务划分
 ```
 
 ---
 
-## 1. CUDA 编程 (01-cuda/)
+## 核心主题
 
-### 架构与基础
-- [Blackwell 架构](./01-cuda/blackwell/README.md) - UMMA 指令、双 SM 协同、TMA 到 TMem
-- [硬件架构](./01-cuda/hardware/README.md) - GPU 层级结构：GPC/TPC/SM
-- [启动配置](./01-cuda/launch/README.md)
-- [Stream 管理](./01-cuda/stream/README.md)
-- [合作组 (Cooperative Groups)](./01-cuda/cg/README.md)
-- [JIT 编译 (NVRTC)](./01-cuda/jit/README.md) - 运行时特化、动态代码生成、架构自适应
+### CUDA 与 GPU 编程
 
-### 核心原语
-- [Warp 原语](./01-cuda/primitives/README.md) - shfl, ballot, any, all 等
-- [Reduce 优化](./01-cuda/reduce/README.md) - Warp/Block 级别 ReduceSum
-- [Vectorize 访问](./01-cuda/op/element_wise/vectorize/README.md)
+- 架构基础：[硬件架构](./01-cuda/hardware/README.md)、[Blackwell](./01-cuda/blackwell/README.md)、[Hopper TMA](./01-cuda/hopper/TMA/README.md)、[Hopper Pipeline](./01-cuda/hopper/pipe/README.md)
+- 执行模型：[启动配置](./01-cuda/launch/README.md)、[Stream](./01-cuda/stream/README.md)、[Cooperative Groups](./01-cuda/cg/README.md)、[Warp 原语](./01-cuda/primitives/warp/README.md)
+- 内存优化：[Bank Conflict](./01-cuda/memory/bank/README.md)、[Cache](./01-cuda/memory/cache/README.md)、[Pin Memory](./01-cuda/pin/README.md)、[VMM](./01-cuda/memory/vmm/README.md)
+- 算子实现：[HGEMV](./01-cuda/blas/hgemv/README.md)、[Element-wise](./01-cuda/op/element_wise/README.md)、[Transpose](./01-cuda/op/transpose/README.md)、[Reduce](./01-cuda/reduce/README.md)
+- CUTLASS / CuTe：[CuTe 多维分块](./01-cuda/cutlass/cute/multidimTile/README.md)、[Copy](./01-cuda/cutlass/copy/README.md)、[CUTLASS 3.x GEMM](./01-cuda/cutlass/gemm/cutlass3.x/README.md)、[Device GEMM](./01-cuda/cutlass/gemm/device/README.md)
 
-### TensorCore 编程
-- [TensorCore 指令](./01-cuda/tensorCore/README.md) - mma 指令、数据布局、访存优化
-- [PTX 内联汇编](./01-cuda/PTX/README.md)
+### 编程语言与 Kernel DSL
 
-### 内存层次与优化
-- [Bank 冲突优化](./01-cuda/memory/bank/README.md)
-- [Cache 优化](./01-cuda/memory/cache/README.md)
-- [内存空间转换](./01-cuda/memory/convert/README.md)
-- [Pin Memory (锁页内存)](./01-cuda/pin/README.md) - 锁页内存分配与 DMA 直传
-- [VMM 虚拟内存管理](./01-cuda/memory/vmm/README.md) - 物理块与虚拟地址解耦、动态扩展数组、多 GPU P2P 共享
+- C++：[类型系统](./02-lang/cpp/type/README.md)、[内存管理](./02-lang/cpp/memory/README.md)、[模板](./02-lang/cpp/template/README.md)、[智能指针](./02-lang/cpp/point/README.md)、[STL vector](./02-lang/cpp/stl/vector/README.md)
+- Python：[迭代器协议](./02-lang/python/iter/README.md)、[yield 生成器](./02-lang/python/yield/README.md)、[asyncio](./02-lang/python/async/README.md)、[类系统](./02-lang/python/class/README.md)
+- Triton：[基础语法](./02-lang/Triton/basic/README.md)、[矩阵乘法](./02-lang/Triton/matmul/README.md)、[FlashAttention](./02-lang/Triton/flashAttention/README.md)、[Autotune](./02-lang/Triton/autotune/README.md)、[Kernel Fusion](./02-lang/Triton/fusion/permuteFusion/README.md)
 
-### 异步操作
-- [Pipeline 机制](./01-cuda/sync/pipe/README.md)
-- [Stream 同步](./01-cuda/sync/stream/README.md)
-- [异步内存操作](./01-cuda/sync/mem/README.md)
-- [块内同步](./01-cuda/sync/inner/README.md)
+### LLM 架构、训练与推理
 
-### 其他特性
-- [DSMEM 分布式共享内存](./01-cuda/dsmem/README.md)
-- [Fuse 算子融合](./01-cuda/fuse/README.md)
-- [性能测试](./01-cuda/bench/README.md)
+- 架构：[模型数据流](./03-llm/arch/flow/README.md)、[Attention](./03-llm/arch/Attention/README.md)、[FlashAttention V1](./03-llm/arch/Attention/FlashAttention/README.md)、[FlashAttention V2](./03-llm/arch/Attention/flashAttentionv2/README.md)、[MoE](./03-llm/arch/MoE/README.md)
+- 并行训练：[DP](./03-llm/parallel/DP/README.md)、[DDP](./03-llm/parallel/DDP/README.md)、[TP](./03-llm/parallel/TP/README.md)、[PP](./03-llm/parallel/PP/README.md)、[EP](./03-llm/parallel/EP/README.md)、[FSDP](./03-llm/parallel/FSDP/README.md)
+- 训练与微调：[数据集处理](./03-llm/train/dataset/README.md)、[SFT](./03-llm/train/finetuning/SFT/README.md)、[RLHF](./03-llm/train/finetuning/RLHF/README.md)、[DPO](./03-llm/train/finetuning/DPO/README.md)、[梯度检查点](./03-llm/train/LowMem/checkpoint/README.md)
+- 训练算力：[Chinchilla Scaling Law](./011-train/scalingLaw/README.md)
+- 推理优化：[KV Cache](./03-llm/inference/kvcache/README.md)、[Prefix Cache](./03-llm/inference/prefix_cache/README.md)、[Batching](./03-llm/inference/batch/README.md)、[Chunked Prefill](./03-llm/inference/chunkPrefill/README.md)、[Speculative Decoding](./03-llm/inference/speculative/README.md)
+- 量化与压缩：[线性量化](./03-llm/inference/quant/linearQuant/README.md)、[AWQ](./03-llm/inference/quant/AWQ/README.md)、[QAT](./03-llm/inference/quant/QAT/README.md)、[SmoothQuant](./03-llm/inference/quant/smooth/README.md)、[k-means 量化](./03-llm/inference/quant/kmeans/README.md)
 
-### CUDA 算子实现 (续)
-- [矩阵转置](./01-cuda/op/transpose/README.md) - 共享内存分块、Bank Conflict 避免、向量化访存优化
+### 多模态 Infra
 
-### SM (Streaming Multiprocessor) 编程
-- **SM 控制库**: [libsmctrl](./01-cuda/sm/libsmctrl/) - SM 掩码校准、SM 数量限制
-  - [H100 SM 掩码映射校准](./01-cuda/sm/libsmctrl/h100_sm_mask_calibration.md) - 掩码位与物理 TPC 映射关系分析
-- **SM 放置策略**:
-  - [SM 间隔放置分析](./01-cuda/sm/sm_interval/detailed_analysis.md) - H100 缓存架构与 SM 放置策略详解
-  - [性能对比总结](./01-cuda/sm/sm_interval/performance_summary.md) - Sequential vs Interleaved 性能对比
-  - [SMID vs BlockIdx](./01-cuda/sm/sm_interval/smid_vs_blockidx_analysis.md) - 任务分配策略对比
-  - [H100 缓存分析](./01-cuda/sm/sm_interval/h100_cache_analysis.md) - L2 Partition 机制与性能影响
+- 入口：[多模态目录](./03-multi/README.md)
+- 架构：[ViT](./03-multi/arch/vit/README.md)、[CLIP](./03-multi/arch/clip/README.md)、[VAE](./03-multi/arch/vae/README.md)、[TextEncoder](./03-multi/arch/textEncoder/README.md)、[DiT](./03-multi/arch/dit/README.md)、[LDM](./03-multi/arch/ldm/README.md)
+- 推理：[DiT Cache](./03-multi/inference/dit-cache/README.md)、[Text2X](./03-multi/inference/t2x/README.md)
 
-### CUDA 算子实现
-- **BLAS 算子**: [HGEMV](./01-cuda/blas/hgemv/README.md) | HGEMM ⚠️ TODO
-- **逐元素算子**: [Element-wise](./01-cuda/op/element_wise/README.md) | [Vectorize Element-wise](./01-cuda/op/element_wise/vectorize/README.md)
-- **Reduce 算子**: [ReduceMin](./01-cuda/op/reduce/) | [ReduceMax](./01-cuda/op/reduce/)
-- **Softmax 算子**: [Softmax](./01-cuda/op/softmax/) - CUDA 与 Triton 实现
-- **TopK 算子**: [TopK](./01-cuda/op/topk/) - TopK 实现与带宽测试
+### 通信、框架与系统
 
-### Ampere 架构特性
-- [cp.async 异步拷贝与流水线](./01-cuda/ampere/cpasync/README.md) - cp.async 指令、3-Stage Pipeline、性能对比
-
-### Hopper 架构特性
-- [分布式共享内存 (DSMEM)](./01-cuda/hopper/DistributedSM/README.md)
-- [TMA (Tensor Memory Accelerator)](./01-cuda/hopper/TMA/README.md) - DMA 数据搬运、TMA 硬件引擎、调试示例
-- [WGMMA (Warp Group MMA)](./01-cuda/hopper/wgmma/) - Warp Group 级矩阵乘加速指令
-- [Pipeline 双缓冲](./01-cuda/hopper/pipe/README.md) - PipelineState、ClusterBarrier、生产者-消费者双缓冲
-- [Cluster 调度](./01-cuda/cutlass/cluster/)
-
-### 低精度编程
-- [FP8 类型转换](./01-cuda/lowprec/fp8/README.md) - e5m2/e4m3 格式、FP8-Half 转换指令
-
-### CCCL 库
-- [Thrust](./01-cuda/cccl/thrust/README.md)
-- [cuSPARSE](./01-cuda/cccl/cusparse/README.md)
+- 通信：[Gloo](./04-comm/backend/gloo/README.md)、[NCCL](./04-comm/CCL/NCCL/README.md)、[集合通信](./04-comm/collective/README.md)、[Overlap](./04-comm/overlap/README.md)、[NVLink](./04-comm/nvlink/README.md)
+- PyTorch：[Overview](./05-framework/pytorch/overview/README.md)、[Stream](./05-framework/pytorch/stream/README.md)、[Context](./05-framework/pytorch/context/README.md)、[Custom Ops](./05-framework/pytorch/custom_ops/README.md)、[Memory](./05-framework/pytorch/memory/model/README.md)
+- Serving / Training Framework：[vLLM](./05-framework/vllm/README.md)、[SGLang](./05-framework/sglang/README.md)、[Megatron-LM](./05-framework/megtron/README.md)、[Slime](./05-framework/slime/README.md)、[DeepSpeed](./05-framework/deepspeed/README.md)
+- 系统：[系统与硬件概述](./07-system/README.md)、[GPU](./07-system/gpu/README.md)、[NPU](./07-system/npu/README.md)、[内存系统](./07-system/memory/README.md)、[io_uring](./07-system/os/io_uring/README.md)
+- Profiling：[CUDA 性能分析](./09-profile/cuda/README.md)、[性能优化方法](./09-profile/improve/README.md)、[调试基础](./09-profile/debug/README.md)、[困惑度分析](./09-profile/perplexity/README.md)
 
 ---
 
-## 2. CUTLASS & CuTe (01-cuda/cutlass/)
+## 当前重点
 
-### CuTe 基础
-- [Layout 布局](./01-cuda/cutlass/cute/layout/layout.md)
-- [Tensor 操作](./01-cuda/cutlass/cute/tensor/tensor.md)
-- [多维度分块](./01-cuda/cutlass/cute/multidimTile/README.md)
-- [_v/_t 后缀约定](./01-cuda/cutlass/cute/vt/README.md) - 编译期值提取
+近期新增和重点维护方向：
 
-### GEMM 实现
-- [高层 CuTe GEMM](./01-cuda/cutlass/gemm/cuteHigh/README.md)
-- [Device 层 GEMM](./01-cuda/cutlass/gemm/device/README.md)
-- [CUTLASS 3.x GEMM](./01-cuda/cutlass/gemm/cutlass3.x/README.md) - CuTe Layout 统一体系
+- CUDA VMM、Pin Memory、Hopper Pipeline、Blackwell 架构
+- Triton Matmul、FlashAttention、Kernel Fusion
+- Chinchilla Scaling Law、训练算力与数据/参数配比
+- PyTorch compile/custom ops/memory/linear 源码链路
+- vLLM 架构、并行策略、显存管理、Sleep Mode
+- 多模态 DiT/LDM/ADM、DiT Cache、Text2X
+- FSDP、分布式转置、通信 overlap、NCCL 专题
 
-### 其他主题
-- [Copy 机制](./01-cuda/cutlass/copy/README.md)
-- [转置优化](./01-cuda/cutlass/trans/)
-- [MMA 操作](./01-cuda/cutlass/cute/mma/)
-
-### CuTe 实践
-- [Reduce 实现](./cuda/cutlass/cute/practice/) - 基于 CuTe 抽象的 Block 级 Reduce 实现
+待补主题见 [TODO.md](./TODO.md)。
 
 ---
 
-## 3. 编程语言 (02-lang/)
+## 维护约定
 
-### C++
-- **基础**: [类型系统](./02-lang/cpp/type/README.md) | [命名空间](./02-lang/cpp/namespace/README.md) | [类型转换](./02-lang/cpp/cast/README.md) | [自动类型推导](./02-lang/cpp/auto/README.md) | [Lambda 表达式](./02-lang/cpp/lamda/)
-- **内存管理**: [内存管理](./02-lang/cpp/memory/README.md)
-- **面向对象**: [类继承](./02-lang/cpp/class/inherit/README.md) | [虚函数](./02-lang/cpp/class/virtual/README.md) | [三/五法则](./02-lang/cpp/class/rules/README.md) | [静态成员](./02-lang/cpp/class/member/README.md) | [模板](./02-lang/cpp/template/README.md)
-- **元编程**: [元编程](./02-lang/cpp/metaprogam/README.md)
-- **智能指针**: [shared_ptr / unique_ptr](./02-lang/cpp/point/README.md)
-- **STL**: [vector](./02-lang/cpp/stl/vector/README.md) | [map](./02-lang/cpp/stl/map/README.md) | [unordered_map](./02-lang/cpp/stl/unordered_map/README.md) | [bitsets](./02-lang/cpp/stl/bitsets/README.md)
-- **运算符**: [运算符重载](./02-lang/cpp/operator/README.md)
-- **异步**: [future](./02-lang/cpp/async/future/README.md)
-- **GCC 扩展**: [内建函数](./02-lang/cpp/gcc/builtin/README.md)
-- **Keywords**: [关键字](./02-lang/cpp/keywords/README.md)
-- **引用**: [引用](./02-lang/cpp/reference/README.md)
+- 根 README 保持为高层入口，不追求列出每个叶子目录。
+- 每个主题目录优先维护自己的 README，根 README 只链接稳定入口。
+- 新增目录时尽量保持路径命名一致，避免大小写混用和拼写漂移。
+- 示例代码、实验日志和图表应放在对应主题目录下，README 只保留结论、关键路径和复现实验入口。
 
-### Python
-- [数据类型](./02-lang/python/type/README.md)
-- [类系统](./02-lang/python/class/README.md) | [抽象基类](./02-lang/python/class/abc/README.md)
-- [全局变量](./02-lang/python/global/README.md)
-- [迭代器协议](./02-lang/python/iter/README.md) - `__iter__` / `__next__`、迭代器与可迭代对象
-- [yield 生成器](./02-lang/python/yield/README.md) - yield/send/throw/close、yield from、手写事件循环
-  - [Lab1: 生成器基础](./02-lang/python/yield/lab1_generator.py) - next() 推进、StopIteration、内存对比
-  - [Lab2: send() 双向通道](./02-lang/python/yield/lab2_send.py) - yield 左右两侧、启动约束
-  - [Lab3: yield from](./02-lang/python/yield/lab3_yield_from.py) - 展平、send 透传、捕获 return 值
-  - [Lab4: throw/close](./02-lang/python/yield/lab4_throw_close.py) - 异常注入、GeneratorExit、finally 清理
-  - [Lab5: 手写 asyncio](./02-lang/python/yield/lab5_mini_asyncio.py) - 用生成器实现事件循环
-- [异步编程](./02-lang/python/async/README.md) - asyncio、async/await、事件循环
-  - [Lab1: 协程基础](./02-lang/python/async/lab1_coroutine.py) - 协程不是线程、await 让出点
-  - [Lab2: 事件循环调度](./02-lang/python/async/lab2_event_loop.py) - 调度顺序、sleep(0) 语义
-  - [Lab3: I/O 并发](./02-lang/python/async/lab3_io_concurrency.py) - gather 并发、串行 vs 并发对比
-  - [Lab4: Task 取消与超时](./02-lang/python/async/lab4_task_cancel.py) - cancel/wait_for/shield
-  - [Lab5: 生产者消费者](./02-lang/python/async/lab5_producer_consumer.py) - Queue 背压、task_done/join
-
-### Triton
-- [基础语法](./02-lang/Triton/basic/README.md)
-- [硬件信息](./02-lang/Triton/hardware/)
-- [性能测试](./02-lang/Triton/benchmark/README.md)
-- [随机数生成](./02-lang/Triton/random/README.md)
-- [矩阵乘法](./02-lang/Triton/matmul/README.md) - Hopper 架构 matmul 实现与 TMA 使用
-- [FlashAttention](./02-lang/Triton/FlashAttention/)
-- [LayerNorm](./02-lang/Triton/layernorm/)
-- [Softmax](./02-lang/Triton/softmax/)
-- [Autotune](./02-lang/Triton/autotune/)
-- [Kernel Fusion](./02-lang/Triton/fusion/permuteFusion/README.md) - Permute Fusion 四种方案对比
-
-### CUTLASS
-- [入门指南](./02-lang/cutlass/README.md)
-
----
-
-## 4. 大模型 (03-llm/)
-
-### 4.1 模型架构 (arch/)
-- **整体流程**: [模型数据流](./03-llm/arch/flow/README.md)
-- **Tokenization**: [BPE 分词](./03-llm/arch/tokenizer/BPE/README.md)
-- **位置编码**: [绝对位置编码](./03-llm/arch/position_encode/absolute/README.md) | [相对位置编码](./03-llm/arch/position_encode/relative/README.md)
-- **Attention 机制**: [Attention 综述](./03-llm/arch/Attention/README.md)
-  - [FlashAttention V1](./03-llm/arch/Attention/FlashAttention/README.md)
-  - [FlashAttention V2](./03-llm/arch/Attention/flashAttentionv2/README.md)
-  - [Ring Attention](./03-llm/arch/Attention/ring-attention/README.md)
-  - [Softmax Attention](./03-llm/arch/Attention/softmax/README.md)
-  - [Block-wise Attention](./03-llm/arch/Attention/blockWiseAttention/)
-  - [Unpad Attention](./03-llm/arch/Attention/unpad/)
-  - [Padding 处理](./03-llm/arch/Attention/pad.md)
-  - [FlashAttention 全文](./03-llm/arch/Attention/FlashAttention/full.md)
-- **MoE**: [MoE 基础](./03-llm/arch/MoE/README.md)
-- **线性层**: [线性层](./03-llm/arch/Linear/README.md)
-- **归一化**: [Norm 层](./03-llm/arch/Norm/README.md)
-- **模型中间表示 (IR)**: [IR 基础](./03-llm/IR/README.md) | [PNNX](./03-llm/IR/PNNX/README.md) | [ONNX](./03-llm/IR/ONNX/README.md)
-- **模型保存与加载**: [模型保存/加载](./03-llm/model/save_load/README.md)
-- **权重形状分析**: [Weight Shape 分析](./03-llm/model/weightShape/) - LLM 线性层权重维度分析与 GEMM 模式识别
-- **学习率调度**: [学习率调度器](./03-llm/model/learningRT/README.md)
-
-### 4.2 深度学习基础 (foundation/)
-- [RNN](./03-llm/foundation/dl/RNN/README.md)
-- [LSTM](./03-llm/foundation/dl/LSTM/README.md)
-- [Word2Vec](./03-llm/foundation/dl/word2vec/README.md)
-
-### 4.3 并行训练 (train/)
-- **数据并行**: [数据集处理](./03-llm/train/dataset/README.md) | [DP](./03-llm/train/DP/README.md) | [DDP](./03-llm/train/DDP/README.md)
-- **模型并行**: [张量并行 (TP)](./03-llm/train/TP/README.md) | [流水线并行 (PP)](./03-llm/train/PP/README.md)
-- **混合并行**: [混合并行策略](./03-llm/train/HybirdParallel/README.md) | [Expert Parallel (EP)](./03-llm/train/EP/README.md)
-- **微调技术**: [SFT](./03-llm/train/finetuning/SFT/README.md) | [RLHF](./03-llm/train/finetuning/RLHF/README.md) | [DPO](./03-llm/train/finetuning/DPO/README.md)
-- **显存优化**: [梯度检查点](./03-llm/train/LowMem/checkpoint/README.md)
-
-### 4.4 推理优化 (inference/)
-- **推理框架**: [TensorRT](./03-llm/inference/TensorRT/README.md)
-- **批处理策略**: [批处理技术](./03-llm/inference/batch/README.md) | [Continuous Batching](./03-llm/inference/contiuousBatching/README.md) | [Chunked Prefill](./03-llm/inference/chunkPrefill/README.md)
-- **KV Cache**: [KV Cache](./03-llm/inference/kvcache/README.md) | [Prefix Cache](./03-llm/inference/prefix_cache/README.md)
-- **FlashDecode**: [FlashDecode](./03-llm/inference/flashDecode/README.md)
-- **投机采样**: [Speculative](./03-llm/inference/speculative/README.md)
-- **模型剪枝**: [细粒度剪枝](./03-llm/inference/prune/fine-grain/README.md) | [通道剪枝](./03-llm/inference/prune/channel-based/README.md)
-- **量化技术**:
-  - [线性量化](./03-llm/inference/quant/linearQuant/README.md) | [对称量化](./03-llm/inference/quant/linearQuant/Symmetric/) | [非对称量化](./03-llm/inference/quant/linearQuant/Asymmetric/)
-  - [QAT](./03-llm/inference/quant/QAT/README.md) | [AWQ](./03-llm/inference/quant/AWQ/README.md) | [SmoothQuant](./03-llm/inference/quant/smooth/README.md) | [WNAM](./03-llm/inference/quant/WNAM/README.md)
-  - [k-means 量化](./03-llm/inference/quant/kmeans/README.md)
-  - 非线性量化 ⚠️ TODO | 二值量化 ⚠️ TODO
-- **性能分析**: [Profile](./03-llm/inference/profile/README.md)
-- **Attention 优化**: [Prefill 机制](./03-llm/inference/AttentionSummary/prefill.md)
-
-### 4.5 其他主题
-- **多模态**: [ViT](./03-multi/arch/vit/README.md) | [CLIP](./03-multi/arch/clip/README.md) | [TextEncoder](./03-multi/arch/textEncoder/README.md) | [VAE](./03-multi/arch/vae/README.md)
-- **强化学习**: [RL 基础](./03-llm/RL/README.md)
-- **知识蒸馏 (KD)**
-- **神经架构搜索 (NAS)**: [OFA 网络](./03-llm/NAS/README.md)
-
-### 4.6 性能基准 (bench/)
-- [推理基准测试](./03-llm/bench/InferBench/README.md)
-- [评估指标](./03-llm/bench/metrics/README.md)
-
----
-
-## 5. 多模态模型 Infra (03-multi/)
-
-> 聚焦多模态（图文/视频/音频）在推理与训练侧的 infra 实现，完整学习路径见 [03-multi/README.md](./03-multi/README.md)
-
-### 模型架构
-- [ViT](./03-multi/arch/vit/README.md) - Vision Transformer，patch embedding 与位置编码
-- [CLIP](./03-multi/arch/clip/README.md) - 图文对比学习对齐
-- [VAE](./03-multi/arch/vae/README.md) - 图像压缩到 latent space
-- [TextEncoder](./03-multi/arch/textEncoder/README.md) - 跨模态文本编码器
-- [LDM](./03-multi/arch/ldm/README.md) - 潜空间扩散模型，Cross-Attention 条件控制
-- [DiT](./03-multi/arch/dit/README.md) - Diffusion Transformer，用 Transformer 替换 U-Net 骨干
-- [ADM](./03-multi/arch/adm/README.md) - Ablated Diffusion Model
-- LLaVA 系列 ⚠️ TODO | Qwen-VL ⚠️ TODO
-
-### 推理优化
-- [DiT Cache](./03-multi/inference/dit-cache/README.md) - 相邻时间步 Attention/MLP 输出缓存策略
-- [Text2X 生成概述](./03-multi/inference/t2x/README.md) - 文本到多模态生成任务综述
-- 视觉 token Prefill 优化 ⚠️ TODO
-- 多模态 KV Cache 与 prefix cache ⚠️ TODO
-- Token 压缩（ToMe/Pooling）⚠️ TODO
-- 视觉预处理异步 Pipeline ⚠️ TODO
-
-### 训练
-- 多模态数据加载 ⚠️ TODO
-- 编码器冻结与梯度流控制 ⚠️ TODO
-- 多模态微调策略 ⚠️ TODO
-
-### 并行与部署
-- 视觉编码器张量并行 ⚠️ TODO
-- 编码-解码分离部署（disaggregated prefill）⚠️ TODO
-
----
-
-## 6. 模型通信 (04-comm/) 
-
-### 通信后端
-- [Gloo](./04-comm/backend/gloo/README.md)
-- [NCCL](./04-comm/CCL/NCCL/README.md)
-  - [配置选项](./04-comm/CCL/NCCL/config/README.md)
-  - [图接口](./04-comm/CCL/NCCL/graph/README.md)
-  - [对称内存](./04-comm/CCL/NCCL/symmetric/README.md)
-  - [多卡内存访问](./04-comm/CCL/NCCL/multiMem/README.md)
-  - [环形缓冲](./04-comm/CCL/NCCL/buffer/README.md)
-  - [零拷贝](./04-comm/CCL/NCCL/zero-CTA/zero.cu) // TODO
-
-### 集合通信原语
-- [集合通信原语](./04-comm/collective/README.md) - All-Gather, Reduce-Scatter, All-Reduce, Broadcast, Send/Recv
-
-### 计算通信重叠
-- [Overlap 机制](./04-comm/overlap/README.md) - 计算与通信解耦、chunk 级流水线
-
----
-
-## 7. 深度学习框架 (05-framework/)
-
-### PyTorch
-- [框架概述](./05-framework/pytorch/overview/README.md) - PyTorch 整体架构：Python 前端/绑定层/ATen/c10/后端
-- [Stream 机制](./05-framework/pytorch/stream/README.md) - CUDA Stream 基础上的内存分配与同步
-- [Context 机制](./05-framework/pytorch/context/README.md) - 全局单例 Context 配置管理
-- [Green Context](./05-framework/pytorch/context/greenctx.md) - CUDA 13.0+ SM 隔离与管理机制
-- [Tensor 操作](./05-framework/pytorch/tensor/README.md)
-- [计算图](./05-framework/pytorch/graph/README.md)
-- [梯度机制](./05-framework/pytorch/grad/README.md)
-- [优化器](./05-framework/pytorch/optimizer/README.md) - SGD/Adam/AdamW 原理、自适应学习率、自定义优化器、Scheduler
-- [装饰器](./05-framework/pytorch/decorator/README.md)
-- [分布式训练](./05-framework/pytorch/dist/README.md)
-- [显存管理](./05-framework/pytorch/memory/model/README.md)
-  - [Python GC 机制](./05-framework/pytorch/memory/gc/README.md) - 引用计数、循环引用与 gc.collect
-  - [显存监控](./05-framework/pytorch/memory/monitor/README.md) - memory_allocated/reserved 接口与监控工具
-  - [Pin 内存实现](./05-framework/pytorch/memory/pin/README.md) - PyTorch Pin Memory 底层实现详解
-- [重计算机制](./05-framework/pytorch/recompute/README.md) - 训练显存节省策略（含前向/反向显存分解 demo）
-- [torch.compile 优化](./05-framework/pytorch/compile/README.md) - JIT 编译优化、Graph Break 分析
-- [自定义 CUDA 算子](./05-framework/pytorch/custom_ops/README.md) - pybind vs torch.library 绑定方式与 CUDA Graph 兼容性
-- [对称内存](./05-framework/pytorch/symmMem/README.md)
-- [C++ Storage 类](./05-framework/pytorch/cpp/storage/README.md) - PyTorch C++ 层 Storage 数据结构
-- [nn.Linear 源码分析](./05-framework/pytorch/linear/README.md) - Linear 层调用链路与 cuBLASLt 后端
-  - [SM Carveout 机制](./05-framework/pytorch/linear/sm-carveout.md) - cuBLASLt SM 数量控制实验性功能
-- [FLOPs 计数器](./05-framework/pytorch/flopsCounter/README.md) - FlopCounterMode 接口与模型 FLOPs 统计
-- [SM 配置](./05-framework/pytorch/hardware/README.md) - Persistent Kernel SM 占用、_SMCarveout_EXPERIMENTAL
-
-### Megatron-LM
-- [Megatron 架构](./05-framework/megtron/README.md) - TP/PP/DP/CP/EP 并行策略与整体架构
-
-### DeepSpeed
-- [DeepSpeed 基础](./05-framework/deepspeed/README.md) ⚠️ TODO
-
-### Slime
-- [Slime 框架](./05-framework/slime/README.md) - 训练/推理混合调度、GRPO 训练流程、Reward 计算
-
-### vLLM
-- [vLLM 框架](./05-framework/vllm/README.md)
-- [vLLM 架构](./05-framework/vllm/arch.md) - vLLM 整体架构设计
-- [vLLM 并行策略](./05-framework/vllm/parallel.md) - TP/PP/DP/CP/EP 并行布局与 DCP/PCP 详解
-- [vLLM 显存分配](./05-framework/vllm/memory.md) - KV Cache 显存分配机制
-- [vLLM Sleep Mode](./05-framework/vllm/sleep.md) - 暂时释放 GPU 显存给其他任务（RLHF 等）
-
-### SGLang
-- [权重加载流程](./05-framework/sglang/weightLoad/README.md) - safetensors 迭代器、loader 选择、load_weights 调用链
-
----
-
-## 8. AI Agent (06-agent/)
-
-### Agent 框架
-- [LangChain](./06-agent/langchain/README.md)
-- [推理引擎](./06-agent/infer/README.md)
-
-### 向量数据库
-- [向量数据库基础](./06-agent/vectorDB/README.md)
-- [Faiss](./06-agent/vectorDB/faiss/README.md)
-
----
-
-## 9. 系统与硬件 (07-system/)
-
-### 概述
-- [系统与硬件概述](./07-system/README.md)
-- [GPU 架构](./07-system/gpu/README.md)
-- [NPU](./07-system/npu/README.md)
-
-### 内存系统
-- [内存系统概述](./07-system/memory/README.md)
-- [页表](./07-system/memory/pagetable.md)
-- [TLB](./07-system/memory/tlb.md)
-- [Cache 一致性](./07-system/cache/coherent/README.md)
-
-### 进程与线程
-- [进程/线程/协程](./07-system/process/README.md)
-
-### OS I/O
-- [AIO 异步 I/O](./07-system/os/aio/README.md) - libaio 四核心 API、O_DIRECT、滑动窗口读取 demo
-- [io_uring](./07-system/os/io_uring/README.md) - SQ/CQ 共享内存环形队列、裸 syscall demo、与 libaio 对比
-
-### 硬件架构
-- [CPU (鲲鹏)](./07-system/cpu/kunpeng.md)
-- [ARM SME](./07-system/matrixUnit/arm_sme/README.md)
-
----
-
-## 10. 工具与性能分析 (08-tools/ & 09-profile/)
-
-### 开发工具 (08-tools/)
-- [Python 项目管理](./08-tools/pyproject/README.md)
-- [TVM 编译器](./08-tools/compiler/tvm/README.md)
-- [Einops](./08-tools/third_party/einops/README.md)
-- [Torch 绑定](./08-tools/glue/torch/README.md) | [pybind11](./08-tools/glue/torch/pybind/) | [nanobind](./08-tools/glue/torch/nanobind/)
-- [Tuning](./08-tools/tuning/)
-
-### 性能分析 (09-profile/)
-- [CUDA 性能分析](./09-profile/cuda/README.md)
-  - [示例：GEMM](./09-profile/cuda/example/gemm/)
-  - [示例：矩阵转置](./09-profile/cuda/example/matTrans/)
-  - [示例：Warp Reduce](./09-profile/cuda/example/warpReduce/)
-- [性能优化方法](./09-profile/improve/README.md)
-- [调试基础](./09-profile/debug/README.md)
-- [Thop 工具](./09-profile/thop/)
-- [困惑度分析](./09-profile/perplexity/)
-- [日志分析](./09-profile/log/)
-
----
-
-## 11. 算子开发范式 (dao)
-
-- [算子开发范式](./dao/README.md) - 算子开发思考
-- [任务划分策略](./dao/partition/README.md) - 维度中心 vs 硬件中心 vs Split-K
-
----
-
-## 12. 分布式训练专题 (010-dist/)
-
-- [FSDP](./010-dist/fsdp/README.md) - Full Sharded Data Parallelism：按层分片、All-Gather 重建
-- [分布式转置](./010-dist/trans/README.md) - 矩阵转置与 All-to-All 通信等价关系
-
----
-
-## 13. 基础概念 (concept/)
-
-- [基础概念](./concept/README.md) - pre-training / SFT / RL 阶段概念梳理
-
----
-
-## 待办事项
-
-### 文档完善
-- [ ] `01-cuda/blas/gemm/` - 添加 GEMM 实现文档
-- [ ] `05-framework/deepspeed/` - 完善 DeepSpeed 文档
-- [ ] `03-llm/inference/quant/non-linear/` - 添加非线性量化文档
-- [ ] `03-llm/inference/quant/binary/` - 添加二值量化文档
-- 详细待学习清单见 [TODO.md](./TODO.md)
-
-### 已完成
-- [x] 项目结构重构 - 统一目录命名与分类
-- [x] `01-cuda/sm/` - SM 编程系列 (SM 放置策略、SMID vs BlockIdx、L2 缓存分析)
-- [x] `01-cuda/hardware/` - GPU 硬件架构文档 (GPC/TPC/SM 层级)
-- [x] `01-cuda/sm/libsmctrl/` - H100 SM 掩码映射校准
-- [x] `05-framework/pytorch/overview/` - PyTorch 框架概述
-- [x] `05-framework/pytorch/stream/` - PyTorch Stream 机制
-- [x] `05-framework/pytorch/context/` - PyTorch Context 与 Green Context
-- [x] `05-framework/pytorch/linear/sm-carveout/` - SM Carveout 机制详解
-- [x] `01-cuda/launch/` - 启动配置文档
-- [x] `01-cuda/memory/cache/` - Cache 优化文档
-- [x] `05-framework/vllm/` - vLLM 架构文档
-- [x] `02-lang/Triton/benchmark/` - 性能测试方法
-- [x] `03-llm/arch/Attention/` - MQA 部分完善
-- [x] `03-llm/train/TP/` - 并行损失函数计算
-- [x] `04-comm/CCL/NCCL/` - AllGather 和点对点通信
-- [x] `03-llm/model/save_load/` - 模型保存/加载文档
-- [x] `03-llm/train/EP/` - EP 并行文档
-- [x] `01-cuda/blackwell/` - Blackwell 架构文档 (UMMA、双 SM 协同)
-- [x] `01-cuda/jit/` - CUDA JIT 编译 (NVRTC) 文档
-- [x] `01-cuda/hopper/pipe/` - Hopper 双缓冲流水线示例
-- [x] `01-cuda/op/softmax/` - Softmax 算子实现
-- [x] `01-cuda/op/reduce/` - Reduce 算子实现
-- [x] `01-cuda/op/element_wise/vectorize/` - Vectorize Element-wise 算子
-- [x] `01-cuda/op/topk/` - TopK 算子实现与带宽测试
-- [x] `02-lang/Triton/fusion/` - Triton Kernel Fusion (Permute Fusion)
-- [x] `02-lang/Triton/matmul/` - Triton 矩阵乘法实现
-- [x] `02-lang/cpp/class/rules/` - C++ 三/五法则
-- [x] `02-lang/cpp/point/` - 智能指针 (shared_ptr/unique_ptr)
-- [x] `02-lang/cpp/keywords/` - C++ 关键字
-- [x] `02-lang/cpp/reference/` - C++ 引用
-- [x] `05-framework/pytorch/compile/` - torch.compile 优化
-- [x] `05-framework/pytorch/custom_ops/` - 自定义 CUDA 算子绑定
-- [x] `05-framework/pytorch/symmMem/` - 对称内存
-- [x] `01-cuda/cutlass/gemm/cutlass3.x/` - CUTLASS 3.x GEMM
-- [x] `01-cuda/cutlass/cute/vt/` - CuTe _v/_t 后缀约定
-- [x] `dao/` - 算子开发范式与任务划分
-- [x] `04-comm/overlap/` - 计算通信 overlap 机制
-- [x] `07-system/` - 系统与硬件架构整理
-- [x] `01-cuda/op/transpose/` - 矩阵转置算子优化
-- [x] `01-cuda/cutlass/cute/layout/` - CuTe Layout 详解
-- [x] `04-comm/CCL/NCCL/oneshot/` - NCCL one-shot 通信
-- [x] `04-comm/CCL/NCCL/symm/` - 对称内存
-- [x] `04-comm/nvshem/` - NVSHMEM 单边通信
-- [x] `05-framework/pytorch/linear/` - PyTorch Linear 层源码分析
-- [x] `05-framework/megtron/` - Megatron-LM 架构 (TP/PP/DP/CP/EP 并行策略)
-- [x] `05-framework/pytorch/memory/gc/` - Python GC 机制与显存释放
-- [x] `05-framework/pytorch/memory/monitor/` - 显存监控接口与工具
-- [x] `05-framework/vllm/parallel.md` - vLLM 并行策略 (DCP/PCP/EP/EPLB)
-- [x] `010-dist/fsdp/` - FSDP 全分片数据并行文档
-- [x] `010-dist/trans/` - 分布式转置与 All-to-All 等价关系
-- [x] `05-framework/slime/` - Slime 框架 (训练/推理调度、GRPO)
-- [x] `concept/` - 基础概念（pre-training / SFT / RL）
-- [x] `01-cuda/pin/` - CUDA Pin Memory 锁页内存
-- [x] `02-lang/python/async/` - Python 异步编程 (asyncio/async/await)
-- [x] `03-multi/arch/textEncoder/` - TextEncoder 架构与跨模态对齐
-- [x] `03-multi/arch/vit/` - ViT 算法文档
-- [x] `03-multi/arch/vae/` - VAE 文档
-- [x] `03-multi/` - 多模态 Infra 学习目录（arch/encode/inference/train/parallel/memory）
-- [x] `05-framework/pytorch/memory/pin/` - PyTorch Pin Memory 底层实现
-- [x] `05-framework/pytorch/cpp/storage/` - PyTorch C++ Storage 类
-- [x] `05-framework/pytorch/recompute/` - torch 重计算机制
-- [x] `05-framework/vllm/arch.md` - vLLM 架构文档
-- [x] `05-framework/vllm/memory.md` - vLLM 显存分配机制
-- [x] `05-framework/vllm/sleep.md` - vLLM Sleep Mode
-- [x] `02-lang/python/yield/` - yield 生成器五个 Lab（基础/send/yield from/throw-close/手写事件循环）
-- [x] `02-lang/python/iter/` - 迭代器协议
-- [x] `05-framework/sglang/weightLoad/` - SGLang 权重加载流程（safetensors 迭代器、loader 调用链）
-- [x] `01-cuda/memory/vmm/` - CUDA VMM 虚拟内存管理（物理块/VA解耦、动态扩展、多GPU P2P共享）
-
-- [x] `05-framework/pytorch/optimizer/` - 优化器文档（SGD/AdaGrad/RMSProp/Adam/AdamW/Scheduler/自定义优化器）
-- [x] `02-lang/cpp/class/member/` - C++ 静态成员
-- [x] `03-multi/arch/dit/` - DiT (Diffusion Transformer) 架构文档
-- [x] `03-multi/arch/ldm/` - LDM (Latent Diffusion Model) 文档
-- [x] `03-multi/arch/adm/` - ADM (Ablated Diffusion Model) 文档
-- [x] `03-multi/inference/dit-cache/` - DiT Cache 策略（相邻时间步 Attention/MLP 缓存）
-- [x] `03-multi/inference/t2x/` - Text2X 生成任务综述
-- [x] `05-framework/pytorch/flopsCounter/` - FLOPs 计数器（FlopCounterMode）
-
----
-
-最后更新：2026-05-10
+最后更新：2026-05-15
