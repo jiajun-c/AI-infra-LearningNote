@@ -61,7 +61,7 @@ AI-infra-LearningNote/
 ### LLM 架构、训练与推理
 
 - 架构：[模型数据流](./03-llm/arch/flow/README.md)、[Attention](./03-llm/arch/Attention/README.md)、[FlashAttention V1](./03-llm/arch/Attention/FlashAttention/README.md)、[FlashAttention V2](./03-llm/arch/Attention/flashAttentionv2/README.md)、[MoE](./03-llm/arch/MoE/README.md)
-- 并行训练：[DP](./03-llm/parallel/DP/README.md)、[DDP](./03-llm/parallel/DDP/README.md)、[TP](./03-llm/parallel/TP/README.md)、[PP](./03-llm/parallel/PP/README.md)、[EP](./03-llm/parallel/EP/README.md)、[FSDP](./03-llm/parallel/FSDP/README.md)
+- 并行训练：[DP](./010-dist/dp/README.md)、[DDP](./010-dist/DDP/README.md)、[TP](./03-llm/parallel/TP/README.md)、[PP](./03-llm/parallel/PP/README.md)、[EP](./03-llm/parallel/EP/README.md)、[FSDP](./03-llm/parallel/FSDP/README.md)
 - 训练与微调：[数据集处理](./03-llm/train/dataset/README.md)、[SFT](./03-llm/train/finetuning/SFT/README.md)、[RLHF](./03-llm/train/finetuning/RLHF/README.md)、[DPO](./03-llm/train/finetuning/DPO/README.md)、[梯度检查点](./03-llm/train/LowMem/checkpoint/README.md)
 - 训练算力：[Chinchilla Scaling Law](./011-train/scalingLaw/README.md)
 - 推理优化：[KV Cache](./03-llm/inference/kvcache/README.md)、[Prefix Cache](./03-llm/inference/prefix_cache/README.md)、[Batching](./03-llm/inference/batch/README.md)、[Chunked Prefill](./03-llm/inference/chunkPrefill/README.md)、[Speculative Decoding](./03-llm/inference/speculative/README.md)
