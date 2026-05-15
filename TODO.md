@@ -34,6 +34,17 @@
 
 ## 03 LLM
 
+### 大模型训练学习路径
+- [ ] **训练目标与数据**：[Week 1 Pre-training](./011-train/pre-training/README.md)，pre-training / SFT / RLHF / DPO 的目标函数、数据格式和 loss 区别
+- [ ] **LLM 计算图**：Embedding、Attention、MLP、Norm、Residual、CrossEntropy 的 forward/backward 主链路
+- [ ] **单卡训练机制**：autograd、optimizer state、mixed precision、gradient accumulation、activation checkpointing
+- [ ] **训练显存估算**：params、gradients、optimizer states、activations、temporary buffers 的拆解
+- [ ] **训练性能核心算子**：FlashAttention、online softmax、MLP GEMM、LayerNorm/RMSNorm 的瓶颈分析
+- [ ] **分布式训练主线**：DDP -> ZeRO/FSDP -> TP -> PP -> EP -> 混合并行
+- [ ] **通信模式映射**：DDP/AllReduce、FSDP/AllGather+ReduceScatter、TP/collectives、PP/P2P、EP/All-to-All
+- [ ] **训练框架源码主链路**：Megatron-LM、DeepSpeed、PyTorch FSDP 的 parallel group、forward/backward、optimizer step、checkpoint
+- [ ] **Scaling Law 与训练预算**：根据 GPU 数量、训练天数、MFU 估算 FLOPs，再反推参数量和训练 token 数
+
 ### 推理
 - [ ] **PagedAttention**：vLLM 的 KV cache 分页管理，block table 实现
 - [ ] **Continuous Batching**：iteration-level scheduling，与 static batching 的对比
