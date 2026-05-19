@@ -22,7 +22,7 @@ import torch.nn.functional as F
 
 def standard_attention(q, k, v):
     """
-    标准 Attention 实现
+    标准 Attention 实现 
     q, k, v: [batch, heads, seq_len, head_dim]
     """
     # Step 1: 计算 Q @ K.T，得到注意力分数

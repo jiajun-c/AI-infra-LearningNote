@@ -64,3 +64,8 @@ int main() {
     return 0;
 }
 ```
+
+## 3. 迭代器
+
+在`vector`相关的操作中，我们经常会使用`auto begin = vec.begin()`，不过当vector发生扩容的时候，会导致其失效。
+
