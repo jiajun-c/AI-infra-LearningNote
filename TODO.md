@@ -66,10 +66,14 @@
 
 ## 04 通信
 
-- [ ] **All-to-All**：MoE expert dispatch 的核心通信原语，与 All-Reduce 的对比
-- [ ] **通信计算重叠**：`isend/irecv` + `wait`，Tensor Parallel 中的 overlap 技术
-- [ ] **RDMA / RoCE**：AI 集群网络基础，`ibverbs`，与 NCCL 的关系
-- [ ] **集合通信拓扑算法**：Ring、Tree、Recursive Halving，带宽利用率分析
+- [ ] **RDMA / RoCE 基础**：QP、CQ、MR、doorbell、send/recv、read/write、atomic，理解 GPUDirect RDMA 的数据路径
+- [ ] **InfiniBand / RoCE 网络差异**：PFC、ECN、拥塞控制、lossless fabric、交换机 buffer 和重传
+- [ ] **NCCL 网络路径与配置**：`NCCL_SOCKET_IFNAME`、`NCCL_IB_HCA`、`NCCL_IB_GID_INDEX`、`NCCL_NET_GDR_LEVEL`、NCCL net plugin
+- [ ] **GPU-NIC 拓扑建模**：PCIe switch、NUMA、rail-optimized rank mapping、multi-rail 带宽聚合
+- [ ] **集合通信拓扑算法**：Ring、Tree、Recursive Doubling/Halving、Hierarchical AllReduce，带宽利用率分析
+- [ ] **All-to-All / MoE 通信**：expert dispatch/combine、token permutation、负载不均衡与尾延迟
+- [ ] **通信计算重叠**：`isend/irecv` + `wait`，NCCL stream、bucket、Tensor Parallel 中的 overlap 技术
+- [ ] **网络排障工具链**：`ibstat`、`ibv_devinfo`、`ib_write_bw`、`perftest`、`ethtool`、`nvidia-smi topo -m`、NCCL debug log
 
 ---
 
