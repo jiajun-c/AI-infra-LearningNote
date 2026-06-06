@@ -318,6 +318,37 @@ DPDK：用户态轮询网卡，绕过内核协议栈
 QUIC：基于 UDP 的现代传输协议
 ```
 
+## 12. Kernel bypass
+
+当 socket、epoll、io_uring、batch、CPU 亲和性这些优化仍然不够时，可以考虑 kernel bypass。
+
+核心思路：
+
+```text
+传统路径：
+NIC -> driver -> skb -> kernel protocol stack -> socket buffer -> app
+
+kernel bypass：
+NIC -> DMA -> userspace packet buffer -> app polling loop
+```
+
+它通过用户态直接轮询网卡队列，减少 syscall、skb、socket buffer、协议栈和线程唤醒带来的延迟。
+
+常见方案：
+
+| 技术 | 典型用途 |
+| --- | --- |
+| DPDK | 用户态直接管理网卡 RX/TX queue，极致低延迟和高吞吐 |
+| AF_XDP | XDP + 用户态 ring，部署比 DPDK 更贴近 Linux 生态 |
+| RDMA | 远端直接内存访问，训练、存储、HPC 常见 |
+
+本仓库有一个 DPDK 最小 UDP echo 示例：
+
+```text
+kernel-bypass/README.md
+kernel-bypass/dpdk_udp_echo.c
+```
+
 ## 小结
 
 ```text
