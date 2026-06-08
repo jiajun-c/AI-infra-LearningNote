@@ -8,8 +8,9 @@
 | ---- | ---- | ---- |
 | [nvtx.md](./nvtx.md) | nvtx 性能标记 | 在代码中添加 range annotation，配合 Nsight Systems 定位热点 |
 | [theory.md](./theory.md) | 理论性能分析 | GFlops 计算、算术强度（AI）、Roofline 拐点、kernel launch 与 wave 效应 |
+| [roofline.md](./roofline.md) | Roofline 分析 | Roofline 模型详解、多精度对比、优化策略 |
 | [stall.md](./stall.md) | Warp Stall 分析 | Short/Long Stall 的含义，Nsight Compute 计数器解读，与 AI 的对应关系 |
-| [roofline.md](./roofline.md)| roofline 分析| 对roofline的分析 |
+| [benchmark.md](./benchmark.md) | Benchmark 实战 | CUDA/PyTorch 中如何精确测量 kernel 的 GFlops，完整模板和常见陷阱 |
 
 ## 典型分析流程
 

@@ -79,7 +79,7 @@ AI-infra-LearningNote/
 - PyTorch：[Overview](./05-framework/pytorch/overview/README.md)、[Stream](./05-framework/pytorch/stream/README.md)、[Context](./05-framework/pytorch/context/README.md)、[Custom Ops](./05-framework/pytorch/custom_ops/README.md)、[Memory](./05-framework/pytorch/memory/model/README.md)
 - Serving / Training Framework：[vLLM](./05-framework/vllm/README.md)、[SGLang](./05-framework/sglang/README.md)、[Megatron-LM](./05-framework/megtron/README.md)、[Slime](./05-framework/slime/README.md)、[DeepSpeed](./05-framework/deepspeed/README.md)
 - 系统：[系统与硬件概述](./07-system/README.md)、[GPU](./07-system/gpu/README.md)、[GPU 内存模型](./07-system/gpu/memory/README.md)、[NPU](./07-system/npu/README.md)、[CPU 调度](./07-system/cpu/sched/README.md)、[x86 Cache](./07-system/cpu/x86/cache/README.md)、[内存系统](./07-system/memory/README.md)、[网络内核旁路](./07-system/net/kernel-bypass/README.md)、[io_uring](./07-system/os/io_uring/README.md)、[Cache Coherent](./07-system/cache/coherent/README.md)
-- Profiling：[总览](./09-profile/README.md)、[CUDA 性能分析](./09-profile/cuda/README.md)、[GFlops 计算](./09-profile/cuda/theory.md)、[Roofline 分析](./09-profile/cuda/roofline.md)、[Warp Stall](./09-profile/cuda/stall.md)、[性能优化](./09-profile/improve/README.md)、[调试](./09-profile/debug/README.md)
+- Profiling：[总览](./09-profile/README.md)、[CUDA 性能分析](./09-profile/cuda/README.md)、[GFlops 计算](./09-profile/cuda/theory.md)、[Benchmark](./09-profile/cuda/benchmark.md)、[Roofline](./09-profile/cuda/roofline.md)、[Warp Stall](./09-profile/cuda/stall.md)、[优化](./09-profile/improve/README.md)、[调试](./09-profile/debug/README.md)
 
 ---
 
