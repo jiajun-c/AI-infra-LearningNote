@@ -30,11 +30,11 @@ AI-infra-LearningNote/
 ├── 04-comm/       通信后端、NCCL、集合通信、网络栈与计算通信重叠
 ├── 05-framework/  PyTorch、vLLM、SGLang、Megatron、DeepSpeed
 ├── 06-agent/      Agent 框架与向量检索
-├── 07-system/     CPU/GPU/NPU、内存系统、OS I/O、进程模型
+├── 07-system/     CPU/GPU/NPU、内存系统、OS I/O、网络、进程模型
 ├── 08-tools/      编译器、项目管理、第三方库与工程工具
 ├── 09-profile/    性能分析、调试、优化方法与评测工具
-├── 010-dist/      分布式训练专题
-├── 011-train/     训练算力、Scaling Law 与训练策略
+├── 010-dist/      分布式训练专题：DP/DDP/FSDP/HSDP/ZeRO
+├── 011-train/     训练算力、Scaling Law、Pre/Post-Training
 ├── concept/       pre-training / SFT / RL 等基础概念
 ├── cuda/          CUTLASS / CuTe 实践代码
 └── dao/           算子开发范式与任务划分
@@ -61,8 +61,8 @@ AI-infra-LearningNote/
 ### LLM 架构、训练与推理
 
 - 架构：[模型数据流](./03-llm/arch/flow/README.md)、[Attention](./03-llm/arch/Attention/README.md)、[FlashAttention V1](./03-llm/arch/Attention/FlashAttention/README.md)、[FlashAttention V2](./03-llm/arch/Attention/flashAttentionv2/README.md)、[MoE](./03-llm/arch/MoE/README.md)
-- 并行训练：[DP](./010-dist/dp/README.md)、[DDP](./010-dist/DDP/README.md)、[TP](./03-llm/parallel/TP/README.md)、[PP](./03-llm/parallel/PP/README.md)、[EP](./03-llm/parallel/EP/README.md)、[FSDP](./03-llm/parallel/FSDP/README.md)
-- 训练与微调：[数据集处理](./03-llm/train/dataset/README.md)、[SFT](./03-llm/train/finetuning/SFT/README.md)、[RLHF](./03-llm/train/finetuning/RLHF/README.md)、[DPO](./03-llm/train/finetuning/DPO/README.md)、[梯度检查点](./03-llm/train/LowMem/checkpoint/README.md)
+- 并行训练：[DP](./010-dist/dp/README.md)、[DDP](./010-dist/DDP/README.md)、[FSDP](./010-dist/fsdp/README.md)、[HSDP](./010-dist/hsdp/README.md)、[ZeRO](./010-dist/zero/README.md)、[Distributed Transpose](./010-dist/trans/README.md)、[TP](./03-llm/parallel/TP/README.md)、[PP](./03-llm/parallel/PP/README.md)、[EP](./03-llm/parallel/EP/README.md)
+- 训练与微调：[Pre-Training](./011-train/pre-training/README.md)、[Post-Training SFT](./011-train/post-training/SFT/README.md)、[RLHF](./011-train/post-training/Alignment/RLHF/README.md)、[DPO](./011-train/post-training/Alignment/DPO/README.md)、[Gradient Accumulation](./011-train/gradAccStep/README.md)、[数据集处理](./03-llm/train/dataset/README.md)、[梯度检查点](./03-llm/train/LowMem/checkpoint/README.md)
 - 训练算力：[Chinchilla Scaling Law](./011-train/scalingLaw/README.md)
 - 推理优化：[KV Cache](./03-llm/inference/kvcache/README.md)、[Prefix Cache](./03-llm/inference/prefix_cache/README.md)、[Batching](./03-llm/inference/batch/README.md)、[Chunked Prefill](./03-llm/inference/chunkPrefill/README.md)、[Speculative Decoding](./03-llm/inference/speculative/README.md)
 - 量化与压缩：[线性量化](./03-llm/inference/quant/linearQuant/README.md)、[AWQ](./03-llm/inference/quant/AWQ/README.md)、[QAT](./03-llm/inference/quant/QAT/README.md)、[SmoothQuant](./03-llm/inference/quant/smooth/README.md)、[k-means 量化](./03-llm/inference/quant/kmeans/README.md)
@@ -75,11 +75,11 @@ AI-infra-LearningNote/
 
 ### 通信、框架与系统
 
-- 通信与网络：[总览](./04-comm/README.md)、[Gloo](./04-comm/backend/gloo/README.md)、[NCCL](./04-comm/CCL/NCCL/README.md)、[集合通信](./04-comm/collective/README.md)、[Overlap](./04-comm/overlap/README.md)、[NVLink](./04-comm/nvlink/README.md)
+- 通信与网络：[总览](./04-comm/README.md)、[Gloo](./04-comm/backend/gloo/README.md)、[NCCL](./04-comm/CCL/NCCL/README.md)、[集合通信](./04-comm/collective/README.md)、[Overlap](./04-comm/overlap/README.md)、[NVLink](./04-comm/nvlink/README.md)、[NVSHMEM](./04-comm/nvshem/README.md)
 - PyTorch：[Overview](./05-framework/pytorch/overview/README.md)、[Stream](./05-framework/pytorch/stream/README.md)、[Context](./05-framework/pytorch/context/README.md)、[Custom Ops](./05-framework/pytorch/custom_ops/README.md)、[Memory](./05-framework/pytorch/memory/model/README.md)
 - Serving / Training Framework：[vLLM](./05-framework/vllm/README.md)、[SGLang](./05-framework/sglang/README.md)、[Megatron-LM](./05-framework/megtron/README.md)、[Slime](./05-framework/slime/README.md)、[DeepSpeed](./05-framework/deepspeed/README.md)
-- 系统：[系统与硬件概述](./07-system/README.md)、[GPU](./07-system/gpu/README.md)、[NPU](./07-system/npu/README.md)、[内存系统](./07-system/memory/README.md)、[io_uring](./07-system/os/io_uring/README.md)
-- Profiling：[CUDA 性能分析](./09-profile/cuda/README.md)、[性能优化方法](./09-profile/improve/README.md)、[调试基础](./09-profile/debug/README.md)、[困惑度分析](./09-profile/perplexity/README.md)
+- 系统：[系统与硬件概述](./07-system/README.md)、[GPU](./07-system/gpu/README.md)、[GPU 内存模型](./07-system/gpu/memory/README.md)、[NPU](./07-system/npu/README.md)、[CPU 调度](./07-system/cpu/sched/README.md)、[x86 Cache](./07-system/cpu/x86/cache/README.md)、[内存系统](./07-system/memory/README.md)、[网络内核旁路](./07-system/net/kernel-bypass/README.md)、[io_uring](./07-system/os/io_uring/README.md)、[Cache Coherent](./07-system/cache/coherent/README.md)
+- Profiling：[总览](./09-profile/README.md)、[CUDA 性能分析](./09-profile/cuda/README.md)、[GFlops 计算](./09-profile/cuda/theory.md)、[Roofline 分析](./09-profile/cuda/roofline.md)、[Warp Stall](./09-profile/cuda/stall.md)、[性能优化](./09-profile/improve/README.md)、[调试](./09-profile/debug/README.md)
 
 ---
 
@@ -93,7 +93,10 @@ AI-infra-LearningNote/
 - PyTorch compile/custom ops/memory/linear 源码链路
 - vLLM 架构、并行策略、显存管理、Sleep Mode
 - 多模态 DiT/LDM/ADM、DiT Cache、Text2X
-- FSDP、分布式转置、通信 overlap、NCCL 与网络栈专题
+- FSDP/HSDP/ZeRO、分布式转置、通信 overlap、NCCL 与网络栈专题
+- CPU 调度与绑核、x86 Cache 层次、内核旁路网络、epoll/io_uring
+- Pre-Training / Post-Training（SFT/RLHF/DPO）训练流程
+- GPU GFlops 计算、Roofline 性能建模、Warp Stall 硬件诊断
 
 待补主题见 [TODO.md](./TODO.md)。
 
@@ -106,4 +109,4 @@ AI-infra-LearningNote/
 - 新增目录时尽量保持路径命名一致，避免大小写混用和拼写漂移。
 - 示例代码、实验日志和图表应放在对应主题目录下，README 只保留结论、关键路径和复现实验入口。
 
-最后更新：2026-05-31
+最后更新：2026-06-09
