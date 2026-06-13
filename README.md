@@ -76,7 +76,7 @@ AI-infra-LearningNote/
 
 ### 通信、框架与系统
 
-- 通信与网络：[总览](./04-comm/README.md)、[Gloo](./04-comm/backend/gloo/README.md)、[NCCL](./04-comm/CCL/NCCL/README.md)、[对称内存](./04-comm/CCL/NCCL/symm/README.md) ([PyTorch API](./05-framework/pytorch/symmMem/README.md))、[集合通信](./04-comm/collective/README.md)、[Overlap](./04-comm/overlap/README.md)、[NVLink](./04-comm/nvlink/README.md)、[NVSHMEM](./04-comm/nvshem/README.md)
+- 通信与网络：[总览](./04-comm/README.md)、[Gloo](./04-comm/backend/gloo/README.md)、[NCCL](./04-comm/CCL/NCCL/README.md)、[跨卡同步机制](./04-comm/sync/README.md)、[对称内存](./04-comm/CCL/NCCL/symm/README.md) ([PyTorch API](./05-framework/pytorch/symmMem/README.md))、[集合通信](./04-comm/collective/README.md)、[Overlap](./04-comm/overlap/README.md)、[NVLink](./04-comm/nvlink/README.md)、[NVSHMEM](./04-comm/nvshem/README.md)
 - PyTorch：[Overview](./05-framework/pytorch/overview/README.md)、[Stream](./05-framework/pytorch/stream/README.md)、[Context](./05-framework/pytorch/context/README.md)、[Custom Ops](./05-framework/pytorch/custom_ops/README.md)、[Memory](./05-framework/pytorch/memory/model/README.md)
 - Serving / Training Framework：[vLLM](./05-framework/vllm/README.md)、[SGLang](./05-framework/sglang/README.md)、[Megatron-LM](./05-framework/megtron/README.md)、[Slime](./05-framework/slime/README.md)、[DeepSpeed](./05-framework/deepspeed/README.md)
 - 系统：[系统与硬件概述](./07-system/README.md)、[GPU](./07-system/gpu/README.md)、[GPU 内存模型](./07-system/gpu/memory/README.md)、[NPU](./07-system/npu/README.md)、[CPU 调度](./07-system/cpu/sched/README.md)、[x86 Cache](./07-system/cpu/x86/cache/README.md)、[内存系统](./07-system/memory/README.md)、[网络内核旁路](./07-system/net/kernel-bypass/README.md)、[io_uring](./07-system/os/io_uring/README.md)、[Cache Coherent](./07-system/cache/coherent/README.md)
@@ -94,7 +94,7 @@ AI-infra-LearningNote/
 - PyTorch compile/custom ops/memory/linear 源码链路
 - vLLM 架构、并行策略、显存管理、Sleep Mode
 - 多模态 DiT/LDM/ADM、DiT Cache、Text2X
-- FSDP/HSDP/ZeRO、分布式转置、通信 overlap、NCCL 与网络栈专题
+- FSDP/HSDP/ZeRO、分布式转置、通信 overlap、跨卡同步机制、NCCL 与网络栈专题
 - CPU 调度与绑核、x86 Cache 层次、内核旁路网络、epoll/io_uring
 - Pre-Training / Post-Training（SFT/RLHF/DPO）训练流程
 - GPU GFlops 计算、Roofline 性能建模、Warp Stall 硬件诊断、ILP 指令级并行
@@ -112,4 +112,4 @@ AI-infra-LearningNote/
 - 新增目录时尽量保持路径命名一致，避免大小写混用和拼写漂移。
 - 示例代码、实验日志和图表应放在对应主题目录下，README 只保留结论、关键路径和复现实验入口。
 
-最后更新：2026-06-10
+最后更新：2026-06-13
