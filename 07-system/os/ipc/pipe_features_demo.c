@@ -70,7 +70,7 @@ static void demo_half_duplex(void)
     ssize_t n;
 
     puts("\n[1] 半双工: pipe 返回一个读端和一个写端");
-    if (pipe(p) == -1) {
+    if ( (p) == -1) {
         die("pipe");
     }
 

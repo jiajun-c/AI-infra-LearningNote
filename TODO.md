@@ -53,7 +53,8 @@
 - [ ] **投机解码进阶**：SpecInfer、Medusa、Eagle 多草稿头
 
 ### 训练
-- [ ] **序列并行（SP）**：Megatron-SP，ring attention，长序列训练
+
+- [x] **序列并行（SP）**：Megatron-SP，ring attention，长序列训练 → [010-dist/cp/](./010-dist/cp/README.md)
 - [ ] **ZeRO-3 + Offload**：参数/梯度/优化器状态的 CPU offload 细节
 - [ ] **异步 checkpoint**：训练不停顿的 checkpoint 写入（torch.distributed.checkpoint）
 - [ ] **MoE 训练**：Expert 并行、负载均衡 loss、token dropping

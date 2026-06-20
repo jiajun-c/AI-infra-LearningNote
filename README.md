@@ -33,7 +33,7 @@ AI-infra-LearningNote/
 ├── 07-system/     CPU/GPU/NPU、内存系统、OS I/O、网络、进程模型
 ├── 08-tools/      编译器、项目管理、第三方库与工程工具
 ├── 09-profile/    性能分析、调试、优化方法与评测工具
-├── 010-dist/      分布式训练专题：DP/DDP/FSDP/HSDP/ZeRO
+├── 010-dist/      分布式训练专题：DP/DDP/FSDP/HSDP/ZeRO/CP
 ├── 011-train/     训练算力、Scaling Law、Pre/Post-Training
 ├── concept/       pre-training / SFT / RL 等基础概念
 ├── cuda/          CUTLASS / CuTe 实践代码
@@ -63,6 +63,7 @@ AI-infra-LearningNote/
 
 - 架构：[模型数据流](./03-llm/arch/flow/README.md)、[Attention](./03-llm/arch/Attention/README.md)、[FlashAttention V1](./03-llm/arch/Attention/FlashAttention/README.md)、[FlashAttention V2](./03-llm/arch/Attention/flashAttentionv2/README.md)、[MoE](./03-llm/arch/MoE/README.md)
 - 并行训练：[DP](./010-dist/dp/README.md)、[DDP](./010-dist/DDP/README.md)、[FSDP](./010-dist/fsdp/README.md)、[HSDP](./010-dist/hsdp/README.md)、[ZeRO](./010-dist/zero/README.md)、[Distributed Transpose](./010-dist/trans/README.md)、[TP](./03-llm/parallel/TP/README.md)、[PP](./03-llm/parallel/PP/README.md)、[EP](./03-llm/parallel/EP/README.md)
+- 序列并行 (CP)：[总览](./010-dist/cp/README.md)、[Megatron-SP](./010-dist/cp/Megtron-SP/README.md)、[Ring Attention](./010-dist/cp/ringAttention/README.md)、[Ulysses](./010-dist/cp/ulysses/README.md)
 - 训练与微调：[Pre-Training](./011-train/pre-training/README.md)、[Post-Training SFT](./011-train/post-training/SFT/README.md)、[RLHF](./011-train/post-training/Alignment/RLHF/README.md)、[DPO](./011-train/post-training/Alignment/DPO/README.md)、[Gradient Accumulation](./011-train/gradAccStep/README.md)、[数据集处理](./03-llm/train/dataset/README.md)、[梯度检查点](./03-llm/train/LowMem/checkpoint/README.md)
 - 训练算力：[Chinchilla Scaling Law](./011-train/scalingLaw/README.md)
 - 推理优化：[KV Cache](./03-llm/inference/kvcache/README.md)、[Prefix Cache](./03-llm/inference/prefix_cache/README.md)、[Batching](./03-llm/inference/batch/README.md)、[Chunked Prefill](./03-llm/inference/chunkPrefill/README.md)、[Speculative Decoding](./03-llm/inference/speculative/README.md)
@@ -94,7 +95,7 @@ AI-infra-LearningNote/
 - PyTorch compile/custom ops/memory/linear 源码链路
 - vLLM 架构、并行策略、显存管理、Sleep Mode
 - 多模态 DiT/LDM/ADM、DiT Cache、Text2X
-- FSDP/HSDP/ZeRO、分布式转置、通信 overlap、跨卡同步机制、NCCL 与网络栈专题
+- FSDP/HSDP/ZeRO、CP 序列并行（Megatron-SP / Ring Attention / Ulysses）、跨卡同步机制（dist/P2P/IPC）、NCCL 与网络栈专题
 - CPU 调度与绑核、x86 Cache 层次、内核旁路网络、epoll/io_uring
 - Pre-Training / Post-Training（SFT/RLHF/DPO）训练流程
 - GPU GFlops 计算、Roofline 性能建模、Warp Stall 硬件诊断、ILP 指令级并行
@@ -112,4 +113,4 @@ AI-infra-LearningNote/
 - 新增目录时尽量保持路径命名一致，避免大小写混用和拼写漂移。
 - 示例代码、实验日志和图表应放在对应主题目录下，README 只保留结论、关键路径和复现实验入口。
 
-最后更新：2026-06-13
+最后更新：2026-06-20
