@@ -90,6 +90,18 @@ FP32 算力 ───────── 66.9 TFLOPS
    - 在算力线附近 → Compute-bound → 需要算法层面提效
    - 远低于两条线 → **实现问题**（cache miss、bank conflict、occupancy 低）
 
+## 4. 使用 Roofline 进行CTA层级的分析
+
+可以看到上面的分析往往局限于整个算子的层面，假设需要进行更加细致的分析
+
+例如对于一个使用cuda core和share memory的算子而言，其每个时钟周期完成的访存为 32x4B = 128B，而由于一个CTA内一次可以有四个warp在执行，所以可以执行的FMA的操作数量为4x32=128FMA，一个FMA等于两个普通操作。
+
+所以rigde的点为AI = 128FMA/cycle/128B/cycle = 1MFA/B = 2
+
+只有当计算强度>2的时候才能喂满cuda core
+
+
+
 ### 典型算子分类
 
 | 算子 | 近似 AI | 在 H100 上的瓶颈 |

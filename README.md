@@ -46,12 +46,14 @@ AI-infra-LearningNote/
 
 ### CUDA 与 GPU 编程
 
-- 架构基础：[硬件架构](./01-cuda/hardware/README.md)、[Blackwell](./01-cuda/blackwell/README.md)、[Hopper TMA](./01-cuda/hopper/TMA/README.md)、[Hopper Pipeline](./01-cuda/hopper/pipe/README.md)
+- 架构基础：[硬件架构](./01-cuda/hardware/README.md)、[Hopper 专题](./01-cuda/hardware/hopper.md)、[Blackwell 专题](./01-cuda/hardware/blackwell.md)、[SM 微架构](./01-cuda/hardware/sm.md)
+- Hopper 特性：[TMA](./01-cuda/hopper/TMA/README.md)、[Pipeline](./01-cuda/hopper/pipe/README.md)、[DSMEM](./01-cuda/hopper/DistributedSM/README.md)
 - 执行模型：[启动配置](./01-cuda/launch/README.md)、[Stream](./01-cuda/stream/README.md)、[Cooperative Groups](./01-cuda/cg/README.md)、[Warp 原语](./01-cuda/primitives/warp/README.md)
 - Driver API：[总览](./01-cuda/driver/README.md)、[Stream Memory Ops](./01-cuda/driver/memory/README.md)（cuStreamWriteValue32/WaitValue32/BatchMemOp）
 - 内存优化：[Bank Conflict](./01-cuda/memory/bank/README.md)、[全局内存合并](./01-cuda/memory/global/README.md)、[Cache](./01-cuda/memory/cache/README.md)、[Pin Memory](./01-cuda/pin/README.md)、[VMM](./01-cuda/memory/vmm/README.md)
 - 算子实现：[HGEMV](./01-cuda/blas/hgemv/README.md)、[Element-wise](./01-cuda/op/element_wise/README.md)、[Transpose](./01-cuda/op/transpose/README.md)、[Reduce](./01-cuda/reduce/README.md)
 - CUTLASS / CuTe：[CuTe 多维分块](./01-cuda/cutlass/cute/multidimTile/README.md)、[Copy](./01-cuda/cutlass/copy/README.md)、[CUTLASS 3.x GEMM](./01-cuda/cutlass/gemm/cutlass3.x/README.md)、[Device GEMM](./01-cuda/cutlass/gemm/device/README.md)
+- [内存修饰符](./01-cuda/memory/specifier/README.md)
 
 ### 编程语言与 Kernel DSL
 
@@ -80,7 +82,7 @@ AI-infra-LearningNote/
 - 通信与网络：[总览](./04-comm/README.md)、[Gloo](./04-comm/backend/gloo/README.md)、[NCCL](./04-comm/CCL/NCCL/README.md)、[跨卡同步机制](./04-comm/sync/README.md)、[对称内存](./04-comm/CCL/NCCL/symm/README.md) ([PyTorch API](./05-framework/pytorch/symmMem/README.md))、[集合通信](./04-comm/collective/README.md)、[Overlap](./04-comm/overlap/README.md)、[NVLink](./04-comm/nvlink/README.md)、[NVSHMEM](./04-comm/nvshem/README.md)
 - PyTorch：[Overview](./05-framework/pytorch/overview/README.md)、[Stream](./05-framework/pytorch/stream/README.md)、[Context](./05-framework/pytorch/context/README.md)、[Custom Ops](./05-framework/pytorch/custom_ops/README.md)、[Memory](./05-framework/pytorch/memory/model/README.md)
 - Serving / Training Framework：[vLLM](./05-framework/vllm/README.md)、[SGLang](./05-framework/sglang/README.md)、[Megatron-LM](./05-framework/megtron/README.md)、[Slime](./05-framework/slime/README.md)、[DeepSpeed](./05-framework/deepspeed/README.md)
-- 系统：[系统与硬件概述](./07-system/README.md)、[GPU](./07-system/gpu/README.md)、[GPU 内存模型](./07-system/gpu/memory/README.md)、[NPU](./07-system/npu/README.md)、[CPU 调度](./07-system/cpu/sched/README.md)、[x86 Cache](./07-system/cpu/x86/cache/README.md)、[内存系统](./07-system/memory/README.md)、[网络内核旁路](./07-system/net/kernel-bypass/README.md)、[io_uring](./07-system/os/io_uring/README.md)、[Cache Coherent](./07-system/cache/coherent/README.md)
+- 系统：[系统与硬件概述](./07-system/README.md)、[GPU 架构](./01-cuda/hardware/README.md)、[GPU 内存模型](./07-system/gpu/memory/README.md)、[NPU](./07-system/npu/README.md)、[CPU 调度](./07-system/cpu/sched/README.md)、[x86 Cache](./07-system/cpu/x86/cache/README.md)、[内存系统](./07-system/memory/README.md)、[网络内核旁路](./07-system/net/kernel-bypass/README.md)、[io_uring](./07-system/os/io_uring/README.md)、[Cache Coherent](./07-system/cache/coherent/README.md)
 - Profiling：[总览](./09-profile/README.md)、[CUDA 性能分析](./09-profile/cuda/README.md)、[GFlops 计算](./09-profile/cuda/theory.md)、[Benchmark](./09-profile/cuda/benchmark.md)、[Roofline](./09-profile/cuda/roofline.md)、[Warp Stall](./09-profile/cuda/stall.md)、[Kernel 延迟](./09-profile/latency/README.md)、[优化](./09-profile/improve/README.md)、[调试](./09-profile/debug/README.md)
 
 ---
