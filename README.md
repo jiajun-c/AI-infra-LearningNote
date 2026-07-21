@@ -69,7 +69,7 @@ AI-infra-LearningNote/
 - 训练与微调：[Pre-Training](./011-train/pre-training/README.md)、[Post-Training SFT](./011-train/post-training/SFT/README.md)、[RLHF](./011-train/post-training/Alignment/RLHF/README.md)、[DPO](./011-train/post-training/Alignment/DPO/README.md)、[Gradient Accumulation](./011-train/gradAccStep/README.md)、[数据集处理](./03-llm/train/dataset/README.md)、[梯度检查点](./03-llm/train/LowMem/checkpoint/README.md)
 - 训练算力：[Chinchilla Scaling Law](./011-train/scalingLaw/README.md)
 - 推理优化：[KV Cache](./03-llm/inference/kvcache/README.md)、[Prefix Cache](./03-llm/inference/prefix_cache/README.md)、[Batching](./03-llm/inference/batch/README.md)、[Chunked Prefill](./03-llm/inference/chunkPrefill/README.md)、[Speculative Decoding](./03-llm/inference/speculative/README.md)
-- 量化与压缩：[线性量化](./03-llm/inference/quant/linearQuant/README.md)、[AWQ](./03-llm/inference/quant/AWQ/README.md)、[QAT](./03-llm/inference/quant/QAT/README.md)、[SmoothQuant](./03-llm/inference/quant/smooth/README.md)、[k-means 量化](./03-llm/inference/quant/kmeans/README.md)
+- 精度与量化：[精度总览](./012-prec/README.md)、[FP8](./012-prec/format/fp8/README.md)、[FP4](./012-prec/format/fp4/README.md)、[线性量化](./012-prec/quant/linearQuant/README.md)、[AWQ](./012-prec/quant/AWQ/README.md)、[SmoothQuant](./012-prec/quant/smooth/README.md)
 
 ### 多模态 Infra
 
