@@ -257,7 +257,7 @@ ZeRO-2: ReduceScatter，每个 rank 只保留自己的梯度分片
 运行方式：
 
 ```bash
-python 010-dist/zero/demo.py
+python 10-dist/zero/demo.py
 ```
 
 这个 demo 没有起真实多进程，而是在一个进程里模拟 4 个 rank，重点是把这几件事讲清楚：

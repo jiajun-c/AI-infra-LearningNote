@@ -12,9 +12,9 @@ AI 基础设施学习笔记，聚焦 GPU 编程、LLM 训练与推理、通信�
 
 1. **GPU / CUDA Infra**：从 [CUDA 硬件架构](./01-cuda/hardware/README.md) 开始，再看 [内存层次与合并访问](./01-cuda/memory/global/README.md)、[TensorCore](./01-cuda/tensorCore/README.md)、[CUTLASS / CuTe](./01-cuda/cutlass/gemm/cutlass3.x/README.md)。
 2. **LLM Training Infra**：先看 [Attention](./03-llm/arch/Attention/README.md)、[MoE](./03-llm/arch/MoE/README.md)，再进入 [TP](./03-llm/parallel/TP/README.md)、[PP](./03-llm/parallel/PP/README.md)、[FSDP](./03-llm/parallel/FSDP/README.md)。
-3. **LLM Inference Infra**：从 [KV Cache](./03-llm/inference/kvcache/README.md)、[Continuous Batching](./03-llm/inference/contiuousBatching/README.md)、[Chunked Prefill](./03-llm/inference/chunkPrefill/README.md) 和 [FlashDecode](./03-llm/inference/flashDecode/README.md) 入手。
+3. **LLM Inference Infra**：从 [KV Cache](./03-llm/inference/kvcache/README.md)、[Continuous Batching](./03-llm/inference/continuousBatching/README.md)、[Chunked Prefill](./03-llm/inference/chunkPrefill/README.md) 和 [FlashDecode](./03-llm/inference/flashDecode/README.md) 入手；量化详见 [精度专题](./12-prec/README.md)。
 4. **Framework / Serving**：看 [PyTorch 架构](./05-framework/pytorch/overview/README.md)、[torch.compile](./05-framework/pytorch/compile/README.md)、[vLLM](./05-framework/vllm/README.md)、[SGLang 权重加载](./05-framework/sglang/weightLoad/README.md)。
-5. **Training Compute / Scaling Law**：看 [Chinchilla Scaling Law](./011-train/scalingLaw/README.md)，理解固定训练算力下参数量和训练 token 数的分配。
+5. **Training Compute / Scaling Law**：看 [Chinchilla Scaling Law](./11-train/scalingLaw/README.md)，理解固定训练算力下参数量和训练 token 数的分配。
 6. **通信、网络与系统调优**：看 [通信与网络](./04-comm/README.md)、[NCCL](./04-comm/CCL/NCCL/README.md)、[系统与硬件](./07-system/README.md)、[CUDA Profiling](./09-profile/cuda/README.md)。
 
 ---
@@ -25,7 +25,7 @@ AI 基础设施学习笔记，聚焦 GPU 编程、LLM 训练与推理、通信�
 AI-infra-LearningNote/
 ├── 01-cuda/       CUDA 编程、GPU 架构、算子、CUTLASS/CuTe
 ├── 02-lang/       C++、Python、Triton 与底层编程语言基础
-├── 03-llm/        LLM 架构、训练、推理、量化、并行与评测
+├── 03-llm/        LLM 架构、训练、推理、并行与评测
 ├── 03-multi/      多模态模型 Infra，含 ViT/CLIP/VAE/DiT/LDM
 ├── 04-comm/       通信后端、NCCL、集合通信、网络栈与计算通信重叠
 ├── 05-framework/  PyTorch、vLLM、SGLang、Megatron、DeepSpeed
@@ -33,10 +33,10 @@ AI-infra-LearningNote/
 ├── 07-system/     CPU/GPU/NPU、内存系统、OS I/O、网络、进程模型
 ├── 08-tools/      编译器、项目管理、第三方库与工程工具
 ├── 09-profile/    性能分析、调试、优化方法与评测工具
-├── 010-dist/      分布式训练专题：DP/DDP/FSDP/HSDP/ZeRO/CP
-├── 011-train/     训练算力、Scaling Law、Pre/Post-Training
+├── 10-dist/      分布式训练专题：DP/DDP/FSDP/HSDP/ZeRO/CP
+├── 11-train/     训练算力、Scaling Law、Pre/Post-Training
+├── 12-prec/      精度专题：数据格式（FP8/FP4）+ 量化方法（AWQ/SmoothQuant 等）
 ├── concept/       pre-training / SFT / RL 等基础概念
-├── cuda/          CUTLASS / CuTe 实践代码
 └── dao/           算子开发范式与任务划分
 ```
 
@@ -50,10 +50,9 @@ AI-infra-LearningNote/
 - Hopper 特性：[TMA](./01-cuda/hopper/TMA/README.md)、[Pipeline](./01-cuda/hopper/pipe/README.md)、[DSMEM](./01-cuda/hopper/DistributedSM/README.md)
 - 执行模型：[启动配置](./01-cuda/launch/README.md)、[Stream](./01-cuda/stream/README.md)、[Cooperative Groups](./01-cuda/cg/README.md)、[Warp 原语](./01-cuda/primitives/warp/README.md)
 - Driver API：[总览](./01-cuda/driver/README.md)、[Stream Memory Ops](./01-cuda/driver/memory/README.md)（cuStreamWriteValue32/WaitValue32/BatchMemOp）
-- 内存优化：[Bank Conflict](./01-cuda/memory/bank/README.md)、[全局内存合并](./01-cuda/memory/global/README.md)、[Cache](./01-cuda/memory/cache/README.md)、[Pin Memory](./01-cuda/pin/README.md)、[VMM](./01-cuda/memory/vmm/README.md)
+- 内存优化：[修饰符](./01-cuda/memory/specifier/README.md)、[Bank Conflict](./01-cuda/memory/bank/README.md)、[全局内存合并](./01-cuda/memory/global/README.md)、[Cache](./01-cuda/memory/cache/README.md)、[Pin Memory](./01-cuda/pin/README.md)、[VMM](./01-cuda/memory/vmm/README.md)
 - 算子实现：[HGEMV](./01-cuda/blas/hgemv/README.md)、[Element-wise](./01-cuda/op/element_wise/README.md)、[Transpose](./01-cuda/op/transpose/README.md)、[Reduce](./01-cuda/reduce/README.md)
 - CUTLASS / CuTe：[CuTe 多维分块](./01-cuda/cutlass/cute/multidimTile/README.md)、[Copy](./01-cuda/cutlass/copy/README.md)、[CUTLASS 3.x GEMM](./01-cuda/cutlass/gemm/cutlass3.x/README.md)、[Device GEMM](./01-cuda/cutlass/gemm/device/README.md)
-- [内存修饰符](./01-cuda/memory/specifier/README.md)
 
 ### 编程语言与 Kernel DSL
 
@@ -64,12 +63,12 @@ AI-infra-LearningNote/
 ### LLM 架构、训练与推理
 
 - 架构：[模型数据流](./03-llm/arch/flow/README.md)、[Attention](./03-llm/arch/Attention/README.md)、[FlashAttention V1](./03-llm/arch/Attention/FlashAttention/README.md)、[FlashAttention V2](./03-llm/arch/Attention/flashAttentionv2/README.md)、[MoE](./03-llm/arch/MoE/README.md)
-- 并行训练：[DP](./010-dist/dp/README.md)、[DDP](./010-dist/DDP/README.md)、[FSDP](./010-dist/fsdp/README.md)、[HSDP](./010-dist/hsdp/README.md)、[ZeRO](./010-dist/zero/README.md)、[Distributed Transpose](./010-dist/trans/README.md)、[TP](./03-llm/parallel/TP/README.md)、[PP](./03-llm/parallel/PP/README.md)、[EP](./03-llm/parallel/EP/README.md)
-- 序列并行 (CP)：[总览](./010-dist/cp/README.md)、[Megatron-SP](./010-dist/cp/Megtron-SP/README.md)、[Ring Attention](./010-dist/cp/ringAttention/README.md)、[Ulysses](./010-dist/cp/ulysses/README.md)
-- 训练与微调：[Pre-Training](./011-train/pre-training/README.md)、[Post-Training SFT](./011-train/post-training/SFT/README.md)、[RLHF](./011-train/post-training/Alignment/RLHF/README.md)、[DPO](./011-train/post-training/Alignment/DPO/README.md)、[Gradient Accumulation](./011-train/gradAccStep/README.md)、[数据集处理](./03-llm/train/dataset/README.md)、[梯度检查点](./03-llm/train/LowMem/checkpoint/README.md)
-- 训练算力：[Chinchilla Scaling Law](./011-train/scalingLaw/README.md)
+- 并行训练：[DP](./10-dist/dp/README.md)、[DDP](./10-dist/DDP/README.md)、[FSDP](./10-dist/fsdp/README.md)、[HSDP](./10-dist/hsdp/README.md)、[ZeRO](./10-dist/zero/README.md)、[Distributed Transpose](./10-dist/trans/README.md)、[TP](./03-llm/parallel/TP/README.md)、[PP](./03-llm/parallel/PP/README.md)、[EP](./03-llm/parallel/EP/README.md)
+- 序列并行 (CP)：[总览](./10-dist/cp/README.md)、[Megatron-SP](./10-dist/cp/Megtron-SP/README.md)、[Ring Attention](./10-dist/cp/ringAttention/README.md)、[Ulysses](./10-dist/cp/ulysses/README.md)
+- 训练与微调：[Pre-Training](./11-train/pre-training/README.md)、[Post-Training SFT](./11-train/post-training/SFT/README.md)、[RLHF](./11-train/post-training/Alignment/RLHF/README.md)、[DPO](./11-train/post-training/Alignment/DPO/README.md)、[Gradient Accumulation](./11-train/gradAccStep/README.md)、[数据集处理](./03-llm/train/dataset/README.md)、[梯度检查点](./03-llm/train/LowMem/checkpoint/README.md)
+- 训练算力：[Chinchilla Scaling Law](./11-train/scalingLaw/README.md)
 - 推理优化：[KV Cache](./03-llm/inference/kvcache/README.md)、[Prefix Cache](./03-llm/inference/prefix_cache/README.md)、[Batching](./03-llm/inference/batch/README.md)、[Chunked Prefill](./03-llm/inference/chunkPrefill/README.md)、[Speculative Decoding](./03-llm/inference/speculative/README.md)
-- 精度与量化：[精度总览](./012-prec/README.md)、[FP8](./012-prec/format/fp8/README.md)、[FP4](./012-prec/format/fp4/README.md)、[线性量化](./012-prec/quant/linearQuant/README.md)、[AWQ](./012-prec/quant/AWQ/README.md)、[SmoothQuant](./012-prec/quant/smooth/README.md)
+- 精度与量化：[精度总览](./12-prec/README.md)、[FP8](./12-prec/format/fp8/README.md)、[FP4](./12-prec/format/fp4/README.md)、[线性量化](./12-prec/quant/linearQuant/README.md)、[AWQ](./12-prec/quant/AWQ/README.md)、[SmoothQuant](./12-prec/quant/smooth/README.md)
 
 ### 多模态 Infra
 
@@ -91,18 +90,18 @@ AI-infra-LearningNote/
 
 近期新增和重点维护方向：
 
-- CUDA VMM、Pin Memory、Hopper Pipeline、Blackwell 架构
+- GPU 架构文档重组：统一到 [01-cuda/hardware/](./01-cuda/hardware/README.md)，含 Hopper/Blackwell 专题和 SM 微架构
+- 精度专题集中：[12-prec/](./12-prec/README.md)，含 FP8/FP4 数据格式和 AWQ/SmoothQuant 等量化方法
+- CUDA 内存修饰符（specifier）：__device__ / __shared__ / __constant__ / __grid_constant__
 - Triton Matmul、FlashAttention、Kernel Fusion
+- Hopper Pipeline、TMA、DSMEM
 - Chinchilla Scaling Law、训练算力与数据/参数配比
-- PyTorch compile/custom ops/memory/linear 源码链路
-- vLLM 架构、并行策略、显存管理、Sleep Mode
-- 多模态 DiT/LDM/ADM、DiT Cache、Text2X
-- FSDP/HSDP/ZeRO、CP 序列并行（Megatron-SP / Ring Attention / Ulysses）、跨卡同步机制（dist/P2P/IPC）、NCCL 与网络栈专题
-- CPU 调度与绑核、x86 Cache 层次、内核旁路网络、epoll/io_uring
-- Pre-Training / Post-Training（SFT/RLHF/DPO）训练流程
-- GPU GFlops 计算、Roofline 性能建模、Warp Stall 硬件诊断、ILP 指令级并行
-- 全局内存合并访问：transaction 模型、SoA vs AoS、GEMV 行主序/列主序
-- 共享内存 Bank Conflict vs 全局内存 Uncoalesced 对比
+- vLLM 架构、并行策略、显存管理
+- 多模态 DiT/LDM、DiT Cache
+- FSDP/HSDP/ZeRO、CP 序列并行（Megatron-SP / Ring Attention / Ulysses）
+- NCCL Group Call、Zero-CTA、NCCL 与网络栈专题
+- GPU GFlops 计算、Roofline 性能建模、Warp Stall 硬件诊断
+- 全局内存合并访问、Bank Conflict vs Uncoalesced 对比
 
 待补主题见 [TODO.md](./TODO.md)。
 
@@ -115,4 +114,4 @@ AI-infra-LearningNote/
 - 新增目录时尽量保持路径命名一致，避免大小写混用和拼写漂移。
 - 示例代码、实验日志和图表应放在对应主题目录下，README 只保留结论、关键路径和复现实验入口。
 
-最后更新：2026-06-20
+最后更新：2026-07-22

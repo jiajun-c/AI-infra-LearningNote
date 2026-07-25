@@ -35,7 +35,7 @@
 ## 03 LLM
 
 ### 大模型训练学习路径
-- [ ] **训练目标与数据**：[Week 1 Pre-training](./011-train/pre-training/README.md)，pre-training / SFT / RLHF / DPO 的目标函数、数据格式和 loss 区别
+- [ ] **训练目标与数据**：[Week 1 Pre-training](./11-train/pre-training/README.md)，pre-training / SFT / RLHF / DPO 的目标函数、数据格式和 loss 区别
 - [ ] **LLM 计算图**：Embedding、Attention、MLP、Norm、Residual、CrossEntropy 的 forward/backward 主链路
 - [ ] **单卡训练机制**：autograd、optimizer state、mixed precision、gradient accumulation、activation checkpointing
 - [ ] **训练显存估算**：params、gradients、optimizer states、activations、temporary buffers 的拆解
@@ -54,7 +54,7 @@
 
 ### 训练
 
-- [x] **序列并行（SP）**：Megatron-SP，ring attention，长序列训练 → [010-dist/cp/](./010-dist/cp/README.md)
+- [x] **序列并行（SP）**：Megatron-SP，ring attention，长序列训练 → [10-dist/cp/](./10-dist/cp/README.md)
 - [ ] **ZeRO-3 + Offload**：参数/梯度/优化器状态的 CPU offload 细节
 - [ ] **异步 checkpoint**：训练不停顿的 checkpoint 写入（torch.distributed.checkpoint）
 - [ ] **MoE 训练**：Expert 并行、负载均衡 loss、token dropping

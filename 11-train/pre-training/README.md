@@ -479,7 +479,7 @@ concept/README.md
 03-llm/train/finetuning/SFT/README.md
 03-llm/train/finetuning/RLHF/README.md
 03-llm/train/finetuning/DPO/README.md
-011-train/scalingLaw/README.md
+11-train/scalingLaw/README.md
 ```
 
 读的时候重点关注：
