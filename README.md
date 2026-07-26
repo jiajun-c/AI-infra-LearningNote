@@ -46,13 +46,15 @@ AI-infra-LearningNote/
 
 ### CUDA 与 GPU 编程
 
-- 架构基础：[硬件架构](./01-cuda/hardware/README.md)、[Hopper 专题](./01-cuda/hardware/hopper.md)、[Blackwell 专题](./01-cuda/hardware/blackwell.md)、[SM 微架构](./01-cuda/hardware/sm.md)
-- Hopper 特性：[TMA](./01-cuda/hopper/TMA/README.md)、[Pipeline](./01-cuda/hopper/pipe/README.md)、[DSMEM](./01-cuda/hopper/DistributedSM/README.md)
-- 执行模型：[启动配置](./01-cuda/launch/README.md)、[Stream](./01-cuda/stream/README.md)、[Cooperative Groups](./01-cuda/cg/README.md)、[Warp 原语](./01-cuda/primitives/warp/README.md)
-- Driver API：[总览](./01-cuda/driver/README.md)、[Stream Memory Ops](./01-cuda/driver/memory/README.md)（cuStreamWriteValue32/WaitValue32/BatchMemOp）
-- 内存优化：[修饰符](./01-cuda/memory/specifier/README.md)、[Bank Conflict](./01-cuda/memory/bank/README.md)、[全局内存合并](./01-cuda/memory/global/README.md)、[Cache](./01-cuda/memory/cache/README.md)、[Pin Memory](./01-cuda/pin/README.md)、[VMM](./01-cuda/memory/vmm/README.md)
-- 算子实现：[HGEMV](./01-cuda/blas/hgemv/README.md)、[Element-wise](./01-cuda/op/element_wise/README.md)、[Transpose](./01-cuda/op/transpose/README.md)、[Reduce](./01-cuda/reduce/README.md)
+- 架构基础：[硬件架构](./01-cuda/hardware/README.md)、[Hopper](./01-cuda/hardware/hopper.md)、[Blackwell](./01-cuda/hardware/blackwell.md)、[SM 微架构](./01-cuda/hardware/sm.md)
+- Hopper 特性：[TMA](./01-cuda/hopper/TMA/README.md)、[WGMMA](./01-cuda/hopper/wgmma/README.md)、[Pipeline](./01-cuda/hopper/pipe/README.md)、[DSMEM](./01-cuda/hopper/DistributedSM/README.md)
+- 执行模型：[启动配置](./01-cuda/launch/README.md)、[Stream](./01-cuda/stream/README.md)、[同步机制](./01-cuda/sync/README.md)、[Cooperative Groups](./01-cuda/cg/README.md)、[Warp 原语](./01-cuda/primitives/warp/README.md)
+- 内存：[修饰符](./01-cuda/memory/specifier/README.md)、[Bank Conflict](./01-cuda/memory/bank/README.md)、[全局内存合并](./01-cuda/memory/global/README.md)、[Cache](./01-cuda/memory/cache/README.md)、[Pin Memory](./01-cuda/pin/README.md)、[VMM](./01-cuda/memory/vmm/README.md)
+- 算子：[总览](./01-cuda/op/README.md)、[HGEMV](./01-cuda/blas/hgemv/README.md)、[Element-wise](./01-cuda/op/element_wise/README.md)、[Transpose](./01-cuda/op/transpose/README.md)
+- BLAS：[总览](./01-cuda/blas/README.md)、[HGEMM](./01-cuda/blas/hgemm/README.md)、[VMulSum](./01-cuda/blas/vmulSum/README.md)
 - CUTLASS / CuTe：[CuTe 多维分块](./01-cuda/cutlass/cute/multidimTile/README.md)、[Copy](./01-cuda/cutlass/copy/README.md)、[CUTLASS 3.x GEMM](./01-cuda/cutlass/gemm/cutlass3.x/README.md)、[Device GEMM](./01-cuda/cutlass/gemm/device/README.md)
+- SM 实验：[总览](./01-cuda/sm/README.md)、[L2 缓存分析](./01-cuda/sm/sm_interval/h100_cache_analysis.md)
+- 工具：[Benchmark](./01-cuda/bench/README.md)、[JIT](./01-cuda/jit/README.md)、[Driver API](./01-cuda/driver/README.md)
 
 ### 编程语言与 Kernel DSL
 
@@ -62,7 +64,7 @@ AI-infra-LearningNote/
 
 ### LLM 架构、训练与推理
 
-- 架构：[模型数据流](./03-llm/arch/flow/README.md)、[Attention](./03-llm/arch/Attention/README.md)、[FlashAttention V1](./03-llm/arch/Attention/FlashAttention/README.md)、[FlashAttention V2](./03-llm/arch/Attention/flashAttentionv2/README.md)、[MoE](./03-llm/arch/MoE/README.md)
+- 架构：[模型数据流](./03-llm/arch/flow/README.md)、[Attention](./03-llm/arch/Attention/README.md)、[FlashAttention V1](./03-llm/arch/Attention/FlashAttention/README.md)、[FlashAttention V2](./03-llm/arch/Attention/flashAttentionv2/README.md)、[FlashMLA](./03-llm/arch/Attention/flashMLA/README.md)、[MoE](./03-llm/arch/MoE/README.md)
 - 并行训练：[DP](./10-dist/dp/README.md)、[DDP](./10-dist/DDP/README.md)、[FSDP](./10-dist/fsdp/README.md)、[HSDP](./10-dist/hsdp/README.md)、[ZeRO](./10-dist/zero/README.md)、[Distributed Transpose](./10-dist/trans/README.md)、[TP](./03-llm/parallel/TP/README.md)、[PP](./03-llm/parallel/PP/README.md)、[EP](./03-llm/parallel/EP/README.md)
 - 序列并行 (CP)：[总览](./10-dist/cp/README.md)、[Megatron-SP](./10-dist/cp/Megtron-SP/README.md)、[Ring Attention](./10-dist/cp/ringAttention/README.md)、[Ulysses](./10-dist/cp/ulysses/README.md)
 - 训练与微调：[Pre-Training](./11-train/pre-training/README.md)、[Post-Training SFT](./11-train/post-training/SFT/README.md)、[RLHF](./11-train/post-training/Alignment/RLHF/README.md)、[DPO](./11-train/post-training/Alignment/DPO/README.md)、[Gradient Accumulation](./11-train/gradAccStep/README.md)、[数据集处理](./03-llm/train/dataset/README.md)、[梯度检查点](./03-llm/train/LowMem/checkpoint/README.md)
