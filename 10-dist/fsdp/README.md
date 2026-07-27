@@ -41,3 +41,7 @@ class FSDPLinear(nn.Module):
         return out
 
 ```
+
+## 3. 优缺点
+
+优点是节省了单点的存储，缺点是跨机通信较慢。

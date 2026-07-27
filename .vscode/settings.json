@@ -160,7 +160,7 @@
     "barrier": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled",
-  "cmake.sourceDirectory": "/volume/code/jjcheng/AI-infra-LearningNote/01-cuda/blas/hgemv",
+  "cmake.sourceDirectory": "/home/star/workspace/AI-infra-LearningNote/01-cuda/blas/hgemv",
   "python-envs.defaultEnvManager": "ms-python.python:system",
   "python-envs.pythonProjects": []
 }
