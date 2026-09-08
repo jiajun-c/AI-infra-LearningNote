@@ -1,0 +1,8 @@
+# zero 和 DDP对比
+
+DDP需要对梯度做一次AllReduce，其通信量是2x，而zero系列分为123
+
+- zero1：2x
+- zero2：2x
+- zero3: 3x
+

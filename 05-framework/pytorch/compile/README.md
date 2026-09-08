@@ -1,43 +1,54 @@
-# torch compile 优化
+# torch compile
 
-torch.compile 是一个优化技术可以加速torch代码，将pytorch代码都给转换为JIT编译的优化内核
+## 1. 流程
 
-[code](./demo.py) 中展示了使用torch.compile的demo
+`torch.compile(fn)` -> Dynamo(字节码->FX图->guards) -> AOTAutograd(joint fwd/bwd -> 分解+切分) -> inductor(FX图->Triton + Python wrapper) -> Runtime(guard检查+cudagraphs)
 
-编译产生的图如下所示
+torch compile有四个核心组件
 
-```shell
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]     def forward(self, L_x_: "f32[3, 3][3, 1]cpu", L_y_: "f32[3, 3][3, 1]cpu"):
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         l_x_ = L_x_
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         l_y_ = L_y_
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]          # File: /volume/code/chengjiajun/workspace/AI-infra-LearningNote/05-framework/pytorch/compile/demo.py:15 in opt_foo2, code: a = torch.sin(x)
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         a: "f32[3, 3][3, 1]cpu" = torch.sin(l_x_);  l_x_ = None
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]          # File: /volume/code/chengjiajun/workspace/AI-infra-LearningNote/05-framework/pytorch/compile/demo.py:16 in opt_foo2, code: b = torch.cos(y)
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         b: "f32[3, 3][3, 1]cpu" = torch.cos(l_y_);  l_y_ = None
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]          # File: /volume/code/chengjiajun/workspace/AI-infra-LearningNote/05-framework/pytorch/compile/demo.py:17 in opt_foo2, code: return a + b
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         add: "f32[3, 3][3, 1]cpu" = a + b;  a = b = None
-V0322 09:42:56.339000 144730 site-packages/torch/_dynamo/output_graph.py:1983] [1/0] [__graph_code]         return (add,)
-```
+## 2. 四个核心组件
 
-## 图断裂
+### 2.1 Dynamo
 
-torch.compile显然不是万能的，当其中出现一些条件语句的时候，其就会被break成多个图
+逐字节码用`InstructionTranslator`做符号化执行，构造FX Graph和guards
 
-如下所示，在if的条件语句哪里会break子图
+### 2.2 Guards
 
-```python3
-def bar(a, b):
-    x = a / (torch.abs(a) + 1)
-    if b.sum() < 0:
-        b = b * -1
-    return x * b
-```
+每个 FX 图附带一组结构化 guard（TENSOR_MATCH / ID_MATCH / TYPE_MATCH 等），guard 不过则重新 trace
 
-对于这样的代码我们可以写成`torch.where`从而进行消除
+### 2.3 AOTAutograd
 
-## handle with triton kernel
+用 functorch 的 FakeTensor trace 出 joint fwd+bwd 图，用 decomposition 表把 fused op 降级，按 partitioner 切回两张图
 
-![alt text](image.png)
+### 2.4 inductor
+
+- 连续 elementwise 融合为单个 Triton kernel；
+- matmul + epilogue 用 Triton GEMM template；
+- reduction 与后续 elementwise 切成两个 kernel（reduction 需要 cross-block 同步）；
+- 启用 triton.cudagraphs = True 后还会捕获 cudagraph 消除 Python launch overhead。
+
+### 2.5 自定义triton算子输入
+
+@torch.library.custom_op + register_fake (fake tensor用) + @register_lowering(写inductor IR)
+
+
+## 3 torch compile几种模式
+
+### 3.1 default 
+
+默认模式，做了下面的优化
+
+- kernel fusion：将epilogue阶段融合到规约算子后面
+- memroy planning：进行buffer的复用
+- Constant folding：trace 期静态求值。
+
+### 3.2 max-autotune-no-cudagraphs
+
+- max_autotune = True — 走多 backend 多候选 benchmark
+- coordinate_descent_tuning = True — 围绕最优 config 做精细 ±1 调整
+
+
+### 3.3 reduce-overhead
+
+开启cudagraphds = True，同时在torch中也有cudagraphtrees的用法，可以当每次变一次shape的时候就重新capture，然后以树的形式保存新的一段路径
+

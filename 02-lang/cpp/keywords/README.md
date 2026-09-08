@@ -37,7 +37,28 @@ int main(int argc, char **argv) {
 
 ## const
 
-const 表示变量的值是不可变的。
+const 表示变量的值是不可变的。const修饰符紧贴着哪个标识符，被修饰的就是它
+
+对于简单类型而言下面的两种写法其实是等价的
+
+```cpp
+const int x = 10;
+int const y = 10;
+```
+
+但是对于复杂类型而言，其位置决定含义，需要从右向左看
+
+```cpp
+int x = 10, y = 20;
+
+// 指向const int的指针，其可变，但是指向的值不可变
+const int* p1 = &x;
+
+// 指针const，其不可变
+int* const p2 = &x;
+```
+
+使用`const`
 
 ## constexpr 
 

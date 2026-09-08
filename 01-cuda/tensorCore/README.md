@@ -4,6 +4,7 @@ TensorCore 是英伟达GPU中的矩阵运算单元，我们可以通过mma指令
 
 ## 支持的数据type/shape
 
+g++ -O0 -fno-elide-constructors class.cpp -o class && ./class
 
 [具体文档](https://docs.nvidia.com/cuda/parallel-thread-execution/index.html?highlight=mma%2520sync%2520aligned%2520m8n8k4#warp-level-matrix-shape)
 

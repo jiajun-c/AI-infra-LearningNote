@@ -21,4 +21,3 @@ LayerNorm 是大模型中场景的归一化操作，作用是对特征张量按�
 ## 3. RMS Normalization
 
 ![alt text](image-1.png)
-

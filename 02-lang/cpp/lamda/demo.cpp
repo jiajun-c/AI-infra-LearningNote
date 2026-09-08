@@ -2,12 +2,16 @@
 
 using namespace std;
 
+auto add = [](int a, int b) {
+    return a + b;
+};
+
 int main() {
     int x = 10;
     int y = 100;
-    auto change = [=, &x]() {
-        x += y;
-    };
-    change();
-    printf("%d %d\n", x, y);
+    int res = add(x, y);
+    printf("%d\n",[ x,  y]{
+        return x + y;
+    }());
+    
 }

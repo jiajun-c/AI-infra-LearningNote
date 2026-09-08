@@ -20,6 +20,37 @@ ZeRO 的核心思路不是改变训练数学本身，而是把这些训练状态
 
 每张卡都保存完整模型、完整梯度、完整优化器状态。
 
+## 1.5 训练状态的字节账
+
+后面讨论每个 ZeRO 阶段时都会用到一些常量，先把账算清楚。
+
+在混合精度（FP16）+ Adam 这个最常见的设定下，对每个可训练参数 `p[i]`，需要保存的训练状态是：
+
+| 训练状态 | bytes / param |
+| --- | --- |
+| `fp16 weight`（forward / backward 用） | 2 |
+| `fp32 master weight`（optimizer.step 用） | 4 |
+| `fp16 .grad` | 2 |
+| `fp32` 一阶动量 `m` | 4 |
+| `fp32` 二阶动量 `v` | 4 |
+| 合计 | **16** |
+
+也就是 ZeRO 论文里那个经典数字 **16 bytes / param** 的来源。
+
+为了后面写起来方便，统一记两个量：
+
+```text
+P  = 可训练参数个数
+S  = 所有可训练参数以 fp16 存的字节数 = 2P
+2S = 所有可训练参数以 fp32 存的字节数（master weight 或 m / v 之一）
+```
+
+几个常被弄混的点：
+
+- **模型权重 = 6 bytes**（不是 2 bytes）：除了 fp16 weight，还有一份 fp32 master weight。
+- **梯度 = 2 bytes**：`.grad` 里实际存的是 fp16；DDP 在 `AllReduce` 内部确实会开 fp32 reduce bucket，但那是 reduce 窗口里的临时开销，不算稳态显存。
+- **优化器状态 = 8 bytes**专指 Adam（`m + v`）。SGD-with-momentum 是 4 bytes，纯 SGD 是 0 bytes。
+
 ## 2. ZeRO-1
 
 `ZeRO-1` 只分片优化器状态：
