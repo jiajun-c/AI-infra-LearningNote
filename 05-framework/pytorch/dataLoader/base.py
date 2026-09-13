@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, Dataset
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # print(device)
 
-
+mp.set_sharing_strategy()
 class SyntheticDataset(Dataset):
     def __init__(self, size=10000, feature_dim=224, transform_delay=0.001):              
         self.size = size

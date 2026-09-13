@@ -223,7 +223,6 @@ void push(int v) {
 std::atomic<bool> x{false}, y{false};
 std::atomic<int>  z{0};
 
-```cpp
 void write_x() { x.store(true, std::memory_order_seq_cst); }
 void write_y() { y.store(true, std::memory_order_seq_cst); }
 

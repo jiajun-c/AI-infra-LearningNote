@@ -35,4 +35,3 @@ void hello(int id) {
 std::thread t2(hello, 2);
 
 ```
-

@@ -179,7 +179,7 @@ for persist in [False, True]:
     times.sort()
     median = times[len(times) // 2]
     label = "persistent=False" if not persist else "persistent=True "
-    print(f"  {label}  (20 epoch total) median={median:6.3f}s  "
+    print(f"  {label}  ({EPOCHS_B} epoch total) median={median:6.3f}s  "
           f"min={min(times):6.3f}s  max={max(times):6.3f}s")
 
 print()

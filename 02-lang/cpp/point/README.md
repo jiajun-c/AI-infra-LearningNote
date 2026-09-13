@@ -20,14 +20,8 @@ int main() {
     std::cout << "b: " << a.use_count() << "pointer " << b.get() << std::endl;
 }
 ```
-
+ 
 侵入性智能指针，其会把引用计数器给放到对象中，从而规避了智能指针控制块和对象可能不在一个cacheline的问题
-
-```cpp
-
-```
-
-
 
 `shared_ptr` 其分为三个层次
 
