@@ -10,6 +10,7 @@
 | --- | --- |
 | 理解 GPU 与 CUDA | [硬件架构](./01-cuda/hardware/README.md) → [内存系统](./01-cuda/memory/README.md) → [并行原语](./01-cuda/primitives/warp/README.md) → [CUTLASS 3.x GEMM](./01-cuda/cutlass/gemm/cutlass3.x/README.md) |
 | 补齐 C++ / Python / Triton 基础 | [C++ 类型系统](./02-lang/cpp/type/README.md) → [引用与转发](./02-lang/cpp/reference/README.md) → [Python](./02-lang/python/iter/README.md) → [Triton](./02-lang/Triton/README.md) |
+| 学习 CuTe DSL 与异步数据搬运 | [Layout](./02-lang/cuteDSL/layout/README.md) → [mbarrier](./02-lang/cuteDSL/mbarrier/README.md) → [Pipeline](./02-lang/cuteDSL/pipeline/README.md) → [TMA](./02-lang/cuteDSL/tma/README.md) → [DSM](./02-lang/cuteDSL/dsm/README.md) |
 | 学习 LLM 核心算子与推理 | [Attention](./03-llm/arch/Attention/README.md) → [MoE](./03-llm/arch/MoE/README.md) → [KV Cache](./03-llm/inference/kvcache/README.md) → [Continuous Batching](./03-llm/inference/continuousBatching/README.md) |
 | 学习分布式训练 | [分布式训练总览](./10-dist/README.md) → DP / DDP → FSDP / ZeRO → TP / PP / EP → 混合并行 |
 | 理解通信与网络瓶颈 | [通信与网络](./04-comm/README.md) → [集合通信](./04-comm/collective/README.md) → [NCCL](./04-comm/CCL/NCCL/README.md) → [计算通信重叠](./04-comm/overlap/README.md) |
@@ -20,7 +21,7 @@
 ```text
 AI-infra-LearningNote/
 ├── 01-cuda/       CUDA 编程、GPU 架构、内存、算子与 CUTLASS
-├── 02-lang/       C++、Python、Triton 与底层编程基础
+├── 02-lang/       C++、Python、Triton、CuTe DSL 与底层编程基础
 ├── 03-llm/        LLM 架构、训练、推理、并行与评测
 ├── 03-multi/      多模态模型：ViT、CLIP、VAE、DiT、LDM
 ├── 04-comm/       通信后端、NCCL、集合通信、互联与 overlap
@@ -48,6 +49,7 @@ AI-infra-LearningNote/
 - C++：[类型系统](./02-lang/cpp/type/README.md)、[引用与完美转发](./02-lang/cpp/reference/README.md)、[模板](./02-lang/cpp/template/README.md)、[线程](./02-lang/cpp/thread/README.md)、[智能指针](./02-lang/cpp/point/README.md)
 - Python：[迭代器](./02-lang/python/iter/README.md)、[生成器](./02-lang/python/yield/README.md)、[asyncio](./02-lang/python/async/README.md)、[类系统](./02-lang/python/class/README.md)
 - Triton：[基础](./02-lang/Triton/basic/README.md)、[Matmul](./02-lang/Triton/matmul/README.md)、[FlashAttention](./02-lang/Triton/flashAttention/README.md)、[Autotune](./02-lang/Triton/autotune/README.md)
+- CuTe DSL：[Layout](./02-lang/cuteDSL/layout/README.md)、[mbarrier](./02-lang/cuteDSL/mbarrier/README.md)、[Pipeline](./02-lang/cuteDSL/pipeline/README.md)、[TMA](./02-lang/cuteDSL/tma/README.md)、[DSM](./02-lang/cuteDSL/dsm/README.md)
 
 ### LLM、分布式与通信
 
@@ -71,4 +73,4 @@ AI-infra-LearningNote/
 
 待补主题见 [TODO.md](./TODO.md)。
 
-最后更新：2026-09-21
+最后更新：2026-09-30

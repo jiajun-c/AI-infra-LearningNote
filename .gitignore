@@ -8,6 +8,7 @@ build/
 *_pnnx.py
 data/
 .cache/
+.venv*/
 
 *egg-info/
 dist/

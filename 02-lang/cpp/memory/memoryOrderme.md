@@ -116,4 +116,80 @@ public:
 
 ## seq_cst
 
-## 
+## compare_exchange_weak
+
+`compare_exchange_weak` 允许**伪失败**：即使原子变量的当前值等于
+`expected`，操作也可能返回 `false`。因此它通常放在循环中使用。
+
+下面通过 CAS 将计数器加一，但计数器最大不能超过 100：
+
+```cpp
+#include <atomic>
+
+std::atomic<int> counter{0};
+
+bool increment_if_below_100() {
+    int expected = counter.load(std::memory_order_relaxed);
+
+    while (expected < 100) {
+        // 成功：counter 被写成 expected + 1，并返回 true。
+        // 失败：counter 不变，expected 被自动更新为 counter 的当前值。
+        if (counter.compare_exchange_weak(
+                expected,
+                expected + 1,
+                std::memory_order_relaxed)) {
+            return true;
+        }
+
+        // 无论是其他线程抢先修改，还是 weak 发生伪失败，都会重新尝试。
+        // 不需要手动执行 expected = counter.load()。
+    }
+
+    return false;
+}
+```
+
+例如 `expected` 原来为 5，但另一个线程先把 `counter` 改成了 8，本次
+CAS 会失败，并把 `expected` 更新为 8。下一轮尝试写入的值就是 9。
+
+## compare_exchange_strong
+
+`compare_exchange_strong` 不允许伪失败。只要当前值确实等于
+`expected`，比较交换就会成功，因此适合只尝试一次的状态转换。
+
+```cpp
+#include <atomic>
+
+enum class State {
+    idle,
+    running,
+    stopped
+};
+
+std::atomic<State> state{State::idle};
+
+bool try_start() {
+    State expected = State::idle;
+
+    // 只允许将 idle 转换成 running，并且只尝试一次。
+    if (state.compare_exchange_strong(expected, State::running)) {
+        return true;  // 转换成功，当前线程取得启动权
+    }
+
+    // 转换失败说明状态确实不是 idle。
+    // expected 已被改写为失败时观察到的实际状态。
+    return false;
+}
+```
+
+如果多个线程同时调用 `try_start()`，只有一个线程能把状态从 `idle`
+改成 `running`。其他线程会失败，并在 `expected` 中得到它们观察到的
+实际状态。
+
+二者的选择原则：
+
+- CAS 本来就在重试循环里：通常使用 `compare_exchange_weak`；
+- 只尝试一次，失败后立即执行其他逻辑：通常使用
+  `compare_exchange_strong`；
+- `strong` 不是“线程竞争时一定成功”，当前值不等于 `expected` 时仍会失败；
+- 两者失败时都会把原子变量的实际值写回 `expected`。
