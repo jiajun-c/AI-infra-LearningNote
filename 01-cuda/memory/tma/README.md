@@ -65,6 +65,7 @@ Pipe 2:                   [TMA load → SMEM] ──mbarrier──> [compute]
 ```
 
 关键机制：
+
 - **Producer**（TMA 线程）：`mbarrier.arrive_and_expect_tx(bytes)` → `cp.async.bulk`（即 TMA copy）→ TMA 完成后自动通知 barrier
 - **Consumer**（计算线程）：`mbarrier.try_wait` 等待数据就绪
 
