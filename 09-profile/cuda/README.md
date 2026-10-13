@@ -12,6 +12,14 @@
 | [stall.md](./stall.md) | Warp Stall 分析 | Short/Long Stall 的含义，Nsight Compute 计数器解读，与 AI 的对应关系 |
 | [benchmark.md](./benchmark.md) | Benchmark 实战 | CUDA/PyTorch 中如何精确测量 kernel 的 GFlops，完整模板和常见陷阱 |
 
+## 专业术语
+
+- GPU utilization：表示在采样的时间窗口内，GPU有kernel在执行的时间的比例，并不表示SM计算单元的实际使用率
+- MFU：模型完成训练时的有效理论计算量与加速器峰值计算能力之比
+- SM Active：SM至少有warp活跃执行的周期占比
+- SM Occupany：Active warps 相对于硬件最大的可驻留warp的比例
+
+
 ## 典型分析流程
 
 1. **定位热点**：用 [nvtx](./nvtx.md) 标记代码段，Nsight Systems 找到耗时最长的 kernel

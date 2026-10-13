@@ -260,7 +260,7 @@ GPU0 Kernel 发送:
   3. GPU0 写一个 flag 到 GPU1 的窗口，通知数据已就绪
 
 GPU1 Kernel 接收:
-  1. GPU1 Kernel 轮询 flag（或等 semaphore）
+  1. GPU1 Kernel 轮询 flag（  或等 semaphore）
   2. GPU1 Kernel 通过 NVLink 直接 load GPU0 的数据
      或 GPU0 已经 store 过来了，直接读本地显存即可
 ```

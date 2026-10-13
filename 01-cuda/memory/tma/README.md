@@ -58,10 +58,10 @@ cuTensorMapEncodeTiled(&tensorMap, ...);
 TMA 与 mbarrier 配合可实现高效的异步流水线：
 
 ```text
-Pipe 0: [TMA load → SMEM] ──mbarrier──> [compute]
+Parrier──> [compute]
+         时间 ──────────────────────────────────────ipe 0: [TMA load → SMEM] ──mbarrier──> [compute]
 Pipe 1:          [TMA load → SMEM] ──mbarrier──> [compute]
-Pipe 2:                   [TMA load → SMEM] ──mbarrier──> [compute]
-         时间 ───────────────────────────────────────>
+Pipe 2:                   [TMA load → SMEM] ──mb─>TMATMATMA
 ```
 
 关键机制：
