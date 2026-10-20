@@ -248,6 +248,8 @@ param_shard = param_shard - lr * m_shard / (sqrt(v_shard) + eps)
 
 只是在真正做某层前向/反向时，通常还需要临时把这一层参数 `all-gather` 回完整视图，算完之后再释放。
 
+[`zero1.py`](./zero1.py) 中的 `ZeRO3` 用两层矩阵乘法演示这一过程：每个 rank 常驻保存自己的模型权重分片（可指定为 FP16/BF16）、FP32 主权重分片和 Adam 状态；自定义 autograd 函数在每层前向临时 `all-gather` 权重，在反向重新聚合权重并对梯度执行 `reduce-scatter`。参数长度不能整除 rank 数时会补零，计算时再裁掉填充部分。这个示例在构造时仍读取完整输入权重；要获得稳态分片的内存收益，调用方也要释放原始完整权重。
+
 ## 5. 和 DDP 的对比
 
 可以把 `DDP` 和 `ZeRO-2` 的差别记成下面这张图：
