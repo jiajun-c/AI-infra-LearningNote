@@ -14,6 +14,7 @@ DP -> DDP -> FSDP / ZeRO -> TP -> PP -> EP -> Hybrid Parallel
 | [DDP](./DDP/README.md) | 多进程数据并行，通过 AllReduce 同步梯度 |
 | [FSDP](./fsdp/README.md) | 参数、梯度、优化器状态分片，降低单卡显存压力 |
 | [ZeRO](./zero/README.md) | 训练状态分片：从 ZeRO-1 到 ZeRO-3 理解参数、梯度、优化器状态如何切分 |
+| [混合并行与显存](./combine/README.md) | TP、EP、DP 等并行方式组合后的单卡参数量与训练状态显存 |
 | [分布式转置](./trans/README.md) | 从矩阵转置理解 All-to-All / All-Gather 等通信形态 |
 
 ## 主线问题

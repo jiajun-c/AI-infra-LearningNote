@@ -12,7 +12,7 @@
 | 补齐 C++ / Python / Triton 基础 | [C++ 类型系统](./02-lang/cpp/type/README.md) → [引用与转发](./02-lang/cpp/reference/README.md) → [Python](./02-lang/python/iter/README.md) → [Triton](./02-lang/Triton/README.md) |
 | 学习 CuTe DSL 与异步数据搬运 | [Layout](./02-lang/cuteDSL/layout/README.md) → [mbarrier](./02-lang/cuteDSL/mbarrier/README.md) → [Pipeline](./02-lang/cuteDSL/pipeline/README.md) → [TMA](./02-lang/cuteDSL/tma/README.md) → [DSM](./02-lang/cuteDSL/dsm/README.md) |
 | 学习 LLM 核心算子与推理 | [Attention](./03-llm/arch/Attention/README.md) → [MoE](./03-llm/arch/MoE/README.md) → [KV Cache](./03-llm/inference/kvcache/README.md) → [Continuous Batching](./03-llm/inference/continuousBatching/README.md) |
-| 学习分布式训练 | [分布式训练总览](./10-dist/README.md) → DP / DDP → FSDP / ZeRO → TP / PP / EP → 混合并行 |
+| 学习分布式训练 | [分布式训练总览](./10-dist/README.md) → DP / DDP → FSDP / ZeRO → TP / PP / EP → [混合并行与显存](./10-dist/combine/README.md) |
 | 理解通信与网络瓶颈 | [通信与网络](./04-comm/README.md) → [集合通信](./04-comm/collective/README.md) → [NCCL](./04-comm/CCL/NCCL/README.md) → [计算通信重叠](./04-comm/overlap/README.md) |
 | 理解训练全流程与损失函数 | [预训练](./11-train/pre-training/README.md) → [交叉熵损失](./11-train/loss/cross-entropy-loss/README.md) → [SFT](./11-train/post-training/SFT/README.md) → [DPO / RLHF](./11-train/post-training/Alignment/README.md) |
 | 学习多模态模型 Infra | [多模态总览](./03-multi/README.md) → [ViT](./03-multi/arch/vit/README.md) → [CLIP](./03-multi/arch/clip/README.md) → [DiT](./03-multi/arch/dit/README.md) → [DiT Cache](./03-multi/inference/dit-cache/README.md) |
@@ -59,7 +59,7 @@ AI-infra-LearningNote/
 
 - 模型：[模型数据流](./03-llm/arch/flow/README.md)、[Attention](./03-llm/arch/Attention/README.md)、[MoE](./03-llm/arch/MoE/README.md)、[Linear](./03-llm/arch/Linear/README.md)、[Norm](./03-llm/arch/Norm/README.md)、[位置编码](./03-llm/arch/position_encode/relative/README.md)
 - 推理：[KV Cache](./03-llm/inference/kvcache/README.md)、[Prefix Cache](./03-llm/inference/prefix_cache/README.md)、[Chunked Prefill](./03-llm/inference/chunkPrefill/README.md)、[Speculative Decoding](./03-llm/inference/speculative/README.md)、[剪枝](./03-llm/inference/prune/channel-based/README.md)
-- 并行：[DP / DDP / FSDP / ZeRO](./10-dist/README.md)、[Tensor Parallel](./03-llm/parallel/TP/README.md)、[Pipeline Parallel](./10-dist/PP/README.md)、[Expert Parallel](./10-dist/ep/README.md)、[Sequence Parallel](./10-dist/cp/README.md)、[显存占用](./10-dist/memory/README.md)
+- 并行：[DP / DDP / FSDP / ZeRO](./10-dist/README.md)、[Tensor Parallel](./03-llm/parallel/TP/README.md)、[Pipeline Parallel](./10-dist/PP/README.md)、[Expert Parallel](./10-dist/ep/README.md)、[Sequence Parallel](./10-dist/cp/README.md)、[混合并行与显存](./10-dist/combine/README.md)、[显存占用](./10-dist/memory/README.md)
 - 通信：[集合通信](./04-comm/collective/README.md)、[NCCL](./04-comm/CCL/NCCL/README.md)、[GIN（GPU 发起网络）](./04-comm/CCL/NCCL/gin/README.md)、[NVLink / NVSwitch](./04-comm/nvlink/README.md)、[拓扑](./04-comm/topo/README.md)、[Overlap](./04-comm/overlap/README.md)
 
 ### 框架、训练与性能
@@ -102,4 +102,4 @@ AI-infra-LearningNote/
 
 待补主题见 [TODO.md](./TODO.md)。
 
-最后更新：2026-10-13
+最后更新：2026-10-21
