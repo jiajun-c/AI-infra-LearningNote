@@ -8,7 +8,7 @@ GPU 程序性能分析、调试和优化方法。
 |------|------|
 | [cuda/](./cuda/README.md) | CUDA kernel 性能分析：nvtx 标记、理论 GFlops 计算、Warp Stall 分析 |
 | [debug/](./debug/README.md) | 调试基础：race condition 检测、常见 bug 定位 |
-| [improve/](./improve/README.md) | 性能优化方法：定位瓶颈、优化策略 |
+| [modeling/](./modeling/README.md) | 性能建模与瓶颈分析 |
 | [perplexity/](./perplexity/README.md) | 模型困惑度分析与评估 |
 | [thop/](./thop/README.md) | THOP：PyTorch 模型 FLOPs/参数量统计工具 |
 | latency/ | GPU kernel 延迟测试（latency_test.cu） |

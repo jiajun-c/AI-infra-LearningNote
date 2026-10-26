@@ -2,9 +2,17 @@
 
 多模态模型（图文/视频/音频）在推理和训练侧与纯语言模型有本质差异，本目录聚焦 **infra 层面**的学习。
 
+## 现有笔记的阅读顺序
+
+1. 视觉表示：[ViT](./arch/vit/README.md) → [CLIP](./arch/clip/README.md) → [Text Encoder](./arch/textEncoder/README.md)。
+2. 生成模型：[VAE](./arch/vae/README.md) → [LDM](./arch/ldm/README.md) → [DiT](./arch/dit/README.md) → [ADM](./arch/adm/README.md)。
+3. 推理优化：[Text2X](./inference/t2x/README.md) → [DiT Cache](./inference/dit-cache/README.md)。
+
+以下目录树与 TODO 描述的是后续规划，其中部分目录尚未建立。
+
 ---
 
-## 目录结构
+## 规划目录结构
 
 ```
 03-multi/
@@ -45,7 +53,7 @@
 - **ViT (Vision Transformer)**: [ViT 基础](./arch/vit/README.md) - patch embedding、位置编码、与 LLM 的接口
 - **CLIP**: [CLIP 对比学习](./arch/clip/README.md) - 图文对齐、zero-shot 分类
 - **VAE**: [变分自编码器](./arch/vae/README.md) - 图像压缩到 latent space（Stable Diffusion 基础）
-- **DiT** ⚠️ TODO - Diffusion Transformer，用于图像生成
+- **DiT**：[Diffusion Transformer](./arch/dit/README.md)，用于图像生成
 
 ### 1.2 多模态 LLM 架构
 
